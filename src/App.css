@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;700;900&display=swap');
+
+:root {
+  --bg-dark: #020617;
+  --bg-card: rgba(15, 23, 42, 0.6); /* تأثير الزجاج */
+  --neon-blue: #00f2ff;
+  --neon-red: #ef4444;
+  --neon-green: #10b981;
+  --neon-gold: #facc15;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-dark);
+  color: white;
+  font-family: 'Oxanium', sans-serif;
+  overflow-x: hidden;
+  /* خلفية السيستم الـ Canvas */
+  background-image: radial-gradient(
+      circle at 15% 50%,
+      rgba(0, 242, 255, 0.08),
+      transparent 25%
+    ),
+    radial-gradient(circle at 85% 30%, rgba(239, 68, 68, 0.08), transparent 25%);
+  background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent; /* بيشيل المربع الأزرق المزعج على الموبايل */
+}
+
+/* أي كارد أو زرار هياخد تأثير الزجاج ده */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* تظبيط شريط التمرير (Scrollbar) عشان ميبقاش شكله قديم */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-blue);
+}
