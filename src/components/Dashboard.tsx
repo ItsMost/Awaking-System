@@ -8,7 +8,7 @@ import {
   Dumbbell, Zap, Star, Clock, Users, Wind, Loader, Footprints, StretchHorizontal,
   PlusCircle, Box, Stethoscope, HeartPulse, Bandage, ClipboardCheck, Target,
   ChevronLeft, ChevronRight, Calendar, Lock, Scale, Bell, Database, Globe, Timer,
-  Trophy, Utensils, Search, Plus, PieChart, RotateCcw, List, Trash2, Gamepad2, Medal
+  Trophy, Utensils, Search, Plus, PieChart, RotateCcw, List, Trash2, Gamepad2, MousePointerClick
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -150,7 +150,7 @@ const FoodItem = styled.div` background: #1e293b50; border: 1px solid #334155; p
 const ManualInputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; `;
 const ResetMacrosBtn = styled.button` background: #2a0808; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; &:hover { background: #450a0a; } `;
 
-// 🚨 تصميمات زرار ونافذة اللعبة (Reaction Game) 🚨
+// 🚨 تصميمات زرار ونافذة الألعاب (ELITE ARCADE) 🚨
 const GameFAB = styled(motion.button)`
   position: fixed;
   bottom: 100px;
@@ -168,10 +168,7 @@ const GameFAB = styled(motion.button)`
   cursor: pointer;
   z-index: 90;
   transition: 0.3s;
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
-  }
+  &:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(168, 85, 247, 0.6); }
 `;
 
 const GameArea = styled.div<{ $state: string }>`
@@ -195,22 +192,9 @@ const GameArea = styled.div<{ $state: string }>`
   border: 4px solid rgba(255,255,255,0.1);
 `;
 
-const GameText = styled.div`
-  font-size: 24px;
-  font-weight: 900;
-  text-transform: uppercase;
-  color: #fff;
-  letter-spacing: 2px;
-  text-align: center;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-`;
-
-const GameSubText = styled.div`
-  font-size: 12px;
-  color: rgba(255,255,255,0.7);
-  margin-top: 10px;
-  font-weight: bold;
-`;
+const GameText = styled.div` font-size: 24px; font-weight: 900; text-transform: uppercase; color: #fff; letter-spacing: 2px; text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,0.5); `;
+const GameSubText = styled.div` font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 10px; font-weight: bold; `;
+const GameSelectorBtn = styled.button<{ $active: boolean, $color: string }>` flex: 1; padding: 10px; background: ${(props) => props.$active ? `${props.$color}20` : 'transparent'}; border: 1px solid ${(props) => props.$active ? props.$color : '#334155'}; color: ${(props) => props.$active ? props.$color : '#94a3b8'}; border-radius: 8px; font-family: 'Oxanium'; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; `;
 
 // ==========================================
 // 3. قاعدة بيانات المهام و الأكل (Local DB)
@@ -354,14 +338,23 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [foodSearchQuery, setFoodSearchQuery] = useState('');
   const [manualFood, setManualFood] = useState({ name: '', protein: '', carbs: '', fats: '', calories: '' });
 
-  // 🚨 States for Reaction Game 🚨
+  // 🚨 States for Arcade Games (Reaction & Sprint) 🚨
   const [showGameModal, setShowGameModal] = useState(false);
   const [gameTab, setGameTab] = useState<'play' | 'leaderboard'>('play');
+  const [activeGame, setActiveGame] = useState<'reaction' | 'sprint'>('reaction');
+  
+  // Reaction State
   const [gameState, setGameState] = useState<'idle' | 'waiting' | 'ready' | 'result' | 'early'>('idle');
   const [reactionTime, setReactionTime] = useState<number | null>(null);
   const [gameStartTime, setGameStartTime] = useState<number>(0);
   const [gameTimeoutId, setGameTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [reactionLeaderboard, setReactionLeaderboard] = useState<any[]>([]);
+
+  // Sprint State
+  const [sprintState, setSprintState] = useState<'idle' | 'playing' | 'result'>('idle');
+  const [sprintScore, setSprintScore] = useState(0);
+  const [sprintTimeLeft, setSprintTimeLeft] = useState(10);
+  const [sprintLeaderboard, setSprintLeaderboard] = useState<any[]>([]);
 
   const isFriday = selectedDate.getDay() === 5;
   const DAILY_QUESTS = currentPlayer.isInjured ? INJURED_DAILY_QUESTS : NORMAL_DAILY_QUESTS;
@@ -575,29 +568,33 @@ const Dashboard = ({ player, setPlayer }: any) => {
     syncData();
   }, [currentPlayer.name, selectedDate]);
 
-  // 🚨 دوال لعبة الـ Reaction 🚨
-  const fetchReactionLeaderboard = async () => {
+  // 🚨 دوال الألعاب المصغرة 🚨
+  const fetchGameLeaderboards = async () => {
     try {
-      const { data } = await supabase.from('reaction_scores').select('*').order('best_time', { ascending: true }).limit(10);
-      if (data) setReactionLeaderboard(data);
-    } catch (e) {
-      console.error(e);
-    }
+      const { data: reactData } = await supabase.from('reaction_scores').select('*').order('best_time', { ascending: true }).limit(10);
+      if (reactData) setReactionLeaderboard(reactData);
+
+      const { data: sprintData } = await supabase.from('finger_sprint_scores').select('*').order('best_score', { ascending: false }).limit(10);
+      if (sprintData) setSprintLeaderboard(sprintData);
+    } catch (e) { console.error(e); }
   };
 
   const handleOpenGame = () => {
     playHoverSound();
     setGameState('idle');
+    setSprintState('idle');
     setReactionTime(null);
+    setSprintScore(0);
     setGameTab('play');
     setShowGameModal(true);
   };
 
-  const startGame = () => {
+  // --- Reaction Game Logic ---
+  const startReactionGame = () => {
     playHoverSound();
     setGameState('waiting');
     setReactionTime(null);
-    const delay = Math.floor(Math.random() * 3000) + 1500; // 1.5s - 4.5s
+    const delay = Math.floor(Math.random() * 3000) + 1500;
     const id = setTimeout(() => {
       setGameState('ready');
       setGameStartTime(Date.now());
@@ -606,9 +603,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
     setGameTimeoutId(id);
   };
 
-  const handleGameAreaClick = async () => {
+  const handleReactionClick = async () => {
     if (gameState === 'idle' || gameState === 'result' || gameState === 'early') {
-      startGame();
+      startReactionGame();
     } else if (gameState === 'waiting') {
       playDashSound('error');
       if (gameTimeoutId) clearTimeout(gameTimeoutId);
@@ -626,11 +623,45 @@ const Dashboard = ({ player, setPlayer }: any) => {
           if (!existing) toast.success(`New Score: ${time}ms!`, { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' }});
           else toast.success(`New Personal Best! Beat previous by ${existing.best_time - time}ms!`, { style: { background: '#020617', border: '1px solid #00f2ff', color: '#00f2ff' }});
         }
-      } catch (e) {
-        console.error('Failed to save score', e);
-      }
+      } catch (e) { console.error('Failed to save score', e); }
     }
   };
+
+  // --- Finger Sprint Game Logic ---
+  useEffect(() => {
+    if (sprintState === 'playing' && sprintTimeLeft > 0) {
+      const timer = setTimeout(() => setSprintTimeLeft(sprintTimeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (sprintState === 'playing' && sprintTimeLeft === 0) {
+      endSprintGame();
+    }
+  }, [sprintState, sprintTimeLeft]);
+
+  const endSprintGame = async () => {
+    setSprintState('result');
+    playDashSound('complete');
+    try {
+      const { data: existing } = await supabase.from('finger_sprint_scores').select('best_score').eq('hunter_name', currentPlayer.name).single();
+      if (!existing || sprintScore > existing.best_score) {
+        await supabase.from('finger_sprint_scores').upsert({ hunter_name: currentPlayer.name, best_score: sprintScore }, { onConflict: 'hunter_name' });
+        if (!existing) toast.success(`New Score: ${sprintScore} Taps!`, { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' }});
+        else toast.success(`New Personal Best! Beat previous by ${sprintScore - existing.best_score} taps!`, { style: { background: '#020617', border: '1px solid #00f2ff', color: '#00f2ff' }});
+      }
+    } catch (e) { console.error('Failed to save sprint score', e); }
+  };
+
+  const handleSprintClick = () => {
+    if (sprintState === 'idle' || sprintState === 'result') {
+      setSprintState('playing');
+      setSprintScore(0);
+      setSprintTimeLeft(10);
+      playDashSound('gameClick');
+    } else if (sprintState === 'playing') {
+      setSprintScore(prev => prev + 1);
+    }
+  };
+
+  // -------------------------
 
   const handleQuestClick = (quest: any) => {
     if (isProcessing || isLoadingSync) return;
@@ -923,7 +954,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     <Container>
       <Toaster position="top-center" theme="dark" />
 
-      {/* 🚨 الزرار العائم للعبة الـ Reaction 🚨 */}
+      {/* 🚨 الزرار العائم للألعاب (ELITE ARCADE) 🚨 */}
       <GameFAB 
         onClick={handleOpenGame}
         whileTap={{ scale: 0.9 }}
@@ -1089,25 +1120,43 @@ const Dashboard = ({ player, setPlayer }: any) => {
         );
       })}
 
-      {/* 🚨 نافذة لعبة الـ Reaction (Reflex Arena) 🚨 */}
+      {/* 🚨 ELITE ARCADE MODAL 🚨 */}
       <AnimatePresence>
         {showGameModal && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
-            <ModalContent $color="#a855f7" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
+            <ModalContent $color={activeGame === 'reaction' ? '#a855f7' : '#0ea5e9'} initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
               <button onClick={() => { setShowGameModal(false); if(gameTimeoutId) clearTimeout(gameTimeoutId); }} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={24} /></button>
               
-              <h2 style={{ color: '#a855f7', margin: '0 0 20px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase' }}>
-                <Gamepad2 size={20} /> REFLEX ARENA
+              <h2 style={{ color: activeGame === 'reaction' ? '#a855f7' : '#0ea5e9', margin: '0 0 20px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase' }}>
+                <Gamepad2 size={20} /> ELITE ARCADE
               </h2>
+
+              <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+                <GameSelectorBtn 
+                  $active={activeGame === 'reaction'} 
+                  $color="#a855f7" 
+                  onClick={() => { playHoverSound(); setActiveGame('reaction'); setGameTab('play'); }}
+                >
+                  <Zap size={14} /> Reflex
+                </GameSelectorBtn>
+                <GameSelectorBtn 
+                  $active={activeGame === 'sprint'} 
+                  $color="#0ea5e9" 
+                  onClick={() => { playHoverSound(); setActiveGame('sprint'); setGameTab('play'); }}
+                >
+                  <MousePointerClick size={14} /> Sprint
+                </GameSelectorBtn>
+              </div>
 
               <NutriTabs style={{ marginBottom: 20 }}>
                 <NutriTab type="button" $active={gameTab === 'play'} onClick={(e) => { e.preventDefault(); playHoverSound(); setGameTab('play'); }}>Play <Gamepad2 size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
-                <NutriTab type="button" $active={gameTab === 'leaderboard'} onClick={(e) => { e.preventDefault(); playHoverSound(); fetchReactionLeaderboard(); setGameTab('leaderboard'); }}>Leaderboard <Trophy size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
+                <NutriTab type="button" $active={gameTab === 'leaderboard'} onClick={(e) => { e.preventDefault(); playHoverSound(); fetchGameLeaderboards(); setGameTab('leaderboard'); }}>Leaderboard <Trophy size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
               </NutriTabs>
 
-              {gameTab === 'play' && (
+              {/* REACTION GAME */}
+              {activeGame === 'reaction' && gameTab === 'play' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <GameArea $state={gameState} onClick={handleGameAreaClick}>
+                  <GameArea $state={gameState} onClick={handleReactionClick}>
                     {gameState === 'idle' && (
                       <>
                         <GameText>CLICK TO START</GameText>
@@ -1132,30 +1181,85 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 </motion.div>
               )}
 
+              {/* FINGER SPRINT GAME */}
+              {activeGame === 'sprint' && gameTab === 'play' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <GameArea 
+                    $state={sprintState === 'playing' ? 'ready' : sprintState === 'result' ? 'result' : 'idle'} 
+                    onClick={handleSprintClick}
+                  >
+                    {sprintState === 'idle' && (
+                      <>
+                        <GameText>CLICK TO START</GameText>
+                        <GameSubText>10 Seconds. Tap as fast as possible!</GameSubText>
+                      </>
+                    )}
+                    {sprintState === 'playing' && (
+                      <>
+                        <GameText style={{ fontSize: 40, color: '#000' }}>{sprintScore}</GameText>
+                        <GameSubText style={{ color: '#000', fontSize: '14px' }}>Time: {sprintTimeLeft}s</GameSubText>
+                      </>
+                    )}
+                    {sprintState === 'result' && (
+                      <>
+                        <GameText style={{ fontSize: 36 }}>{sprintScore} Taps</GameText>
+                        <GameSubText>CPS: {(sprintScore / 10).toFixed(1)} | Click to retry</GameSubText>
+                      </>
+                    )}
+                  </GameArea>
+                </motion.div>
+              )}
+
+              {/* LEADERBOARDS */}
               {gameTab === 'leaderboard' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  {reactionLeaderboard.length === 0 ? (
-                     <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1e293b50', borderRadius: '12px' }}>
-                       No scores recorded yet. Be the first!
-                     </div>
-                  ) : (
-                    <FoodList style={{ maxHeight: '300px' }}>
-                      {reactionLeaderboard.map((score, idx) => (
-                        <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#eab308' : '#334155', background: idx === 0 ? 'rgba(234, 179, 8, 0.1)' : '#1e293b50' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#eab308' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
-                            <div>
-                              <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#eab308' : '#fff' }}>{score.hunter_name}</div>
-                              <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>{new Date(score.created_at).toLocaleDateString()}</div>
-                            </div>
-                          </div>
-                          <div style={{ fontSize: '16px', fontWeight: '900', color: '#00f2ff', display: 'flex', alignItems: 'center', gap: 5 }}>
-                            <Zap size={14} color="#00f2ff" /> {score.best_time} ms
-                          </div>
-                        </FoodItem>
-                      ))}
-                    </FoodList>
+                  
+                  {activeGame === 'reaction' && (
+                    <>
+                      <div style={{ textAlign: 'center', marginBottom: 10, color: '#a855f7', fontWeight: 'bold', fontSize: 12 }}>Top 10 Fastest Reflexes</div>
+                      {reactionLeaderboard.length === 0 ? (
+                         <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1e293b50', borderRadius: '12px' }}>No scores yet. Be the first!</div>
+                      ) : (
+                        <FoodList style={{ maxHeight: '250px' }}>
+                          {reactionLeaderboard.map((score, idx) => (
+                            <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#a855f7' : '#334155', background: idx === 0 ? 'rgba(168, 85, 247, 0.1)' : '#1e293b50' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#a855f7' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
+                                <div>
+                                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#a855f7' : '#fff' }}>{score.hunter_name}</div>
+                                </div>
+                              </div>
+                              <div style={{ fontSize: '16px', fontWeight: '900', color: '#00f2ff', display: 'flex', alignItems: 'center', gap: 5 }}><Zap size={14} color="#00f2ff" /> {score.best_time} ms</div>
+                            </FoodItem>
+                          ))}
+                        </FoodList>
+                      )}
+                    </>
                   )}
+
+                  {activeGame === 'sprint' && (
+                    <>
+                      <div style={{ textAlign: 'center', marginBottom: 10, color: '#0ea5e9', fontWeight: 'bold', fontSize: 12 }}>Top 10 Fastest Fingers (10s)</div>
+                      {sprintLeaderboard.length === 0 ? (
+                         <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1e293b50', borderRadius: '12px' }}>No scores yet. Be the first!</div>
+                      ) : (
+                        <FoodList style={{ maxHeight: '250px' }}>
+                          {sprintLeaderboard.map((score, idx) => (
+                            <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#0ea5e9' : '#334155', background: idx === 0 ? 'rgba(14, 165, 233, 0.1)' : '#1e293b50' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#0ea5e9' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
+                                <div>
+                                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#0ea5e9' : '#fff' }}>{score.hunter_name}</div>
+                                </div>
+                              </div>
+                              <div style={{ fontSize: '16px', fontWeight: '900', color: '#10b981', display: 'flex', alignItems: 'center', gap: 5 }}><Target size={14} color="#10b981" /> {score.best_score} Taps</div>
+                            </FoodItem>
+                          ))}
+                        </FoodList>
+                      )}
+                    </>
+                  )}
+
                 </motion.div>
               )}
             </ModalContent>
