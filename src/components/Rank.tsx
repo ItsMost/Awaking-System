@@ -2,66 +2,148 @@ import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Trophy, Medal, Shield, User, ChevronUp, Activity, Target, Zap, Crown, Lock, Unlock,
-  ShieldAlert, HeartPulse, Scale, Percent, CheckCircle, Clock, X, Database, Dumbbell,
-  TrendingUp, CalendarDays, Globe, Moon, Eye, Wind, Footprints, Lock as LockIcon, Gem,
-  Coffee, Flame, XCircle, Inbox, Check, FileImage, Sword, Skull, Crosshair, Heart,
-  Droplet, Search, Key, Plus, Copy, Trash2, Infinity as InfinityIcon, Axe, Anchor,
-  Fingerprint, Hexagon, Cpu, RotateCcw, Ghost, Award
+  Trophy,
+  Medal,
+  Shield,
+  User,
+  ChevronUp,
+  Activity,
+  Target,
+  Zap,
+  Crown,
+  Lock,
+  Unlock,
+  ShieldAlert,
+  HeartPulse,
+  Scale,
+  Percent,
+  CheckCircle,
+  Clock,
+  X,
+  Database,
+  Dumbbell,
+  TrendingUp,
+  CalendarDays,
+  Globe,
+  Moon,
+  Eye,
+  Wind,
+  Footprints,
+  Lock as LockIcon,
+  Gem,
+  Coffee,
+  Flame,
+  XCircle,
+  Inbox,
+  Check,
+  FileImage,
+  Sword,
+  Skull,
+  Crosshair,
+  Heart,
+  Droplet,
+  Search,
+  Key,
+  Plus,
+  Copy,
+  Trash2,
+  Infinity as InfinityIcon,
+  Axe,
+  Anchor,
+  Fingerprint,
+  Hexagon,
+  Cpu,
+  RotateCcw,
+  Ghost,
+  Award,
+  Star
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast, Toaster } from 'sonner';
 
 // ==========================================
-// 1. الأصوات
+// 1. المحرك الصوتي المضاد للسبام (Anti-Spam Audio Shield) 🚨
 // ==========================================
+let sharedAudioCtx: AudioContext | null = null;
+let lastPlayTime = 0;
+
+const getAudioContext = () => {
+  if (!sharedAudioCtx) {
+    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+    if (Ctx) sharedAudioCtx = new Ctx();
+  }
+  if (sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume();
+  }
+  return sharedAudioCtx;
+};
+
+const canPlay = () => {
+  const now = Date.now();
+  if (now - lastPlayTime < 50) return false;
+  lastPlayTime = now;
+  return true;
+};
+
 const playClick = () => {
-  const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioContext) return;
-  const ctx = new AudioContext();
+  if (!canPlay()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
+  
   osc.connect(gain);
   gain.connect(ctx.destination);
+  
   osc.type = 'sine';
   osc.frequency.setValueAtTime(800, ctx.currentTime);
   osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+  
   gain.gain.setValueAtTime(0.1, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+  
   osc.start();
   osc.stop(ctx.currentTime + 0.1);
 };
 
 const playHover = () => {
-  const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioContext) return;
-  const ctx = new AudioContext();
+  if (!canPlay()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
+  
   osc.connect(gain);
   gain.connect(ctx.destination);
+  
   osc.type = 'sine';
   osc.frequency.setValueAtTime(1200, ctx.currentTime);
+  
   gain.gain.setValueAtTime(0.02, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+  
   osc.start();
   osc.stop(ctx.currentTime + 0.05);
 };
 
 const playUnlock = () => {
-  const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioContext) return;
-  const ctx = new AudioContext();
+  if (!canPlay()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
+  
   osc.connect(gain);
   gain.connect(ctx.destination);
+  
   osc.type = 'square';
   osc.frequency.setValueAtTime(400, ctx.currentTime);
   osc.frequency.setValueAtTime(800, ctx.currentTime + 0.1);
   osc.frequency.setValueAtTime(1200, ctx.currentTime + 0.2);
+  
   gain.gain.setValueAtTime(0.2, ctx.currentTime);
   gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+  
   osc.start();
   osc.stop(ctx.currentTime + 0.4);
 };
@@ -93,6 +175,7 @@ const NORMAL_DAILY_QUESTS = [
   'Functional Mobility',
   'Recovery Cooldown',
 ];
+
 const INJURED_DAILY_QUESTS = [
   'Practice (Rehab)',
   'Hydration Target (3L)',
@@ -100,12 +183,12 @@ const INJURED_DAILY_QUESTS = [
   'Rehab Mobility Protocol',
   'Thermal / Cryotherapy',
 ];
+
 const FRIDAY_DIRECTIVES = [
   'Weekly Volume Compliance',
   'Perfect Microcycle Streak',
 ];
 
-// 🚨 محرك الحساب التراكمي الجديد للـ EXP في الرانك 🚨
 const getCumulativeXp = (lvl: number, currentXp: number) => {
   let total = 0;
   for (let i = 1; i < lvl; i++) {
@@ -115,74 +198,82 @@ const getCumulativeXp = (lvl: number, currentXp: number) => {
 };
 
 // ==========================================
-// 3. نظام الكلاسات (22 Class)
+// 3. نظام الكلاسات الذكي
 // ==========================================
 const CLASS_MAPPING = [
-  { id: 'axe', name: 'Berserker', baseIcon: Axe, evolvedIcon: Sword, color: '#cbd5e1' },
-  { id: 'sword', name: 'Blade Master', baseIcon: Sword, evolvedIcon: Axe, color: '#00f2ff' },
-  { id: 'shadow', name: 'Shadow Assassin', baseIcon: Moon, evolvedIcon: Ghost, color: '#818cf8' },
-  { id: 'wind', name: 'Wind Walker', baseIcon: Wind, evolvedIcon: Footprints, color: '#38bdf8' },
-  { id: 'dumbbell', name: 'Titan Lifter', baseIcon: Dumbbell, evolvedIcon: Anchor, color: '#f97316' },
-  { id: 'zap', name: 'Storm Bringer', baseIcon: Zap, evolvedIcon: Flame, color: '#eab308' },
-  { id: 'shield', name: 'Iron Guardian', baseIcon: Shield, evolvedIcon: Hexagon, color: '#64748b' },
-  { id: 'target', name: 'Deadeye Sniper', baseIcon: Target, evolvedIcon: Crosshair, color: '#f43f5e' },
-  { id: 'droplet', name: 'Blood Medic', baseIcon: Droplet, evolvedIcon: Heart, color: '#ef4444' },
-  { id: 'cpu', name: 'Cyber Hacker', baseIcon: Cpu, evolvedIcon: Fingerprint, color: '#06b6d4' },
-  { id: 'skull', name: 'Immortal Lord', baseIcon: Skull, evolvedIcon: InfinityIcon, color: '#a855f7' },
-  { id: 'crown', name: 'Absolute Monarch', baseIcon: Crown, evolvedIcon: Award, color: '#f59e0b' },
-  { id: 'lock', name: 'Gate Keeper', baseIcon: LockIcon, evolvedIcon: Unlock, color: '#10b981' },
-  { id: 'flame', name: 'Pyromancer', baseIcon: Flame, evolvedIcon: Zap, color: '#ef4444' },
-  { id: 'heart', name: 'Vitality Monk', baseIcon: Heart, evolvedIcon: Droplet, color: '#f43f5e' },
-  { id: 'anchor', name: 'Deep Sea Titan', baseIcon: Anchor, evolvedIcon: Dumbbell, color: '#0ea5e9' },
-  { id: 'hexagon', name: 'Fortress', baseIcon: Hexagon, evolvedIcon: Shield, color: '#8b5cf6' },
-  { id: 'fingerprint', name: 'Phantom', baseIcon: Fingerprint, evolvedIcon: Ghost, color: '#14b8a6' },
-  { id: 'infinity', name: 'Eternal', baseIcon: InfinityIcon, evolvedIcon: Skull, color: '#ec4899' },
-  { id: 'eye', name: 'Visionary', baseIcon: Eye, evolvedIcon: Moon, color: '#d946ef' },
-  { id: 'footprints', name: 'Speedster', baseIcon: Footprints, evolvedIcon: Wind, color: '#10b981' },
-  { id: 'athlete', name: 'Elite Athlete', baseIcon: Activity, evolvedIcon: Target, color: '#10b981' },
+  { id: 'sword', keys: ['sword', 'combat', 'blade', 'warrior'], name: 'Blade Master', baseIcon: Sword, evolvedIcon: Axe, color: '#00f2ff' },
+  { id: 'flame', keys: ['flame', 'fire', 'pyro'], name: 'Pyromancer', baseIcon: Flame, evolvedIcon: Zap, color: '#ef4444' },
+  { id: 'zap', keys: ['zap', 'energy', 'lightning', 'thunder'], name: 'Storm Bringer', baseIcon: Zap, evolvedIcon: Flame, color: '#eab308' },
+  { id: 'dumbbell', keys: ['dumbbell', 'power', 'barbell', 'strength'], name: 'Titan Lifter', baseIcon: Dumbbell, evolvedIcon: Anchor, color: '#f97316' },
+  { id: 'moon', keys: ['moon', 'shadow', 'dark'], name: 'Shadow Assassin', baseIcon: Moon, evolvedIcon: Ghost, color: '#d8b4fe' },
+  { id: 'eye', keys: ['eye', 'visionary', 'seer'], name: 'Visionary', baseIcon: Eye, evolvedIcon: Moon, color: '#818cf8' },
+  { id: 'shield', keys: ['shield', 'defense', 'tank', 'guardian'], name: 'Iron Guardian', baseIcon: Shield, evolvedIcon: Hexagon, color: '#64748b' },
+  { id: 'crown', keys: ['crown', 'royal', 'king', 'monarch'], name: 'Absolute Monarch', baseIcon: Crown, evolvedIcon: Award, color: '#f59e0b' },
+  { id: 'skull', keys: ['skull', 'immortal', 'death', 'undead'], name: 'Immortal Lord', baseIcon: Skull, evolvedIcon: InfinityIcon, color: '#a855f7' },
+  { id: 'footprints', keys: ['footprints', 'shoe', 'speed', 'runner'], name: 'Speedster', baseIcon: Footprints, evolvedIcon: Wind, color: '#10b981' },
+  { id: 'wind', keys: ['wind', 'air', 'breeze'], name: 'Wind Walker', baseIcon: Wind, evolvedIcon: Footprints, color: '#38bdf8' },
+  { id: 'target', keys: ['target', 'precision', 'sniper', 'aim'], name: 'Deadeye Sniper', baseIcon: Target, evolvedIcon: Crosshair, color: '#f43f5e' },
+  { id: 'axe', keys: ['axe', 'berserker', 'chop'], name: 'Berserker', baseIcon: Axe, evolvedIcon: Sword, color: '#cbd5e1' },
+  { id: 'anchor', keys: ['anchor', 'deepsea', 'ocean'], name: 'Deep Sea Titan', baseIcon: Anchor, evolvedIcon: Dumbbell, color: '#0ea5e9' },
+  { id: 'fingerprint', keys: ['fingerprint', 'phantom', 'stealth'], name: 'Phantom', baseIcon: Fingerprint, evolvedIcon: Ghost, color: '#14b8a6' },
+  { id: 'hexagon', keys: ['hexagon', 'fortress', 'base'], name: 'Fortress', baseIcon: Hexagon, evolvedIcon: Shield, color: '#8b5cf6' },
+  { id: 'cpu', keys: ['cpu', 'tech', 'cyber', 'hacker'], name: 'Cyber Hacker', baseIcon: Cpu, evolvedIcon: Fingerprint, color: '#06b6d4' },
+  { id: 'infinity', keys: ['infinity', 'limitless', 'eternal'], name: 'Eternal', baseIcon: InfinityIcon, evolvedIcon: Skull, color: '#ec4899' },
+  { id: 'heart', keys: ['heart', 'vitality', 'medic', 'life'], name: 'Vitality Monk', baseIcon: Heart, evolvedIcon: Droplet, color: '#f43f5e' },
+  { id: 'activity', keys: ['activity', 'athlete', 'pulse', 'sport'], name: 'Elite Athlete', baseIcon: Activity, evolvedIcon: Target, color: '#10b981' },
+  { id: 'droplet', keys: ['droplet', 'water', 'blood', 'liquid'], name: 'Blood Medic', baseIcon: Droplet, evolvedIcon: Heart, color: '#60a5fa' },
+  { id: 'lock', keys: ['lock', 'gate', 'secure'], name: 'Gate Keeper', baseIcon: LockIcon, evolvedIcon: Unlock, color: '#10b981' },
+  { id: 'star', keys: ['star', 'superstar'], name: 'Superstar', baseIcon: Star, evolvedIcon: Crown, color: '#facc15' },
+  { id: 'crosshair', keys: ['crosshair', 'lethal'], name: 'Lethal Weapon', baseIcon: Crosshair, evolvedIcon: Target, color: '#ef4444' }
 ];
 
-const getHunterClass = (hunter: any) => {
-  const iconStr = String(
-    hunter?.selectedIcon ||
-    hunter?.selected_icon ||
-    hunter?.icon ||
-    hunter?.class ||
-    (hunter?.titles && hunter.titles[0]) ||
-    ''
-  ).toLowerCase().trim();
-
-  let searchId = iconStr.replace('_evolved', '').trim();
-  if (searchId === 'moon') searchId = 'shadow';
-  if (searchId === 'shoe') searchId = 'footprints';
-  if (searchId === 'barbell') searchId = 'dumbbell';
-  if (searchId === 'lightning') searchId = 'zap';
-  if (searchId === 'water') searchId = 'droplet';
-
-  const found = CLASS_MAPPING.find(c => searchId.includes(c.id) || c.id.includes(searchId));
-  const cls = found || CLASS_MAPPING[1]; // Default to Sword
-
-  return {
-    cls,
-    isEvolved: iconStr.includes('evolved')
-  };
+const getUserClassInfo = (iconStr: string) => {
+  if (!iconStr) return CLASS_MAPPING[0];
+  const normalized = String(iconStr).toLowerCase().replace('_evolved', '').trim();
+  for (const cls of CLASS_MAPPING) {
+    if (cls.id === normalized || cls.keys.some((k) => normalized.includes(k))) {
+      return cls;
+    }
+  }
+  return CLASS_MAPPING[0];
 };
 
 const getHunterIconOnly = (hunter: any, isRank1: boolean, size: number = 22) => {
-  const { cls, isEvolved } = getHunterClass(hunter);
+  const iconStr = String(
+    hunter?.selectedIcon || 
+    hunter?.selected_icon || 
+    hunter?.icon || 
+    hunter?.class || 
+    (hunter?.titles && hunter.titles[0]) || 
+    ''
+  ).toLowerCase().trim();
+
+  const isEvolved = iconStr.includes('evolved');
+  const cls = getUserClassInfo(iconStr);
   const color = isRank1 ? '#eab308' : cls.color;
+
   const IconComponent = isEvolved ? cls.evolvedIcon : cls.baseIcon;
   return <IconComponent size={size} color={color} />;
 };
 
 const getIconBorderColor = (hunter: any, isRank1: boolean) => {
   if (isRank1) return '#eab308';
-  return getHunterClass(hunter).cls.color;
+  const iconStr = String(
+    hunter?.selectedIcon || 
+    hunter?.selected_icon || 
+    hunter?.icon || 
+    hunter?.class || 
+    (hunter?.titles && hunter.titles[0]) || 
+    ''
+  ).toLowerCase().trim();
+
+  return getUserClassInfo(iconStr).color;
 };
 
 // ==========================================
-// 4. التصميمات (مفرودة وكاملة)
+// 4. التصميمات المفرودة (Styled Components)
 // ==========================================
+
 const Container = styled(motion.div)`
   padding: 15px;
   font-family: 'Oxanium', sans-serif;
@@ -416,6 +507,9 @@ const PlayerNameText = styled.div<{ $isRank1: boolean }>`
   font-weight: bold;
   color: ${(props) => (props.$isRank1 ? '#eab308' : '#fff')};
   margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 `;
 
 const PlayerTitleText = styled.div`
@@ -685,6 +779,9 @@ const Rank = ({ player, setPlayer }: any) => {
   const [monthlyLeaderboard, setMonthlyLeaderboard] = useState<any[]>([]);
   const [maleLeaderboard, setMaleLeaderboard] = useState<any[]>([]);
   const [femaleLeaderboard, setFemaleLeaderboard] = useState<any[]>([]);
+  
+  // 🚨 State جديد للأبطال التاريخيين 🚨
+  const [championsHistory, setChampionsHistory] = useState<any[]>([]);
 
   const [activeBoard, setActiveBoard] = useState<'global' | 'monthly' | 'male' | 'female'>('global');
   const [loading, setLoading] = useState(true);
@@ -723,6 +820,11 @@ const Rank = ({ player, setPlayer }: any) => {
     try {
       const { data: hunters, error } = await supabase.from('shadow_hunters').select('*');
       if (error) throw error;
+      
+      // جلب تاريخ الأبطال من القاعدة
+      const { data: champsData } = await supabase.from('season_champions').select('*');
+      if (champsData) setChampionsHistory(champsData);
+
       if (!hunters) {
         setGlobalLeaderboard([]);
         return;
@@ -931,17 +1033,39 @@ const Rank = ({ player, setPlayer }: any) => {
     }
   };
 
+  // 🚨 زرار الـ Reset Month السحري 🚨
   const handleResetMonth = async () => {
-    const confirmReset = window.confirm('⚠️ DANGER ZONE: هل أنت متأكد من تصفير عداد الشهر لجميع اللاعبين؟ لا يمكن التراجع عن هذه الخطوة!');
+    const confirmReset = window.confirm('⚠️ DANGER ZONE: هل أنت متأكد من إنهاء الموسم؟ سيتم تتويج الأبطال الحاليين ثم تصفير النقاط الشهرية لجميع اللاعبين!');
     if (!confirmReset) return;
+    
     setIsProcessing(true);
     try {
-      const { error } = await supabase.from('shadow_hunters').update({ monthly_xp: 0 }).gte('lvl', 1);
-      if (error) throw error;
-      toast.success('🏆 Monthly Leaderboard Successfully Reset!', { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
-      await supabase.from('exp_history').insert([{ hunter_name: 'SYSTEM', amount_changed: 0, new_total_xp: 0, operation_type: 'increase', reason: 'A NEW MONTHLY SEASON HAS BEGUN! 🏆' }]);
+      const topMale = maleLeaderboard[0];
+      const topFemale = femaleLeaderboard[0];
+      const currentMonthName = new Date().toLocaleString('en-US', { month: 'long' }).toUpperCase();
+      const seasonName = `SEASON: ${currentMonthName} WARFARE`;
+      
+      const championsToInsert = [];
+      if (topMale && topMale.monthly_xp > 0) {
+        championsToInsert.push({ hunter_name: topMale.name, season_name: seasonName, category: 'Male', monthly_xp: topMale.monthly_xp });
+      }
+      if (topFemale && topFemale.monthly_xp > 0) {
+        championsToInsert.push({ hunter_name: topFemale.name, season_name: seasonName, category: 'Female', monthly_xp: topFemale.monthly_xp });
+      }
+
+      if (championsToInsert.length > 0) {
+        const { error: champError } = await supabase.from('season_champions').insert(championsToInsert);
+        if (champError) throw champError;
+      }
+
+      const { error: resetError } = await supabase.from('shadow_hunters').update({ monthly_xp: 0 }).gte('lvl', 1);
+      if (resetError) throw resetError;
+
+      toast.success('🏆 Season Ended! Champions Crowned & Monthly Leaderboard Reset!', { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
+      await supabase.from('exp_history').insert([{ hunter_name: 'SYSTEM', amount_changed: 0, new_total_xp: 0, operation_type: 'increase', reason: 'A NEW SEASON HAS BEGUN! 🏆' }]);
+      
       fetchAndProcessLeaderboard();
-    } catch (err) { toast.error('Error resetting month.'); }
+    } catch (err) { toast.error('Error ending season.'); }
     setIsProcessing(false);
   };
 
@@ -1205,18 +1329,28 @@ const Rank = ({ player, setPlayer }: any) => {
                 filteredBoard.map((hunter, index) => {
                   const isMe = player?.name === hunter.name;
                   const isRank1 = hunter.position === 1;
+                  
+                  // 🚨 حساب التاج (مرات الفوز) 🚨
+                  const playerWins = championsHistory.filter(c => c.hunter_name === hunter.name).length;
+
                   return (
                     <PlayerCard key={`${hunter.name}-${activeBoard}`} $isRank1={isRank1} onClick={() => handlePlayerClick(hunter)} onMouseEnter={playHover} whileTap={{ scale: 0.95 }}>
                       {isRank1 && <Ribbon>المركز الأول 👑</Ribbon>}
                       <RankCol $rank={hunter.position}>{isRank1 ? <Gem size={24} color="#eab308" fill="#ca8a04" /> : hunter.position}</RankCol>
                       
-                      {/* 🚨 الأيقونة ظاهرة هنا بدون صور شخصية إجبارياً 🚨 */}
                       <IconCircle $color={getIconBorderColor(hunter, isRank1)} $isRank1={isRank1}>
                         {getHunterIconOnly(hunter, isRank1, 24)}
                       </IconCircle>
                       
                       <NameCol>
-                        <PlayerNameText $isRank1={isRank1}>{hunter.name} {isMe && '(YOU)'}</PlayerNameText>
+                        <PlayerNameText $isRank1={isRank1}>
+                          {hunter.name} {isMe && '(YOU)'}
+                          {playerWins > 0 && (
+                            <span style={{ color: '#eab308', fontSize: '11px', textShadow: '0 0 5px rgba(234, 179, 8, 0.5)', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                              👑 x{playerWins}
+                            </span>
+                          )}
+                        </PlayerNameText>
                         <PlayerTitleText>{hunter.titles?.[0] || 'GATE CLOSER'}</PlayerTitleText>
                       </NameCol>
                       <LevelCol>
