@@ -13,7 +13,7 @@ import {
 import { supabase } from '../lib/supabase';
 
 // ==========================================
-// 1. المحرك الصوتي المضاد للسبام (Anti-Spam Audio Shield) 🚨
+// 1. المحرك الصوتي المضاد للسبام (Anti-Spam Audio Shield)
 // ==========================================
 let sharedAudioCtx: AudioContext | null = null;
 let lastPlayTime = 0;
@@ -150,54 +150,14 @@ const FoodItem = styled.div` background: #1e293b50; border: 1px solid #334155; p
 const ManualInputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; `;
 const ResetMacrosBtn = styled.button` background: #2a0808; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; &:hover { background: #450a0a; } `;
 
-// 🚨 تصميمات زرار ونافذة الألعاب (ELITE ARCADE) 🚨
-const GameFAB = styled(motion.button)`
-  position: fixed;
-  bottom: 100px;
-  right: 20px;
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
-  border: 2px solid #d8b4fe;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
-  cursor: pointer;
-  z-index: 90;
-  transition: 0.3s;
-  &:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(168, 85, 247, 0.6); }
-`;
-
-const GameArea = styled.div<{ $state: string }>`
-  width: 100%;
-  height: 250px;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  transition: background 0.1s;
-  background: ${(props) => 
-    props.$state === 'waiting' ? '#ef4444' : 
-    props.$state === 'ready' ? '#10b981' : 
-    props.$state === 'early' ? '#b45309' : 
-    props.$state === 'result' ? '#0ea5e9' : '#1e293b'
-  };
-  box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
-  border: 4px solid rgba(255,255,255,0.1);
-`;
-
+const GameFAB = styled(motion.button)` position: fixed; bottom: 100px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: 2px solid #d8b4fe; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; &:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(168, 85, 247, 0.6); } `;
+const GameArea = styled.div<{ $state: string }>` width: 100%; height: 250px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: background 0.1s; background: ${(props) => props.$state === 'waiting' ? '#ef4444' : props.$state === 'ready' ? '#10b981' : props.$state === 'early' ? '#b45309' : props.$state === 'result' ? '#0ea5e9' : '#1e293b' }; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); border: 4px solid rgba(255,255,255,0.1); `;
 const GameText = styled.div` font-size: 24px; font-weight: 900; text-transform: uppercase; color: #fff; letter-spacing: 2px; text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,0.5); `;
 const GameSubText = styled.div` font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 10px; font-weight: bold; `;
 const GameSelectorBtn = styled.button<{ $active: boolean, $color: string }>` flex: 1; padding: 10px; background: ${(props) => props.$active ? `${props.$color}20` : 'transparent'}; border: 1px solid ${(props) => props.$active ? props.$color : '#334155'}; color: ${(props) => props.$active ? props.$color : '#94a3b8'}; border-radius: 8px; font-family: 'Oxanium'; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; `;
 
 // ==========================================
-// 3. قاعدة بيانات المهام و الأكل (Local DB)
+// 3. قاعدة بيانات المهام و الأكل
 // ==========================================
 const LOCAL_FOOD_DB = [
   { name: 'صدور دجاج مطهية (100ج)', protein: 31, carbs: 0, fats: 3, calories: 165 },
@@ -331,6 +291,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [systemLogs, setSystemLogs] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
 
+  // 🚨 Time Anti-Spoofing State 🚨
+  const [timeOffset, setTimeOffset] = useState<number>(0);
+
   const [showNutritionModal, setShowNutritionModal] = useState(false);
   const [dailyMacros, setDailyMacros] = useState({ protein: 0, carbs: 0, fats: 0, calories: 0, log: [] as any[] });
   const [customFoods, setCustomFoods] = useState<any[]>([]); 
@@ -338,37 +301,54 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [foodSearchQuery, setFoodSearchQuery] = useState('');
   const [manualFood, setManualFood] = useState({ name: '', protein: '', carbs: '', fats: '', calories: '' });
 
-  // 🚨 States for Arcade Games (Reaction & Sprint) 🚨
   const [showGameModal, setShowGameModal] = useState(false);
   const [gameTab, setGameTab] = useState<'play' | 'leaderboard'>('play');
   const [activeGame, setActiveGame] = useState<'reaction' | 'sprint'>('reaction');
-  
-  // Reaction State
   const [gameState, setGameState] = useState<'idle' | 'waiting' | 'ready' | 'result' | 'early'>('idle');
   const [reactionTime, setReactionTime] = useState<number | null>(null);
   const [gameStartTime, setGameStartTime] = useState<number>(0);
   const [gameTimeoutId, setGameTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [reactionLeaderboard, setReactionLeaderboard] = useState<any[]>([]);
-
-  // Sprint State
   const [sprintState, setSprintState] = useState<'idle' | 'playing' | 'result'>('idle');
   const [sprintScore, setSprintScore] = useState(0);
   const [sprintTimeLeft, setSprintTimeLeft] = useState(10);
   const [sprintLeaderboard, setSprintLeaderboard] = useState<any[]>([]);
 
+  // 🚨 استدعاء توقيت السيرفر الحقيقي 🚨
+  useEffect(() => {
+    const fetchServerTime = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_server_time');
+        if (data && !error) {
+          const serverTime = new Date(data).getTime();
+          const localTime = new Date().getTime();
+          setTimeOffset(serverTime - localTime);
+        }
+      } catch (err) {
+        console.error("Time sync failed", err);
+      }
+    };
+    fetchServerTime();
+  }, []);
+
+  // 🚨 دالة سحرية بتجيب الوقت الحقيقي بناءً على فرق التوقيت 🚨
+  const getRealTime = () => new Date(Date.now() + timeOffset);
+
+  const realNow = getRealTime();
   const isFriday = selectedDate.getDay() === 5;
   const DAILY_QUESTS = currentPlayer.isInjured ? INJURED_DAILY_QUESTS : NORMAL_DAILY_QUESTS;
-  const isToday = selectedDate.toDateString() === new Date().toDateString();
+  const isToday = selectedDate.toDateString() === realNow.toDateString();
+  
   const isYesterday = () => {
-    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    const yesterday = new Date(realNow); 
+    yesterday.setDate(yesterday.getDate() - 1);
     return selectedDate.toDateString() === yesterday.toDateString();
   };
 
   const isLocked = () => {
     if (isToday) return false;
     if (isYesterday()) {
-      const now = new Date();
-      if (now.getHours() >= 12) return true;
+      if (realNow.getHours() >= 12) return true;
       return false;
     }
     return true;
@@ -378,14 +358,16 @@ const Dashboard = ({ player, setPlayer }: any) => {
     playHoverSound();
     setSelectedDate((prev) => {
       const newD = new Date(prev); newD.setDate(newD.getDate() + offset);
-      const today = new Date(); today.setHours(23, 59, 59, 999);
+      const today = getRealTime(); 
+      today.setHours(23, 59, 59, 999);
       if (newD > today) return prev;
       return new Date(newD);
     });
   };
 
   const getLogDate = () => {
-    const logDate = new Date(selectedDate); const now = new Date();
+    const logDate = new Date(selectedDate); 
+    const now = getRealTime();
     logDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
     return logDate.toISOString();
   };
@@ -401,12 +383,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
   };
 
   const calculateStreak = (currentStreak: number, lastActive: string | null) => {
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    const todayStr = getRealTime().toISOString().split('T')[0];
+    const yesterday = getRealTime(); 
+    yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split('T')[0];
-    if (lastActive === today) return { streak: currentStreak, last_active: today, changed: false };
-    if (lastActive === yesterdayStr) return { streak: currentStreak + 1, last_active: today, changed: true };
-    return { streak: 1, last_active: today, changed: true };
+    
+    if (lastActive === todayStr) return { streak: currentStreak, last_active: todayStr, changed: false };
+    if (lastActive === yesterdayStr) return { streak: currentStreak + 1, last_active: todayStr, changed: true };
+    return { streak: 1, last_active: todayStr, changed: true };
   };
 
   const getDaysDiff = (d1: string, d2: string) => {
@@ -417,7 +401,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const now = new Date();
+      const now = getRealTime();
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
       const diff = endOfMonth.getTime() - now.getTime();
       if (diff > 0) {
@@ -431,7 +415,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     calculateTimeLeft();
     const timer = setInterval(calculateTimeLeft, 60000); 
     return () => clearInterval(timer);
-  }, []);
+  }, [timeOffset]);
 
   useEffect(() => {
     const fetchRadarNews = async () => {
@@ -455,7 +439,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
       const endOfDay = new Date(selectedDate); endOfDay.setHours(23, 59, 59, 999);
       const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
       const fourteenDaysAgo = new Date(selectedDate); fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-      const todayStr = new Date().toISOString().split('T')[0];
+      
+      const todayStr = getRealTime().toISOString().split('T')[0];
 
       try {
         const { data: userData } = await supabase.from('shadow_hunters').select('*').eq('name', currentPlayer.name).single();
@@ -486,7 +471,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
           if (daysSinceCheck > 0) {
             for (let i = 1; i <= daysSinceCheck; i++) {
-              const checkDay = new Date(); checkDay.setDate(checkDay.getDate() - i);
+              const checkDay = getRealTime(); checkDay.setDate(checkDay.getDate() - i);
               const checkDayStr = checkDay.toISOString().split('T')[0];
               if (getDaysDiff(checkDayStr, lastActiveStr) > 0) missedDays++;
             }
@@ -566,9 +551,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
       setIsLoadingSync(false);
     };
     syncData();
-  }, [currentPlayer.name, selectedDate]);
+  }, [currentPlayer.name, selectedDate, timeOffset]);
 
-  // 🚨 دوال الألعاب المصغرة 🚨
   const fetchGameLeaderboards = async () => {
     try {
       const { data: reactData } = await supabase.from('reaction_scores').select('*').order('best_time', { ascending: true }).limit(10);
@@ -589,7 +573,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
     setShowGameModal(true);
   };
 
-  // --- Reaction Game Logic ---
   const startReactionGame = () => {
     playHoverSound();
     setGameState('waiting');
@@ -627,7 +610,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
     }
   };
 
-  // --- Finger Sprint Game Logic ---
   useEffect(() => {
     if (sprintState === 'playing' && sprintTimeLeft > 0) {
       const timer = setTimeout(() => setSprintTimeLeft(sprintTimeLeft - 1), 1000);
@@ -660,8 +642,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
       setSprintScore(prev => prev + 1);
     }
   };
-
-  // -------------------------
 
   const handleQuestClick = (quest: any) => {
     if (isProcessing || isLoadingSync) return;
@@ -798,7 +778,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       }
 
       const streakData = calculateStreak(currentPlayer.streak || 0, currentPlayer.last_active);
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getRealTime().toISOString().split('T')[0];
 
       let hpGain = 0;
       if (quest.id === SHARED_HYDRATION.id || quest.id === SHARED_NUTRITION.id) hpGain = 5;
@@ -843,7 +823,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       if (insertError) throw insertError;
 
       const streakData = calculateStreak(currentPlayer.streak || 0, currentPlayer.last_active);
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getRealTime().toISOString().split('T')[0];
 
       let hpGain = 0;
       if (selectedQuest.id === 'wq1') hpGain = 20;
@@ -954,7 +934,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
     <Container>
       <Toaster position="top-center" theme="dark" />
 
-      {/* 🚨 الزرار العائم للألعاب (ELITE ARCADE) 🚨 */}
       <GameFAB 
         onClick={handleOpenGame}
         whileTap={{ scale: 0.9 }}
@@ -1120,7 +1099,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
         );
       })}
 
-      {/* 🚨 ELITE ARCADE MODAL 🚨 */}
       <AnimatePresence>
         {showGameModal && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
@@ -1153,7 +1131,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 <NutriTab type="button" $active={gameTab === 'leaderboard'} onClick={(e) => { e.preventDefault(); playHoverSound(); fetchGameLeaderboards(); setGameTab('leaderboard'); }}>Leaderboard <Trophy size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
               </NutriTabs>
 
-              {/* REACTION GAME */}
               {activeGame === 'reaction' && gameTab === 'play' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <GameArea $state={gameState} onClick={handleReactionClick}>
@@ -1181,7 +1158,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 </motion.div>
               )}
 
-              {/* FINGER SPRINT GAME */}
               {activeGame === 'sprint' && gameTab === 'play' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <GameArea 
@@ -1210,7 +1186,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 </motion.div>
               )}
 
-              {/* LEADERBOARDS */}
               {gameTab === 'leaderboard' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   
@@ -1267,7 +1242,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
         )}
       </AnimatePresence>
 
-      {/* 🚨 نافذة التغذية الشاملة 🚨 */}
       <AnimatePresence>
         {showNutritionModal && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
