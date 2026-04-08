@@ -13,7 +13,7 @@ import {
 import { supabase } from '../lib/supabase';
 
 // ==========================================
-// 1. المحرك الصوتي المضاد للسبام (Anti-Spam Audio Shield)
+// 1. المحرك الصوتي المضاد للسبام
 // ==========================================
 let sharedAudioCtx: AudioContext | null = null;
 let lastPlayTime = 0;
@@ -157,7 +157,7 @@ const GameSubText = styled.div` font-size: 12px; color: rgba(255,255,255,0.7); m
 const GameSelectorBtn = styled.button<{ $active: boolean, $color: string }>` flex: 1; padding: 10px; background: ${(props) => props.$active ? `${props.$color}20` : 'transparent'}; border: 1px solid ${(props) => props.$active ? props.$color : '#334155'}; color: ${(props) => props.$active ? props.$color : '#94a3b8'}; border-radius: 8px; font-family: 'Oxanium'; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; `;
 
 // ==========================================
-// 3. قاعدة بيانات المهام و الأكل
+// 3. الثوابت وقواعد البيانات (Constants & Arrays)
 // ==========================================
 const LOCAL_FOOD_DB = [
   { name: 'صدور دجاج مطهية (100ج)', protein: 31, carbs: 0, fats: 3, calories: 165 },
@@ -268,6 +268,7 @@ const MONTHLY_QUESTS = [
 
 const PENALTY_QUEST = { id: 'penalty_q', title: 'Disciplinary Execution', desc: 'تنفيذ العقوبة الإدارية المطلوبة ورفع الإثبات لرفع تجميد النظام.', exp: 0, gold: 0, type: 'request', icon: ShieldAlert, color: '#ef4444', isPenalty: true };
 
+
 // ==========================================
 // 4. المكون الرئيسي (Dashboard)
 // ==========================================
@@ -277,6 +278,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
     isInjured: false, activePenalty: false, weight: 75, streak: 0,
     last_active: null, last_penalty_check: null,
   };
+
+  const DAILY_QUESTS = currentPlayer.isInjured ? INJURED_DAILY_QUESTS : NORMAL_DAILY_QUESTS;
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [completedQuests, setCompletedQuests] = useState<string[]>([]);
@@ -291,7 +294,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [systemLogs, setSystemLogs] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
 
-  // 🚨 Time Anti-Spoofing State 🚨
+  // 🚨 Time Anti-Spoofing State
   const [timeOffset, setTimeOffset] = useState<number>(0);
 
   const [showNutritionModal, setShowNutritionModal] = useState(false);
@@ -314,7 +317,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [sprintTimeLeft, setSprintTimeLeft] = useState(10);
   const [sprintLeaderboard, setSprintLeaderboard] = useState<any[]>([]);
 
-  // 🚨 استدعاء توقيت السيرفر الحقيقي 🚨
+  // استدعاء توقيت السيرفر الحقيقي
   useEffect(() => {
     const fetchServerTime = async () => {
       try {
@@ -331,27 +334,36 @@ const Dashboard = ({ player, setPlayer }: any) => {
     fetchServerTime();
   }, []);
 
-  // 🚨 دالة سحرية بتجيب الوقت الحقيقي بناءً على فرق التوقيت 🚨
   const getRealTime = () => new Date(Date.now() + timeOffset);
+
+  // 🚨 دالة لقلب التاريخ عند منتصف الليل 🚨
+  const getSystemDateStr = (date: Date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
 
   const realNow = getRealTime();
   const isFriday = selectedDate.getDay() === 5;
-  const DAILY_QUESTS = currentPlayer.isInjured ? INJURED_DAILY_QUESTS : NORMAL_DAILY_QUESTS;
-  const isToday = selectedDate.toDateString() === realNow.toDateString();
+  const todayStr = getSystemDateStr(realNow);
+  const selStr = getSystemDateStr(selectedDate);
+  
+  const isToday = selStr === todayStr;
   
   const isYesterday = () => {
     const yesterday = new Date(realNow); 
     yesterday.setDate(yesterday.getDate() - 1);
-    return selectedDate.toDateString() === yesterday.toDateString();
+    return selStr === getSystemDateStr(yesterday);
   };
 
+  // 🚨 دالة القفل: يقدر يرجع يوم واحد لورا لحد 12 الظهر 🚨
   const isLocked = () => {
-    if (isToday) return false;
+    if (isToday) return false; // النهارده مفتوح دايماً
+    
     if (isYesterday()) {
-      if (realNow.getHours() >= 12) return true;
-      return false;
+      if (realNow.getHours() < 12) return false; // امبارح مفتوح قبل 12 الظهر
+      return true; // امبارح مقفول بعد 12 الظهر
     }
-    return true;
+    
+    return true; // أي يوم أقدم من امبارح مقفول
   };
 
   const changeDate = (offset: number) => {
@@ -380,17 +392,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
       return `${quest.desc} (هدفك: ${minProtein}g - ${maxProtein}g بروتين).`;
     }
     return quest.desc;
-  };
-
-  const calculateStreak = (currentStreak: number, lastActive: string | null) => {
-    const todayStr = getRealTime().toISOString().split('T')[0];
-    const yesterday = getRealTime(); 
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-    
-    if (lastActive === todayStr) return { streak: currentStreak, last_active: todayStr, changed: false };
-    if (lastActive === yesterdayStr) return { streak: currentStreak + 1, last_active: todayStr, changed: true };
-    return { streak: 1, last_active: todayStr, changed: true };
   };
 
   const getDaysDiff = (d1: string, d2: string) => {
@@ -432,6 +433,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     fetchRadarNews();
   }, []);
 
+  // 🚨 المزامنة وتطبيق "ضريبة التكاسل" 🚨
   useEffect(() => {
     const syncData = async () => {
       setIsLoadingSync(true);
@@ -440,15 +442,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
       const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
       const fourteenDaysAgo = new Date(selectedDate); fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
       
-      const todayStr = getRealTime().toISOString().split('T')[0];
-
       try {
         const { data: userData } = await supabase.from('shadow_hunters').select('*').eq('name', currentPlayer.name).single();
 
         if (userData && setPlayer) {
           let fetchedHp = userData.hp ?? 100;
           let fetchedStreak = userData.streak || 0;
-          let lastPenaltyCheck = userData.last_penalty_check || userData.last_active || todayStr;
+          let fetchedGold = userData.gold || 0;
+          let lastPenaltyCheck = userData.last_penalty_check || todayStr;
           let lastActiveStr = userData.last_active || todayStr;
 
           let fetchedCustomFoods = userData.custom_foods || [];
@@ -465,33 +466,61 @@ const Dashboard = ({ player, setPlayer }: any) => {
           }
           setDailyMacros(fetchedMacros);
 
-          const daysSinceCheck = getDaysDiff(todayStr, lastPenaltyCheck);
+          // 🚨 حساب أيام الغياب والعقوبة 🚨
           let hpLost = 0;
-          let missedDays = 0;
+          let taxLost = 0;
+          let newPenaltyCheckStr = lastPenaltyCheck;
 
-          if (daysSinceCheck > 0) {
-            for (let i = 1; i <= daysSinceCheck; i++) {
-              const checkDay = getRealTime(); checkDay.setDate(checkDay.getDate() - i);
-              const checkDayStr = checkDay.toISOString().split('T')[0];
-              if (getDaysDiff(checkDayStr, lastActiveStr) > 0) missedDays++;
-            }
+          let checkDate = new Date(lastPenaltyCheck);
+          checkDate.setDate(checkDate.getDate() + 1); // ابدأ من اليوم اللي بعد آخر فحص
+          
+          const yesterdayObj = new Date(realNow); 
+          yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+          const yesterdayStr = getSystemDateStr(yesterdayObj);
 
-            if (missedDays > 0) {
-              hpLost = missedDays * 10;
+          while (checkDate <= yesterdayObj) {
+              const checkStr = getSystemDateStr(checkDate);
+              
+              // لو بنفحص امبارح ولسه مجتش 12 الظهر، بنوقف الفحص ومبنخصمش حاجة
+              if (checkStr === yesterdayStr && realNow.getHours() < 12) {
+                  break;
+              }
+
+              const lastActiveDate = new Date(lastActiveStr);
+              // لو هو مجاش في اليوم ده خالص (مفيش أي نشاط متسجل بعده)
+              if (lastActiveDate < checkDate) {
+                  hpLost += 10;
+                  taxLost += 50;
+                  fetchedStreak = 0;
+              }
+
+              newPenaltyCheckStr = checkStr;
+              checkDate.setDate(checkDate.getDate() + 1);
+          }
+
+          if (hpLost > 0 || taxLost > 0) {
               fetchedHp = Math.max(0, fetchedHp - hpLost);
-              fetchedStreak = 0;
-
+              fetchedGold = Math.max(0, fetchedGold - taxLost);
+              
               setTimeout(() => {
-                playDashSound('error');
-                toast.error(`🩸 النزيف (HP Bleed): فقدت ${hpLost} HP بسبب غيابك عن المهام!`, { style: { background: '#450a0a', color: '#ef4444', border: '1px solid #ef4444' } });
+                  playDashSound('error');
+                  toast.error(`💸 تم خصم ضريبة لغيابك عن مهامك: فقدت ${hpLost} HP و ${taxLost} Gold!`, { style: { background: '#450a0a', color: '#ef4444', border: '1px solid #ef4444', padding: '16px' } });
               }, 1500);
-            }
 
-            await supabase.from('shadow_hunters').update({ hp: fetchedHp, streak: fetchedStreak, last_penalty_check: todayStr }).eq('name', currentPlayer.name);
+              await supabase.from('shadow_hunters').update({ 
+                  hp: fetchedHp, 
+                  gold: fetchedGold,
+                  streak: fetchedStreak,
+                  last_penalty_check: newPenaltyCheckStr 
+              }).eq('name', currentPlayer.name);
+          } else if (newPenaltyCheckStr !== lastPenaltyCheck) {
+              await supabase.from('shadow_hunters').update({ 
+                  last_penalty_check: newPenaltyCheckStr 
+              }).eq('name', currentPlayer.name);
           }
 
           setPlayer((prev: any) => ({
-            ...prev, xp: userData.xp, monthlyXp: userData.monthly_xp, gold: userData.gold, lvl: userData.lvl,
+            ...prev, xp: userData.xp, monthlyXp: userData.monthly_xp, gold: fetchedGold, lvl: userData.lvl,
             activePenalty: userData.active_penalty, isInjured: userData.is_injured ?? prev.isInjured, injuryDetails: userData.injury_details ?? prev.injuryDetails,
             weight: userData.weight || prev.weight || 75, streak: fetchedStreak, last_active: userData.last_active, hp: fetchedHp,
             custom_foods: fetchedCustomFoods
@@ -501,7 +530,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
         const { data: requests } = await supabase.from('system_requests').select('task_name, status, created_at').eq('hunter_name', currentPlayer.name).gte('created_at', fourteenDaysAgo.toISOString()).lte('created_at', endOfDay.toISOString());
 
         if (requests) {
-          const allQuests = [...NORMAL_DAILY_QUESTS, ...INJURED_DAILY_QUESTS, ...BIWEEKLY_QUESTS, ...MONTHLY_QUESTS, ...FRIDAY_DIRECTIVES, PENALTY_QUEST];
           const approvedIds: string[] = [];
           const pendingIds: string[] = [];
 
@@ -533,6 +561,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 if (req.status === 'approved') approvedIds.push(SHARED_MOBILITY.id);
                 if (req.status === 'pending') pendingIds.push(SHARED_MOBILITY.id);
               } else {
+                const allQuests = [...NORMAL_DAILY_QUESTS, ...INJURED_DAILY_QUESTS, ...BIWEEKLY_QUESTS, ...MONTHLY_QUESTS, ...FRIDAY_DIRECTIVES, PENALTY_QUEST];
                 const matchedQuest = allQuests.find((q) => q.title === req.task_name);
                 if (matchedQuest) {
                   if (req.status === 'approved') approvedIds.push(matchedQuest.id);
@@ -777,15 +806,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
         xpNeeded = Math.min(newLvl * 150 + 500, 4000);
       }
 
-      const streakData = calculateStreak(currentPlayer.streak || 0, currentPlayer.last_active);
-      const todayStr = getRealTime().toISOString().split('T')[0];
+      const todayStr = getSystemDateStr(getRealTime());
 
       let hpGain = 0;
       if (quest.id === SHARED_HYDRATION.id || quest.id === SHARED_NUTRITION.id) hpGain = 5;
       let newHp = Math.min(100, (currentPlayer.hp || 100) + hpGain);
 
-      const dbUpdates = { xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, lvl: newLvl, streak: streakData.streak, last_active: streakData.last_active, last_penalty_check: todayStr, hp: newHp };
-      const stateUpdates = { xp: newXp, monthlyXp: newMonthlyXp, gold: newGold, lvl: newLvl, streak: streakData.streak, last_active: streakData.last_active, hp: newHp };
+      const dbUpdates = { xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, lvl: newLvl, last_active: selStr, last_penalty_check: todayStr, hp: newHp };
+      const stateUpdates = { xp: newXp, monthlyXp: newMonthlyXp, gold: newGold, lvl: newLvl, last_active: selStr, hp: newHp };
 
       const { error: updateError } = await supabase.from('shadow_hunters').update(dbUpdates).eq('name', currentPlayer.name);
       if (updateError) throw updateError;
@@ -822,15 +850,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
       const { error: insertError } = await supabase.from('system_requests').insert([{ hunter_name: currentPlayer.name, task_name: selectedQuest.title, evidence: selectedQuest.noImage ? 'Action Logged - Awaiting Coach' : hasFile ? '📷 Image Attached' : 'No Evidence', type: selectedQuest.isPenalty ? 'penalty' : 'quest', status: 'pending', created_at: getLogDate() }]);
       if (insertError) throw insertError;
 
-      const streakData = calculateStreak(currentPlayer.streak || 0, currentPlayer.last_active);
-      const todayStr = getRealTime().toISOString().split('T')[0];
+      const todayStr = getSystemDateStr(getRealTime());
 
       let hpGain = 0;
       if (selectedQuest.id === 'wq1') hpGain = 20;
       let newHp = Math.min(100, (currentPlayer.hp || 100) + hpGain);
 
-      await supabase.from('shadow_hunters').update({ streak: streakData.streak, last_active: streakData.last_active, last_penalty_check: todayStr, hp: newHp }).eq('name', currentPlayer.name);
-      if (setPlayer) setPlayer({ ...currentPlayer, streak: streakData.streak, last_active: streakData.last_active, hp: newHp });
+      await supabase.from('shadow_hunters').update({ last_active: selStr, last_penalty_check: todayStr, hp: newHp }).eq('name', currentPlayer.name);
+      if (setPlayer) setPlayer({ ...currentPlayer, last_active: selStr, hp: newHp });
 
       playDashSound('request');
       setPendingQuests((prev) => [...prev, selectedQuest.id]);
@@ -966,7 +993,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       <DateNav>
         <NavBtn onClick={() => changeDate(-1)}><ChevronLeft /></NavBtn>
         <DateDisplay>
-          <div className="day"><Calendar size={14} color="#0ea5e9" /> {isToday ? 'TODAY' : isYesterday() ? 'YESTERDAY' : selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}</div>
+          <div className="day">{isToday ? 'TODAY' : isYesterday() ? 'YESTERDAY' : selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}</div>
           <div className="full-date">{selectedDate.toLocaleDateString()}</div>
         </DateDisplay>
         <NavBtn onClick={() => changeDate(1)} disabled={isToday}><ChevronRight /></NavBtn>
@@ -1099,6 +1126,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         );
       })}
 
+      {/* 🚨 ELITE ARCADE MODAL 🚨 */}
       <AnimatePresence>
         {showGameModal && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
@@ -1131,6 +1159,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 <NutriTab type="button" $active={gameTab === 'leaderboard'} onClick={(e) => { e.preventDefault(); playHoverSound(); fetchGameLeaderboards(); setGameTab('leaderboard'); }}>Leaderboard <Trophy size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
               </NutriTabs>
 
+              {/* REACTION GAME */}
               {activeGame === 'reaction' && gameTab === 'play' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <GameArea $state={gameState} onClick={handleReactionClick}>
@@ -1158,6 +1187,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 </motion.div>
               )}
 
+              {/* FINGER SPRINT GAME */}
               {activeGame === 'sprint' && gameTab === 'play' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <GameArea 
@@ -1186,6 +1216,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 </motion.div>
               )}
 
+              {/* LEADERBOARDS */}
               {gameTab === 'leaderboard' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   
@@ -1242,6 +1273,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         )}
       </AnimatePresence>
 
+      {/* 🚨 نافذة التغذية الشاملة 🚨 */}
       <AnimatePresence>
         {showNutritionModal && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
