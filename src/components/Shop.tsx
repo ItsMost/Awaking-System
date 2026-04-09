@@ -4,13 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart, Gem, Flame, Zap, Shield, Crown, Package, Clock, Coffee, Target, 
   Activity, Award, Wind, Footprints, Heart, ChevronUp, Lock, Unlock, CheckCircle, 
-  AlertTriangle, Star, X, Edit2, Trash2, PlusCircle, Save
+  AlertTriangle, Star, X, Edit2, Trash2, PlusCircle, Save, Medal
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast, Toaster } from 'sonner';
 
 // ==========================================
-// 1. المحرك الصوتي المضاد للسبام (Anti-Spam Audio Shield) 🚨
+// 1. المحرك الصوتي المضاد للسبام
 // ==========================================
 let sharedAudioCtx: AudioContext | null = null;
 let lastPlayTime = 0;
@@ -70,12 +70,22 @@ const playError = () => {
 };
 
 // ==========================================
-// 2. خريطة الأيقونات (Dynamic Icons Map)
+// 2. خريطة الأيقونات ونظام الرانكات (Rank System)
 // ==========================================
 const ICON_MAP: Record<string, any> = {
   Crown, Activity, Zap, Wind, ChevronUp, Target, Heart, Footprints, Clock, Coffee, Shield, Flame, Star, Package, Award
 };
 const getIcon = (iconName: string) => ICON_MAP[iconName] || Star;
+
+const getRankInfo = (level: number) => {
+  if (level >= 30) return { name: 'ELITE', color: '#a855f7' };
+  if (level >= 25) return { name: 'MASTER', color: '#ef4444' };
+  if (level >= 20) return { name: 'DIAMOND', color: '#3b82f6' };
+  if (level >= 15) return { name: 'PLATINUM', color: '#06b6d4' };
+  if (level >= 10) return { name: 'GOLD', color: '#eab308' };
+  if (level >= 5)  return { name: 'SILVER', color: '#94a3b8' };
+  return { name: 'BRONZE', color: '#b45309' };
+};
 
 // ==========================================
 // 3. التصميمات المفرودة
@@ -90,7 +100,7 @@ const ExclusiveBadge = styled.div<{ $color: string }>` position: absolute; top: 
 const ItemGrid = styled.div` display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 30px; `;
 const TitlesGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px; `;
 const TitleCard = styled.div<{ $color: string }>` background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; transition: 0.3s; position: relative; overflow: hidden; &:hover { border-color: ${(props) => props.$color}; background: ${(props) => props.$color}10; transform: translateY(-2px); } `;
-const ItemCard = styled.div` background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: space-between; transition: 0.3s; position: relative; &:hover { border-color: #38bdf8; background: #1e293b; } `;
+const ItemCard = styled.div` background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: space-between; transition: 0.3s; position: relative; overflow: hidden; &:hover { border-color: #38bdf8; background: #1e293b; } `;
 const ItemInfo = styled.div` display: flex; align-items: center; gap: 15px; `;
 const IconWrapper = styled.div<{ $color: string }>` width: 50px; height: 50px; border-radius: 12px; background: ${(props) => props.$color}20; border: 1px solid ${(props) => props.$color}; display: flex; align-items: center; justify-content: center; color: ${(props) => props.$color}; flex-shrink: 0; `;
 const BuyBtn = styled.button<{ $affordable: boolean; $color?: string }>` background: ${(props) => props.$affordable ? (props.$color || '#10b981') : '#334155'}; color: ${(props) => props.$affordable ? '#000' : '#94a3b8'}; border: none; padding: 10px 20px; border-radius: 10px; font-family: 'Oxanium'; font-weight: 900; font-size: 14px; cursor: ${(props) => props.$affordable ? 'pointer' : 'not-allowed'}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: 0.3s; &:hover { filter: ${(props) => props.$affordable ? 'brightness(1.2)' : 'none'}; transform: ${(props) => props.$affordable ? 'translateY(-2px)' : 'none'}; } `;
@@ -109,10 +119,41 @@ const EditInput = styled.input` width: 100%; background: #020617; border: 1px so
 const EditSelect = styled.select` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Oxanium'; outline: none; `;
 const EditTextarea = styled.textarea` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Oxanium'; outline: none; resize: vertical; min-height: 80px; `;
 
+// 🚨 Rank Lock Mystery Overlay 🚨
+const LockedOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  border-radius: inherit;
+`;
+
+const LockedText = styled.div<{ $color: string }>`
+  font-size: 13px;
+  font-weight: 900;
+  color: ${(props) => props.$color};
+  text-transform: uppercase;
+  border: 2px solid ${(props) => props.$color};
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 15px ${(props) => props.$color}40;
+`;
+
 // ==========================================
 // 4. المكون الرئيسي (Shop)
 // ==========================================
 const Shop = ({ player, setPlayer }: any) => {
+  const currentPlayerLevel = player?.lvl || 1;
   const [gold, setGold] = useState(player?.gold || 0);
   const [dbItems, setDbItems] = useState<any[]>([]);
   const [claimsList, setClaimsList] = useState<any[]>([]);
@@ -124,7 +165,7 @@ const Shop = ({ player, setPlayer }: any) => {
   // 🚨 Coach Mode State 🚨
   const isCoachMode = localStorage.getItem('elite_coach_mode') === 'true';
   const [editModal, setEditModal] = useState<{ show: boolean, item: any | null }>({ show: false, item: null });
-  const [formData, setFormData] = useState({ id: '', name: '', description: '', price: 0, category: 'general', color: '#38bdf8', icon: 'Star', max_stock: '' });
+  const [formData, setFormData] = useState({ id: '', name: '', description: '', price: 0, category: 'general', color: '#38bdf8', icon: 'Star', max_stock: '', required_rank: 1 });
 
   useEffect(() => {
     fetchShopData();
@@ -133,18 +174,16 @@ const Shop = ({ player, setPlayer }: any) => {
   const fetchShopData = async () => {
     setLoading(true);
     try {
-      const { data: hunterData } = await supabase.from('shadow_hunters').select('gold').eq('name', player.name).single();
+      const { data: hunterData } = await supabase.from('shadow_hunters').select('gold, lvl').eq('name', player.name).single();
       if (hunterData) {
         setGold(hunterData.gold);
-        setPlayer((prev: any) => ({ ...prev, gold: hunterData.gold }));
+        setPlayer((prev: any) => ({ ...prev, gold: hunterData.gold, lvl: hunterData.lvl }));
       }
 
-      // جلب المنتجات من الداتابيز
       const { data: items, error: itemsErr } = await supabase.from('shop_items').select('*').order('created_at', { ascending: true });
       if (itemsErr) throw itemsErr;
       setDbItems(items || []);
 
-      // جلب عمليات الشراء لحساب المخزون
       const date = new Date();
       const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
       const { data: claims } = await supabase.from('system_requests')
@@ -166,6 +205,11 @@ const Shop = ({ player, setPlayer }: any) => {
     setConfirmModal({ show: false, item: null, type: '' });
     
     if (gold < item.price) { playError(); toast.error('NOT ENOUGH GOLD!'); return; }
+    
+    // 🚨 التأكد إن الرانك يسمح بالشراء
+    const reqRank = item.required_rank || 1;
+    if (currentPlayerLevel < reqRank) { playError(); toast.error('RANK TOO LOW!'); return; }
+
     if (isProcessing) return;
     setIsProcessing(true);
 
@@ -178,7 +222,6 @@ const Shop = ({ player, setPlayer }: any) => {
       if (item.category === 'limited') taskName = `[LIMITED CLAIM] ${item.name}`;
       if (item.category === 'title') taskName = `[TITLE UNLOCKED] ${item.name}`;
 
-      // فحص المخزون
       if (item.category === 'exclusive' || item.category === 'limited') {
         const { data: checkStock } = await supabase.from('system_requests')
           .select('hunter_name').eq('task_name', taskName).gte('created_at', firstDay);
@@ -216,7 +259,7 @@ const Shop = ({ player, setPlayer }: any) => {
       localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
 
       toast.success(`Purchase Successful: ${item.name}!`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
-      fetchShopData(); // Refresh UI to update stock
+      fetchShopData();
 
     } catch (err: any) {
       playError(); toast.error('Transaction Failed.');
@@ -229,13 +272,18 @@ const Shop = ({ player, setPlayer }: any) => {
     playClick(); setConfirmModal({ show: true, item, type });
   };
 
-  // 🚨 دوال الكوتش (Edit/Delete/Add) 🚨
+  // 🚨 دوال الكوتش 🚨
   const openEditModal = (item?: any) => {
     playClick();
     if (item) {
-      setFormData({ id: item.id, name: item.name, description: item.description || '', price: item.price, category: item.category, color: item.color, icon: item.icon, max_stock: item.max_stock ? String(item.max_stock) : '' });
+      setFormData({ 
+        id: item.id, name: item.name, description: item.description || '', price: item.price, 
+        category: item.category, color: item.color, icon: item.icon, 
+        max_stock: item.max_stock ? String(item.max_stock) : '',
+        required_rank: item.required_rank || 1
+      });
     } else {
-      setFormData({ id: '', name: '', description: '', price: 0, category: 'general', color: '#38bdf8', icon: 'Star', max_stock: '' });
+      setFormData({ id: '', name: '', description: '', price: 0, category: 'general', color: '#38bdf8', icon: 'Star', max_stock: '', required_rank: 1 });
     }
     setEditModal({ show: true, item: item || null });
   };
@@ -261,15 +309,14 @@ const Shop = ({ player, setPlayer }: any) => {
         category: formData.category,
         color: formData.color,
         icon: formData.icon,
-        max_stock: formData.max_stock ? Number(formData.max_stock) : null
+        max_stock: formData.max_stock ? Number(formData.max_stock) : null,
+        required_rank: Number(formData.required_rank)
       };
 
       if (formData.id) {
-        // Update
         await supabase.from('shop_items').update(payload).eq('id', formData.id);
         toast.success('تم التعديل بنجاح');
       } else {
-        // Insert
         await supabase.from('shop_items').insert([payload]);
         toast.success('تمت الإضافة بنجاح');
       }
@@ -291,7 +338,6 @@ const Shop = ({ player, setPlayer }: any) => {
     );
   };
 
-  // تفريغ الداتا حسب الأقسام
   const exclusiveItems = dbItems.filter(i => i.category === 'exclusive');
   const limitedItems = dbItems.filter(i => i.category === 'limited');
   const titleItems = dbItems.filter(i => i.category === 'title');
@@ -321,10 +367,22 @@ const Shop = ({ player, setPlayer }: any) => {
             const claimers = itemClaims.map(c => c.hunter_name);
             const isSoldOut = item.max_stock ? claimers.length >= item.max_stock : false;
             const Icon = getIcon(item.icon);
+            
+            // حساب الغموض والرانك
+            const reqRank = item.required_rank || 1;
+            const isRankLocked = currentPlayerLevel < reqRank;
+            const rankInfo = getRankInfo(reqRank);
 
             return (
               <ExclusiveCard key={item.id} $soldOut={isSoldOut} $color={item.color}>
                 {renderCoachControls(item)}
+                
+                {isRankLocked && !isSoldOut && (
+                  <LockedOverlay>
+                    <LockedText $color={rankInfo.color}><Lock size={16} /> REQUIRES {rankInfo.name}</LockedText>
+                  </LockedOverlay>
+                )}
+
                 {item.max_stock && <ExclusiveBadge $color={item.color}>{item.max_stock}/{item.max_stock} SERVER</ExclusiveBadge>}
                 
                 {isSoldOut && (
@@ -341,9 +399,11 @@ const Shop = ({ player, setPlayer }: any) => {
                     <p style={{ margin: 0, fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' }}>{item.description}</p>
                   </div>
                 </div>
-                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-                  <BuyBtn $affordable={gold >= item.price && !isSoldOut} $color={item.color} disabled={gold < item.price || isSoldOut || isProcessing} onClick={() => triggerConfirm(item, 'exclusive')} style={{ width: '100%', padding: '15px', fontSize: '16px' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Gem size={16} /> {item.price} GOLD</span>
+                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', position: 'relative', zIndex: 16 }}>
+                  <BuyBtn $affordable={gold >= item.price && !isSoldOut && !isRankLocked} $color={item.color} disabled={gold < item.price || isSoldOut || isRankLocked || isProcessing} onClick={() => triggerConfirm(item, 'exclusive')} style={{ width: '100%', padding: '15px', fontSize: '16px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      {isRankLocked ? <><Lock size={16} /> RANK TOO LOW</> : <><Gem size={16} /> {item.price} GOLD</>}
+                    </span>
                   </BuyBtn>
                 </div>
               </ExclusiveCard>
@@ -360,9 +420,20 @@ const Shop = ({ player, setPlayer }: any) => {
             const remaining = item.max_stock ? item.max_stock - claimers.length : '∞';
             const Icon = getIcon(item.icon);
 
+            const reqRank = item.required_rank || 1;
+            const isRankLocked = currentPlayerLevel < reqRank;
+            const rankInfo = getRankInfo(reqRank);
+
             return (
               <ExclusiveCard key={item.id} $soldOut={isSoldOut || playerHasIt} $color={item.color}>
                 {renderCoachControls(item)}
+
+                {isRankLocked && !(isSoldOut || playerHasIt) && (
+                  <LockedOverlay>
+                    <LockedText $color={rankInfo.color}><Lock size={16} /> REQUIRES {rankInfo.name}</LockedText>
+                  </LockedOverlay>
+                )}
+
                 {item.max_stock && <ExclusiveBadge $color={item.color}>{remaining}/{item.max_stock} SERVER</ExclusiveBadge>}
                 
                 {(isSoldOut || playerHasIt) && (
@@ -379,9 +450,11 @@ const Shop = ({ player, setPlayer }: any) => {
                     <p style={{ margin: 0, fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' }}>{item.description}</p>
                   </div>
                 </div>
-                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-                  <BuyBtn $affordable={gold >= item.price && !isSoldOut && !playerHasIt} $color={item.color} disabled={gold < item.price || isSoldOut || playerHasIt || isProcessing} onClick={() => triggerConfirm(item, 'limited')} style={{ width: '100%', padding: '12px', fontSize: '14px' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Gem size={14} /> {item.price} GOLD</span>
+                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', position: 'relative', zIndex: 16 }}>
+                  <BuyBtn $affordable={gold >= item.price && !isSoldOut && !playerHasIt && !isRankLocked} $color={item.color} disabled={gold < item.price || isSoldOut || playerHasIt || isRankLocked || isProcessing} onClick={() => triggerConfirm(item, 'limited')} style={{ width: '100%', padding: '12px', fontSize: '14px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      {isRankLocked ? <><Lock size={14} /> RANK TOO LOW</> : <><Gem size={14} /> {item.price} GOLD</>}
+                    </span>
                   </BuyBtn>
                 </div>
               </ExclusiveCard>
@@ -394,14 +467,28 @@ const Shop = ({ player, setPlayer }: any) => {
             {titleItems.map((item) => {
               const hasTitle = player?.titles?.includes(item.name);
               const Icon = getIcon(item.icon);
+              
+              const reqRank = item.required_rank || 1;
+              const isRankLocked = currentPlayerLevel < reqRank;
+              const rankInfo = getRankInfo(reqRank);
+
               return (
                 <TitleCard key={item.id} $color={hasTitle ? '#334155' : item.color} style={{ opacity: hasTitle ? 0.5 : 1 }}>
                   {renderCoachControls(item)}
+
+                  {isRankLocked && !hasTitle && (
+                    <LockedOverlay>
+                      <LockedText $color={rankInfo.color} style={{ fontSize: 10, padding: '5px 10px' }}><Lock size={12} /> {rankInfo.name}</LockedText>
+                    </LockedOverlay>
+                  )}
+
                   <Icon size={24} color={hasTitle ? '#64748b' : item.color} style={{ marginTop: isCoachMode ? 20 : 0 }} />
                   <div style={{ fontSize: '12px', fontWeight: '900', color: hasTitle ? '#94a3b8' : '#fff' }}>{item.name}</div>
-                  <BuyButtonSmall $affordable={gold >= item.price && !hasTitle} $color={item.color} disabled={gold < item.price || hasTitle || isProcessing} onClick={() => triggerConfirm(item, 'title')}>
-                    {hasTitle ? 'OWNED' : <><Gem size={12} /> {item.price}</>}
-                  </BuyButtonSmall>
+                  <div style={{ position: 'relative', zIndex: 16, width: '100%' }}>
+                    <BuyButtonSmall $affordable={gold >= item.price && !hasTitle && !isRankLocked} $color={item.color} disabled={gold < item.price || hasTitle || isRankLocked || isProcessing} onClick={() => triggerConfirm(item, 'title')}>
+                      {hasTitle ? 'OWNED' : isRankLocked ? <Lock size={12}/> : <><Gem size={12} /> {item.price}</>}
+                    </BuyButtonSmall>
+                  </div>
                 </TitleCard>
               );
             })}
@@ -412,9 +499,21 @@ const Shop = ({ player, setPlayer }: any) => {
           <ItemGrid>
             {generalItems.map((item) => {
               const Icon = getIcon(item.icon);
+              
+              const reqRank = item.required_rank || 1;
+              const isRankLocked = currentPlayerLevel < reqRank;
+              const rankInfo = getRankInfo(reqRank);
+
               return (
                 <ItemCard key={item.id} style={{ flexDirection: isCoachMode ? 'column' : 'row', alignItems: isCoachMode ? 'stretch' : 'center', gap: isCoachMode ? 15 : 0 }}>
                   {renderCoachControls(item)}
+
+                  {isRankLocked && (
+                    <LockedOverlay style={{ flexDirection: 'row', gap: 10 }}>
+                      <LockedText $color={rankInfo.color} style={{ fontSize: 12 }}><Lock size={14} /> REQUIRES {rankInfo.name}</LockedText>
+                    </LockedOverlay>
+                  )}
+
                   <ItemInfo style={{ marginTop: isCoachMode ? 25 : 0 }}>
                     <IconWrapper $color={item.color}><Icon size={24} /></IconWrapper>
                     <div>
@@ -422,9 +521,11 @@ const Shop = ({ player, setPlayer }: any) => {
                       <p style={{ margin: 0, fontSize: '10px', color: '#94a3b8' }}>{item.description}</p>
                     </div>
                   </ItemInfo>
-                  <BuyBtn $affordable={gold >= item.price} disabled={gold < item.price || isProcessing} onClick={() => triggerConfirm(item, 'general')}>
-                    <Gem size={14} /> {item.price}
-                  </BuyBtn>
+                  <div style={{ position: 'relative', zIndex: 16 }}>
+                    <BuyBtn $affordable={gold >= item.price && !isRankLocked} disabled={gold < item.price || isRankLocked || isProcessing} onClick={() => triggerConfirm(item, 'general')}>
+                      {isRankLocked ? <Lock size={14} /> : <><Gem size={14} /> {item.price}</>}
+                    </BuyBtn>
+                  </div>
                 </ItemCard>
               );
             })}
@@ -470,6 +571,18 @@ const Shop = ({ player, setPlayer }: any) => {
                 <option value="general">General Store</option>
               </EditSelect>
 
+              {/* 🚨 اختيار الرانك المطلوب 🚨 */}
+              <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>الرانك المطلوب (للقفل)</div>
+              <EditSelect value={formData.required_rank} onChange={(e) => setFormData({...formData, required_rank: Number(e.target.value)})}>
+                <option value={1}>BRONZE (متاح للكل)</option>
+                <option value={5}>SILVER (Level 5+)</option>
+                <option value={10}>GOLD (Level 10+)</option>
+                <option value={15}>PLATINUM (Level 15+)</option>
+                <option value={20}>DIAMOND (Level 20+)</option>
+                <option value={25}>MASTER (Level 25+)</option>
+                <option value={30}>ELITE (Level 30+)</option>
+              </EditSelect>
+
               <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>اسم المنتج</div>
               <EditInput placeholder="مثال: Speed Demon" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
 
@@ -482,18 +595,18 @@ const Shop = ({ player, setPlayer }: any) => {
                   <EditInput type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: Number(e.target.value)})} />
                 </div>
                 <div>
-                  <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>الكمية المتاحة (رقم أو سيبه فاضي)</div>
+                  <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>الكمية المتاحة</div>
                   <EditInput type="number" placeholder="مثال: 2" value={formData.max_stock} onChange={(e) => setFormData({...formData, max_stock: e.target.value})} />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
-                  <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>اسم الأيقونة (إنجليزي)</div>
+                  <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>الأيقونة</div>
                   <EditInput placeholder="Star, Zap, Crown..." value={formData.icon} onChange={(e) => setFormData({...formData, icon: e.target.value})} />
                 </div>
                 <div>
-                  <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>اللون (كود HEX)</div>
+                  <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>اللون (HEX)</div>
                   <EditInput placeholder="#38bdf8" value={formData.color} onChange={(e) => setFormData({...formData, color: e.target.value})} />
                 </div>
               </div>

@@ -149,57 +149,19 @@ const playUnlock = () => {
 };
 
 // ==========================================
-// 2. قوائم المهام والمكافآت
+// 2. Rank System & Class Mapping (نظام الرانكات والكلاسات)
 // ==========================================
-const QUEST_REWARDS: Record<string, { exp: number; gold: number }> = {
-  Practice: { exp: 100, gold: 30 },
-  'Practice (Rehab)': { exp: 90, gold: 30 },
-  'Hydration Target (3L)': { exp: 30, gold: 10 },
-  'Nutritional Compliance': { exp: 30, gold: 10 },
-  'Functional Mobility': { exp: 35, gold: 15 },
-  'Recovery Cooldown': { exp: 20, gold: 10 },
-  'Rehab Mobility Protocol': { exp: 35, gold: 15 },
-  'Thermal / Cryotherapy': { exp: 20, gold: 10 },
-  'Weekly Volume Compliance': { exp: 150, gold: 100 },
-  'Perfect Microcycle Streak': { exp: 150, gold: 100 },
-  'Recovery Logistics': { exp: 100, gold: 50 },
-  'Supplement Inventory': { exp: 100, gold: 50 },
-  'InBody Assessment': { exp: 75, gold: 200 },
-  'Disciplinary Execution': { exp: 0, gold: 0 },
+
+const getRankInfo = (level: number) => {
+  if (level >= 30) return { name: 'ELITE', color: '#a855f7', glow: 'rgba(168, 85, 247, 0.3)' };
+  if (level >= 25) return { name: 'MASTER', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.3)' };
+  if (level >= 20) return { name: 'DIAMOND', color: '#3b82f6', glow: 'none' };
+  if (level >= 15) return { name: 'PLATINUM', color: '#06b6d4', glow: 'none' };
+  if (level >= 10) return { name: 'GOLD', color: '#eab308', glow: 'none' };
+  if (level >= 5)  return { name: 'SILVER', color: '#94a3b8', glow: 'none' };
+  return { name: 'BRONZE', color: '#b45309', glow: 'none' };
 };
 
-const NORMAL_DAILY_QUESTS = [
-  'Practice',
-  'Hydration Target (3L)',
-  'Nutritional Compliance',
-  'Functional Mobility',
-  'Recovery Cooldown',
-];
-
-const INJURED_DAILY_QUESTS = [
-  'Practice (Rehab)',
-  'Hydration Target (3L)',
-  'Tissue Repair Nutrition',
-  'Rehab Mobility Protocol',
-  'Thermal / Cryotherapy',
-];
-
-const FRIDAY_DIRECTIVES = [
-  'Weekly Volume Compliance',
-  'Perfect Microcycle Streak',
-];
-
-const getCumulativeXp = (lvl: number, currentXp: number) => {
-  let total = 0;
-  for (let i = 1; i < lvl; i++) {
-    total += Math.min(i * 150 + 500, 4000);
-  }
-  return total + currentXp;
-};
-
-// ==========================================
-// 3. نظام الكلاسات الذكي
-// ==========================================
 const CLASS_MAPPING = [
   { id: 'sword', keys: ['sword', 'combat', 'blade', 'warrior'], name: 'Blade Master', baseIcon: Sword, evolvedIcon: Axe, color: '#00f2ff' },
   { id: 'flame', keys: ['flame', 'fire', 'pyro'], name: 'Pyromancer', baseIcon: Flame, evolvedIcon: Zap, color: '#ef4444' },
@@ -238,6 +200,7 @@ const getUserClassInfo = (iconStr: string) => {
   return CLASS_MAPPING[0];
 };
 
+// 🚨 التعديل السحري: الأيقونة ترجع بلونها الأصلي اللي اللاعب اختاره 🚨
 const getHunterIconOnly = (hunter: any, isRank1: boolean, size: number = 22) => {
   const iconStr = String(
     hunter?.selectedIcon || 
@@ -250,30 +213,52 @@ const getHunterIconOnly = (hunter: any, isRank1: boolean, size: number = 22) => 
 
   const isEvolved = iconStr.includes('evolved');
   const cls = getUserClassInfo(iconStr);
-  const color = isRank1 ? '#eab308' : cls.color;
-
   const IconComponent = isEvolved ? cls.evolvedIcon : cls.baseIcon;
-  return <IconComponent size={size} color={color} />;
+  
+  // بنستخدم اللون الأصلي للكلاس (cls.color) عشان نحافظ على الهوية البصرية، والمركز الأول بياخد دهبي
+  const finalColor = isRank1 ? '#eab308' : cls.color;
+
+  return <IconComponent size={size} color={finalColor} />;
 };
 
 const getIconBorderColor = (hunter: any, isRank1: boolean) => {
   if (isRank1) return '#eab308';
-  const iconStr = String(
-    hunter?.selectedIcon || 
-    hunter?.selected_icon || 
-    hunter?.icon || 
-    hunter?.class || 
-    (hunter?.titles && hunter.titles[0]) || 
-    ''
-  ).toLowerCase().trim();
-
-  return getUserClassInfo(iconStr).color;
+  return getRankInfo(hunter?.lvl || 1).color;
 };
 
-// ==========================================
-// 4. التصميمات المفرودة (Styled Components)
-// ==========================================
+const QUEST_REWARDS: Record<string, { exp: number; gold: number }> = {
+  Practice: { exp: 100, gold: 30 },
+  'Practice (Rehab)': { exp: 90, gold: 30 },
+  'Hydration Target (3L)': { exp: 30, gold: 10 },
+  'Nutritional Compliance': { exp: 30, gold: 10 },
+  'Functional Mobility': { exp: 35, gold: 15 },
+  'Recovery Cooldown': { exp: 20, gold: 10 },
+  'Rehab Mobility Protocol': { exp: 35, gold: 15 },
+  'Thermal / Cryotherapy': { exp: 20, gold: 10 },
+  'Weekly Volume Compliance': { exp: 150, gold: 100 },
+  'Perfect Microcycle Streak': { exp: 150, gold: 100 },
+  'Recovery Logistics': { exp: 100, gold: 50 },
+  'Supplement Inventory': { exp: 100, gold: 50 },
+  'InBody Assessment': { exp: 75, gold: 200 },
+  'Disciplinary Execution': { exp: 0, gold: 0 },
+};
 
+const NORMAL_DAILY_QUESTS = ['Practice', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility', 'Recovery Cooldown'];
+const INJURED_DAILY_QUESTS = ['Practice (Rehab)', 'Hydration Target (3L)', 'Tissue Repair Nutrition', 'Rehab Mobility Protocol', 'Thermal / Cryotherapy'];
+const FRIDAY_DIRECTIVES = ['Weekly Volume Compliance', 'Perfect Microcycle Streak'];
+
+const getCumulativeXp = (lvl: number, currentXp: number) => {
+  let total = 0;
+  for (let i = 1; i < lvl; i++) {
+    total += Math.min(i * 150 + 500, 4000);
+  }
+  return total + currentXp;
+};
+
+
+// ==========================================
+// 3. التصميمات المفرودة (Styled Components)
+// ==========================================
 const Container = styled(motion.div)`
   padding: 15px;
   font-family: 'Oxanium', sans-serif;
@@ -306,18 +291,13 @@ const TopBtn = styled.button<{ $active?: boolean; $color?: string }>`
   font-size: 12px;
   cursor: pointer;
   transition: 0.3s;
-  box-shadow: ${(props) =>
-    props.$active ? `0 0 15px ${props.$color}40` : '0 4px 10px rgba(0,0,0,0.3)'};
+  box-shadow: ${(props) => props.$active ? `0 0 15px ${props.$color}40` : '0 4px 10px rgba(0,0,0,0.3)'};
 
   &:hover {
     background: ${(props) => (props.$active ? `${props.$color}40` : '#1e293b')};
     color: ${(props) => props.$color || '#fff'};
   }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
 const InboxBadge = styled.span`
@@ -352,8 +332,7 @@ const Tab = styled.button<{ $active: boolean }>`
   gap: 8px;
   background: ${(props) => (props.$active ? '#0ea5e9' : '#0f172a')};
   color: ${(props) => (props.$active ? '#fff' : '#94a3b8')};
-  box-shadow: ${(props) =>
-    props.$active ? '0 4px 15px rgba(14, 165, 233, 0.4)' : 'none'};
+  box-shadow: ${(props) => props.$active ? '0 4px 15px rgba(14, 165, 233, 0.4)' : 'none'};
 `;
 
 const BannerWrapper = styled.div`
@@ -369,31 +348,11 @@ const BannerWrapper = styled.div`
   box-shadow: 0 8px 30px rgba(0,0,0,0.5);
 `;
 
-const BannerIcon = styled.div`
-  margin-bottom: 10px;
-`;
-
-const BannerTitle = styled.h2`
-  margin: 0;
-  color: #0ea5e9;
-  font-size: 18px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  font-weight: 900;
-  text-align: center;
-`;
-
-const BannerSub = styled.p`
-  margin: 5px 0 0 0;
-  color: #64748b;
-  font-size: 12px;
-  text-align: center;
-`;
-
-const SearchContainer = styled.div`
-  position: relative;
-  margin-bottom: 25px;
-`;
+const BannerIcon = styled.div` margin-bottom: 10px; `;
+const BannerTitle = styled.h2` margin: 0; color: #0ea5e9; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; font-weight: 900; text-align: center; `;
+const BannerSub = styled.p` margin: 5px 0 0 0; color: #64748b; font-size: 12px; text-align: center; `;
+const SearchContainer = styled.div` position: relative; margin-bottom: 25px; `;
+const SearchIconBox = styled.div` position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #0ea5e9; `;
 
 const SearchInput = styled.input`
   width: 100%;
@@ -407,28 +366,13 @@ const SearchInput = styled.input`
   outline: none;
   transition: 0.3s;
 
-  &:focus {
-    border-color: #00f2ff;
-    box-shadow: 0 0 15px rgba(0,242,255,0.2);
-  }
-
-  &::placeholder {
-    color: #475569;
-    font-weight: bold;
-  }
+  &:focus { border-color: #00f2ff; box-shadow: 0 0 15px rgba(0,242,255,0.2); }
+  &::placeholder { color: #475569; font-weight: bold; }
 `;
 
-const SearchIconBox = styled.div`
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #0ea5e9;
-`;
-
-const PlayerCard = styled(motion.div)<{ $isRank1: boolean }>`
+const PlayerCard = styled(motion.div)<{ $isRank1: boolean; $rankColor: string; $rankGlow: string }>`
   background: #0f172a;
-  border-left: ${(props) => (props.$isRank1 ? '4px solid #0ea5e9' : 'none')};
+  border-left: 4px solid ${(props) => (props.$isRank1 ? '#eab308' : props.$rankColor)};
   border-radius: 12px;
   padding: 15px 20px;
   margin-bottom: 10px;
@@ -438,7 +382,7 @@ const PlayerCard = styled(motion.div)<{ $isRank1: boolean }>`
   overflow: hidden;
   cursor: pointer;
   transition: 0.3s;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  box-shadow: ${(props) => (props.$rankGlow !== 'none' ? `0 0 15px ${props.$rankGlow}` : '0 4px 6px rgba(0,0,0,0.3)')};
 
   &:hover {
     background: #1e293b;
@@ -450,8 +394,8 @@ const Ribbon = styled.div`
   position: absolute;
   top: 12px;
   right: -35px;
-  background: #3b82f6;
-  color: white;
+  background: #eab308;
+  color: #000;
   padding: 4px 40px;
   transform: rotate(45deg);
   font-size: 10px;
@@ -488,21 +432,9 @@ const IconCircle = styled.div<{ $color: string; $isRank1: boolean }>`
   overflow: hidden;
 `;
 
-const AvatarImgInModal = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-`;
+const NameCol = styled.div` flex: 1; display: flex; flex-direction: column; justify-content: center; `;
 
-const NameCol = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-`;
-
-const PlayerNameText = styled.div<{ $isRank1: boolean }>`
+const PlayerNameText = styled.div<{ $isRank1: boolean; $rankColor: string }>`
   font-size: 16px;
   font-weight: bold;
   color: ${(props) => (props.$isRank1 ? '#eab308' : '#fff')};
@@ -512,24 +444,19 @@ const PlayerNameText = styled.div<{ $isRank1: boolean }>`
   gap: 6px;
 `;
 
-const PlayerTitleText = styled.div`
+const PlayerTitleText = styled.div<{ $rankColor: string }>`
   font-size: 10px;
-  color: #64748b;
+  color: ${(props) => props.$rankColor};
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-weight: bold;
 `;
 
-const LevelCol = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-`;
-
-const LevelTextVal = styled.div<{ $isRank1: boolean }>`
+const LevelCol = styled.div` display: flex; flex-direction: column; align-items: flex-end; justify-content: center; `;
+const LevelTextVal = styled.div<{ $isRank1: boolean; $rankColor: string }>`
   font-size: 18px;
   font-weight: 900;
-  color: ${(props) => (props.$isRank1 ? '#eab308' : '#0ea5e9')};
+  color: ${(props) => (props.$isRank1 ? '#eab308' : props.$rankColor)};
   transition: 0.3s;
 `;
 
@@ -541,235 +468,26 @@ const HoverStats = styled.div`
   opacity: 0;
   transition: all 0.3s ease;
   text-align: right;
-  
-  ${PlayerCard}:hover & {
-    max-height: 20px;
-    opacity: 1;
-    margin-top: 4px;
-  }
+  ${PlayerCard}:hover & { max-height: 20px; opacity: 1; margin-top: 4px; }
 `;
 
-const LoadingSpinner = styled.div`
-  border: 4px solid rgba(14, 165, 233, 0.1);
-  border-left-color: #0ea5e9;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 60px auto;
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-
-const ModalOverlay = styled(motion.div)`
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.9);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  backdrop-filter: blur(8px);
-`;
-
-const ModalContent = styled(motion.div)<{ $isCoach?: boolean; $borderColor?: string }>`
-  background: #0b1120;
-  border: 2px solid ${(props) => props.$borderColor || (props.$isCoach ? '#ef4444' : '#1e293b')};
-  border-radius: 20px;
-  padding: 25px;
-  width: 100%;
-  max-width: 450px;
-  position: relative;
-  box-shadow: 0 0 50px ${(props) => props.$isCoach ? 'rgba(239,68,68,0.3)' : 'rgba(0,0,0,0.8)'};
-  max-height: 85vh;
-  overflow-y: auto;
-
-  &::-webkit-scrollbar {
-    width: 5px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #334155;
-    border-radius: 5px;
-  }
-`;
-
-const CloseBtn = styled.button`
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: none;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: 0.3s;
-
-  &:hover {
-    color: #fff;
-  }
-`;
-
-const PasswordOverlay = styled(motion.div)`
-  background: #020617;
-  border: 1px solid #ef4444;
-  padding: 25px;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  box-shadow: 0 5px 30px rgba(239,68,68,0.3);
-  width: 100%;
-  max-width: 350px;
-  text-align: center;
-`;
-
-const PasswordInput = styled.input`
-  background: #0b1120;
-  border: 1px solid #334155;
-  color: #fff;
-  padding: 12px;
-  border-radius: 8px;
-  font-family: 'Oxanium';
-  font-size: 16px;
-  text-align: center;
-  letter-spacing: 3px;
-
-  &:focus {
-    outline: none;
-    border-color: #ef4444;
-  }
-`;
-
-const CoachSection = styled(motion.div)`
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px dashed #ef4444;
-`;
-
-const DataGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-top: 15px;
-`;
-
-const DataBox = styled.div`
-  background: #1e293b50;
-  border: 1px solid #334155;
-  padding: 12px;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-`;
-
-const TaskRow = styled.div<{ $status: string }>`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #020617;
-  border: 1px solid ${(props) =>
-    props.$status === 'approved' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#ef4444'};
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  font-size: 12px;
-`;
-
-const RecordRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #0f172a;
-  border-left: 3px solid #38bdf8;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 8px;
-  font-size: 13px;
-`;
-
-const RequestCard = styled.div`
-  background: #0f172a;
-  border: 1px solid #facc15;
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const RequestHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px dashed #334155;
-  padding-bottom: 8px;
-`;
-
-const RequestActions = styled.div`
-  display: flex;
-  gap: 10px;
-  margin-top: 5px;
-`;
-
-const ActionBtn = styled.button<{ $type: 'approve' | 'reject' | 'primary' }>`
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  font-weight: bold;
-  font-family: 'Oxanium';
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  transition: 0.3s;
-  background: ${(props) =>
-    props.$type === 'approve' ? '#10b98120' : props.$type === 'primary' ? '#10b981' : '#ef444420'};
-  color: ${(props) =>
-    props.$type === 'approve' ? '#10b981' : props.$type === 'primary' ? '#000' : '#ef4444'};
-  border: 1px solid ${(props) =>
-    props.$type === 'approve' ? '#10b981' : props.$type === 'primary' ? '#10b981' : '#ef4444'};
-
-  &:hover {
-    filter: brightness(1.2);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-const KeyCard = styled.div<{ $isUsed: boolean }>`
-  background: #0f172a;
-  border: 1px solid ${(props) => (props.$isUsed ? '#ef4444' : '#10b981')};
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-`;
-
-const KeyText = styled.div<{ $isUsed: boolean }>`
-  font-family: monospace;
-  font-size: 16px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  color: ${(props) => (props.$isUsed ? '#fca5a5' : '#34d399')};
-  text-decoration: ${(props) => (props.$isUsed ? 'line-through' : 'none')};
-`;
+const LoadingSpinner = styled.div` border: 4px solid rgba(14, 165, 233, 0.1); border-left-color: #0ea5e9; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 60px auto; @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } `;
+const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); `;
+const ModalContent = styled(motion.div)<{ $isCoach?: boolean; $borderColor?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$borderColor || (props.$isCoach ? '#ef4444' : '#1e293b')}; border-radius: 20px; padding: 25px; width: 100%; max-width: 450px; position: relative; box-shadow: 0 0 50px ${(props) => props.$isCoach ? 'rgba(239,68,68,0.3)' : 'rgba(0,0,0,0.8)'}; max-height: 85vh; overflow-y: auto; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: #334155; border-radius: 5px; } `;
+const CloseBtn = styled.button` position: absolute; top: 20px; right: 20px; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; &:hover { color: #fff; } `;
+const PasswordOverlay = styled(motion.div)` background: #020617; border: 1px solid #ef4444; padding: 25px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 5px 30px rgba(239,68,68,0.3); width: 100%; max-width: 350px; text-align: center; `;
+const PasswordInput = styled.input` background: #0b1120; border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; font-family: 'Oxanium'; font-size: 16px; text-align: center; letter-spacing: 3px; &:focus { outline: none; border-color: #ef4444; } `;
+const CoachSection = styled(motion.div)` margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ef4444; `;
+const DataGrid = styled.div` display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; `;
+const DataBox = styled.div` background: #1e293b50; border: 1px solid #334155; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; `;
+const TaskRow = styled.div<{ $status: string }>` display: flex; justify-content: space-between; align-items: center; background: #020617; border: 1px solid ${(props) => props.$status === 'approved' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#ef4444'}; padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 12px; `;
+const RecordRow = styled.div` display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-left: 3px solid #38bdf8; padding: 12px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; `;
+const RequestCard = styled.div` background: #0f172a; border: 1px solid #facc15; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; `;
+const RequestHeader = styled.div` display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #334155; padding-bottom: 8px; `;
+const RequestActions = styled.div` display: flex; gap: 10px; margin-top: 5px; `;
+const ActionBtn = styled.button<{ $type: 'approve' | 'reject' | 'primary' }>` flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-family: 'Oxanium'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; background: ${(props) => props.$type === 'approve' ? '#10b98120' : props.$type === 'primary' ? '#10b981' : '#ef444420'}; color: ${(props) => props.$type === 'approve' ? '#10b981' : props.$type === 'primary' ? '#000' : '#ef4444'}; border: 1px solid ${(props) => props.$type === 'approve' ? '#10b981' : props.$type === 'primary' ? '#10b981' : '#ef4444'}; &:hover { filter: brightness(1.2); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
+const KeyCard = styled.div<{ $isUsed: boolean }>` background: #0f172a; border: 1px solid ${(props) => (props.$isUsed ? '#ef4444' : '#10b981')}; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); `;
+const KeyText = styled.div<{ $isUsed: boolean }>` font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 2px; color: ${(props) => (props.$isUsed ? '#fca5a5' : '#34d399')}; text-decoration: ${(props) => (props.$isUsed ? 'line-through' : 'none')}; `;
 
 // ==========================================
 // 5. المكون الرئيسي (Leaderboard)
@@ -780,7 +498,7 @@ const Rank = ({ player, setPlayer }: any) => {
   const [maleLeaderboard, setMaleLeaderboard] = useState<any[]>([]);
   const [femaleLeaderboard, setFemaleLeaderboard] = useState<any[]>([]);
   
-  // 🚨 State جديد للأبطال التاريخيين 🚨
+  // State للأبطال التاريخيين
   const [championsHistory, setChampionsHistory] = useState<any[]>([]);
 
   const [activeBoard, setActiveBoard] = useState<'global' | 'monthly' | 'male' | 'female'>('global');
@@ -806,15 +524,6 @@ const Rank = ({ player, setPlayer }: any) => {
   const [loadingInbox, setLoadingInbox] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const calculateRankClass = (lvl: number, position: number) => {
-    if (lvl >= 50 && position === 1) return 'S-Class';
-    if (lvl >= 40 && position <= 3) return 'A-Class';
-    if (lvl >= 30 && position <= 5) return 'B-Class';
-    if (lvl >= 20) return 'C-Class';
-    if (lvl >= 10) return 'D-Class';
-    return 'E-Class';
-  };
-
   const fetchAndProcessLeaderboard = async () => {
     setLoading(true);
     try {
@@ -830,7 +539,19 @@ const Rank = ({ player, setPlayer }: any) => {
         return;
       }
 
-      const sortedGlobal = [...hunters].sort((a, b) => {
+      // 🚨 إضافة تفاصيل الرانك لكل لاعب (عشان نستخدمها في الـ UI) 🚨
+      const processedHunters = hunters.map(h => {
+        const lvl = h.lvl || 1;
+        const rankInfo = getRankInfo(lvl);
+        return {
+          ...h,
+          rankName: `${rankInfo.name} HUNTER${rankInfo.name === 'ELITE' ? ' 👑' : ''}`,
+          rankColor: rankInfo.color,
+          rankGlow: rankInfo.glow
+        };
+      });
+
+      const sortedGlobal = [...processedHunters].sort((a, b) => {
         if (b.lvl !== a.lvl) return (b.lvl || 1) - (a.lvl || 1);
         return (b.xp || 0) - (a.xp || 0);
       });
@@ -838,20 +559,18 @@ const Rank = ({ player, setPlayer }: any) => {
         sortedGlobal.map((h, i) => ({
           ...h,
           position: i + 1,
-          rank: calculateRankClass(h.lvl || 1, i + 1),
         }))
       );
 
-      const sortedMonthly = [...hunters].sort((a, b) => (b.monthly_xp || 0) - (a.monthly_xp || 0));
+      const sortedMonthly = [...processedHunters].sort((a, b) => (b.monthly_xp || 0) - (a.monthly_xp || 0));
       setMonthlyLeaderboard(
         sortedMonthly.map((h, i) => ({
           ...h,
           position: i + 1,
-          rank: calculateRankClass(h.lvl || 1, i + 1),
         }))
       );
 
-      const maleHunters = hunters.filter((h) => h.gender === 'Male' || !h.gender);
+      const maleHunters = processedHunters.filter((h) => h.gender === 'Male' || !h.gender);
       const sortedMale = [...maleHunters].sort((a, b) => {
         if (b.lvl !== a.lvl) return (b.lvl || 1) - (a.lvl || 1);
         return (b.xp || 0) - (a.xp || 0);
@@ -860,11 +579,10 @@ const Rank = ({ player, setPlayer }: any) => {
         sortedMale.map((h, i) => ({
           ...h,
           position: i + 1,
-          rank: calculateRankClass(h.lvl || 1, i + 1),
         }))
       );
 
-      const femaleHunters = hunters.filter((h) => h.gender === 'Female');
+      const femaleHunters = processedHunters.filter((h) => h.gender === 'Female');
       const sortedFemale = [...femaleHunters].sort((a, b) => {
         if (b.lvl !== a.lvl) return (b.lvl || 1) - (a.lvl || 1);
         return (b.xp || 0) - (a.xp || 0);
@@ -873,7 +591,6 @@ const Rank = ({ player, setPlayer }: any) => {
         sortedFemale.map((h, i) => ({
           ...h,
           position: i + 1,
-          rank: calculateRankClass(h.lvl || 1, i + 1),
         }))
       );
     } catch (err: any) {
@@ -909,6 +626,11 @@ const Rank = ({ player, setPlayer }: any) => {
         .single();
       const targetHunter = freshHunter || hunter;
       
+      // التأكد من جلب الرانك جوه المودال كمان
+      const rankInfo = getRankInfo(targetHunter.lvl || 1);
+      targetHunter.rankColor = rankInfo.color;
+      targetHunter.rankName = `${rankInfo.name} HUNTER${rankInfo.name === 'ELITE' ? ' 👑' : ''}`;
+
       setSelectedHunter((prev: any) => ({ ...prev, ...targetHunter }));
 
       const { data: tasks } = await supabase
@@ -1329,12 +1051,18 @@ const Rank = ({ player, setPlayer }: any) => {
                 filteredBoard.map((hunter, index) => {
                   const isMe = player?.name === hunter.name;
                   const isRank1 = hunter.position === 1;
-                  
-                  // 🚨 حساب التاج (مرات الفوز) 🚨
                   const playerWins = championsHistory.filter(c => c.hunter_name === hunter.name).length;
 
                   return (
-                    <PlayerCard key={`${hunter.name}-${activeBoard}`} $isRank1={isRank1} onClick={() => handlePlayerClick(hunter)} onMouseEnter={playHover} whileTap={{ scale: 0.95 }}>
+                    <PlayerCard 
+                      key={`${hunter.name}-${activeBoard}`} 
+                      $isRank1={isRank1} 
+                      $rankColor={hunter.rankColor} 
+                      $rankGlow={hunter.rankGlow}
+                      onClick={() => handlePlayerClick(hunter)} 
+                      onMouseEnter={playHover} 
+                      whileTap={{ scale: 0.95 }}
+                    >
                       {isRank1 && <Ribbon>المركز الأول 👑</Ribbon>}
                       <RankCol $rank={hunter.position}>{isRank1 ? <Gem size={24} color="#eab308" fill="#ca8a04" /> : hunter.position}</RankCol>
                       
@@ -1343,7 +1071,7 @@ const Rank = ({ player, setPlayer }: any) => {
                       </IconCircle>
                       
                       <NameCol>
-                        <PlayerNameText $isRank1={isRank1}>
+                        <PlayerNameText $isRank1={isRank1} $rankColor={hunter.rankColor}>
                           {hunter.name} {isMe && '(YOU)'}
                           {playerWins > 0 && (
                             <span style={{ color: '#eab308', fontSize: '11px', textShadow: '0 0 5px rgba(234, 179, 8, 0.5)', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
@@ -1351,11 +1079,11 @@ const Rank = ({ player, setPlayer }: any) => {
                             </span>
                           )}
                         </PlayerNameText>
-                        <PlayerTitleText>{hunter.titles?.[0] || 'GATE CLOSER'}</PlayerTitleText>
+                        <PlayerTitleText $rankColor={hunter.rankColor}>{hunter.rankName}</PlayerTitleText>
                       </NameCol>
                       <LevelCol>
-                        <LevelTextVal $isRank1={isRank1}>LVL {hunter.lvl || 1}</LevelTextVal>
-                        <HoverStats>{hunter.rank} • {activeBoard === 'monthly' ? hunter.monthly_xp : getCumulativeXp(hunter.lvl || 1, hunter.xp || 0)} EXP</HoverStats>
+                        <LevelTextVal $isRank1={isRank1} $rankColor={hunter.rankColor}>LVL {hunter.lvl || 1}</LevelTextVal>
+                        <HoverStats>{activeBoard === 'monthly' ? hunter.monthly_xp : getCumulativeXp(hunter.lvl || 1, hunter.xp || 0)} EXP</HoverStats>
                       </LevelCol>
                     </PlayerCard>
                   );
@@ -1370,15 +1098,15 @@ const Rank = ({ player, setPlayer }: any) => {
       <AnimatePresence>
         {selectedHunter && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ModalContent $isCoach={isCoachMode} initial={{ scale: 0.9 }}>
+            <ModalContent $isCoach={isCoachMode} $borderColor={selectedHunter.rankColor} initial={{ scale: 0.9 }}>
               <CloseBtn onClick={() => setSelectedHunter(null)}><X size={24} /></CloseBtn>
 
               <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <IconCircle $color="#0ea5e9" $isRank1={false} style={{ width: 80, height: 80, margin: '0 auto 15px auto', borderWidth: '4px' }}>
+                <IconCircle $color={selectedHunter.rankColor} $isRank1={false} style={{ width: 80, height: 80, margin: '0 auto 15px auto', borderWidth: '4px' }}>
                   {getHunterIconOnly(selectedHunter, false, 40)}
                 </IconCircle>
-                <h2 style={{ margin: 0, color: '#fff', textTransform: 'uppercase' }}>{selectedHunter.name}</h2>
-                <div style={{ color: '#64748b', fontSize: '12px' }}>{selectedHunter.titles?.[0] || 'GATE CLOSER'}</div>
+                <h2 style={{ margin: 0, color: selectedHunter.rankColor, textTransform: 'uppercase' }}>{selectedHunter.name}</h2>
+                <div style={{ color: '#64748b', fontSize: '12px' }}>{selectedHunter.rankName}</div>
               </div>
 
               <DataGrid>

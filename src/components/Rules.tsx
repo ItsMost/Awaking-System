@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, Shield, Heart, Zap, Flame, ShoppingCart, 
   Gamepad2, AlertTriangle, ChevronDown, ChevronUp, Star,
-  Target, Crosshair, Droplet
+  Target, Crosshair, Droplet, Medal, Crown, Lock, Activity, Clock
 } from 'lucide-react';
 
 // ==========================================
-// التصميمات (Styled Components)
+// التصميمات المفرودة (Styled Components)
 // ==========================================
 const Container = styled(motion.div)`
   padding: 20px;
@@ -17,7 +17,7 @@ const Container = styled(motion.div)`
   padding-bottom: 100px;
   max-width: 600px;
   margin: 0 auto;
-  direction: rtl; /* 👈 تم إضافة دعم اللغة العربية بالكامل هنا */
+  direction: rtl; 
 `;
 
 const Header = styled.div`
@@ -104,105 +104,162 @@ const Highlight = styled.span<{ $color: string }>`
   font-weight: bold;
 `;
 
+const RankItem = styled.li<{ $color: string }>`
+  background: #020617;
+  border: 1px solid ${(props) => props.$color}40;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+  
+  span.rank-name {
+    color: ${(props) => props.$color};
+    min-width: 90px;
+  }
+  
+  span.rank-desc {
+    color: #94a3b8;
+    font-size: 11px;
+  }
+  
+  span.rank-tax {
+    color: #ef4444;
+    font-size: 11px;
+    margin-right: auto;
+  }
+`;
+
 // ==========================================
 // بيانات الدستور (Manifesto Data)
 // ==========================================
 const RULES_DATA = [
   {
     id: 1,
-    title: 'نظام الحياة (HP) والمستويات',
-    icon: Heart,
-    color: '#ef4444',
+    title: 'تصنيفات النخبة (The Rank System)',
+    icon: Crown,
+    color: '#eab308',
     content: (
       <>
-        أنت لست مجرد متدرب، أنت <Highlight $color="#ef4444">رياضي نخبة (Elite Athlete)</Highlight>.
-        <ul>
-          <li><strong>نقاط الحياة (HP):</strong> تبدأ بـ 100 HP. إذا تجاهلت مهامك ولم تفتح التطبيق، ستعاني من <strong>"النزيف (HP Bleed)"</strong> وتفقد 10 HP عن كل يوم غياب.</li>
-          <li><strong>استرجاع الـ HP:</strong> يمكنك تعويض الـ HP المفقود من خلال إتمام مهام التغذية، شرب المياه، والمهام الأسبوعية.</li>
-          <li><strong>المستويات (Leveling):</strong> تكتسب EXP من كل مهمة. عند تجميع النقاط المطلوبة، ترتقي للمستوى التالي وتتلقى مكافآت.</li>
-          <li><strong>الموسم (Season Pass):</strong> كل 500 EXP تكتسبها شهرياً ترفعك مستوى (Tier) في الـ Season Pass للحصول على جوائز حصرية.</li>
+        يتم ترقيتك لرانك جديد كل 5 مستويات. القمة لا ترحم الضعفاء، وكلما ارتفع رانكك زادت هيبتك، وزادت معها <Highlight $color="#ef4444">"ضريبة التكاسل (High ELO Tax)"</Highlight> التي تدفعها من الـ HP والـ Gold عند تفويت المهام:
+        <ul style={{ listStyleType: 'none', padding: 0, marginTop: '15px' }}>
+          <RankItem $color="#b45309"><Medal size={16} color="#b45309" /> <span className="rank-name">BRONZE</span> <span className="rank-desc">المستوى 1 إلى 4</span> <span className="rank-tax">ضريبة: -10 HP | -50 G</span></RankItem>
+          <RankItem $color="#94a3b8"><Medal size={16} color="#94a3b8" /> <span className="rank-name">SILVER</span> <span className="rank-desc">المستوى 5 إلى 9</span> <span className="rank-tax">ضريبة: -15 HP | -75 G</span></RankItem>
+          <RankItem $color="#eab308"><Medal size={16} color="#eab308" /> <span className="rank-name">GOLD</span> <span className="rank-desc">المستوى 10 إلى 14</span> <span className="rank-tax">ضريبة: -20 HP | -100 G</span></RankItem>
+          <RankItem $color="#06b6d4"><Target size={16} color="#06b6d4" /> <span className="rank-name">PLATINUM</span> <span className="rank-desc">المستوى 15 إلى 19</span> <span className="rank-tax">ضريبة: -25 HP | -125 G</span></RankItem>
+          <RankItem $color="#3b82f6"><Shield size={16} color="#3b82f6" /> <span className="rank-name">DIAMOND</span> <span className="rank-desc">المستوى 20 إلى 24</span> <span className="rank-tax">ضريبة: -30 HP | -150 G</span></RankItem>
+          <RankItem $color="#ef4444"><Flame size={16} color="#ef4444" /> <span className="rank-name">MASTER</span> <span className="rank-desc">المستوى 25 إلى 29</span> <span className="rank-tax">ضريبة: -40 HP | -200 G</span></RankItem>
+          <RankItem $color="#a855f7"><Crown size={16} color="#a855f7" /> <span className="rank-name">ELITE 👑</span> <span className="rank-desc">المستوى 30+</span> <span className="rank-tax">ضريبة: -50 HP | -250 G</span></RankItem>
         </ul>
+        <div style={{ marginTop: '10px' }}>
+          * بداية من رانك <Highlight $color="#ef4444">MASTER</Highlight>، سيشع التطبيق بهالة متوهجة تعكس قوتك.<br/>
+          * للوصول إلى رانك ELITE، ستحتاج إلى جمع حوالي <strong>100,000 EXP</strong>، وهو ما يعادل تقريباً عاماً كاملاً من التدريب المثالي!
+        </div>
       </>
     )
   },
   {
     id: 2,
-    title: 'العمليات والمهام (Directives)',
-    icon: Target,
+    title: 'اقتصاد الـ EXP والمستويات',
+    icon: Activity,
     color: '#0ea5e9',
     content: (
       <>
-        الالتزام هو ما يفصل بين العادي والنخبة.
+        أنت لست مجرد متدرب، أنت <Highlight $color="#0ea5e9">رياضي نخبة (Elite Athlete)</Highlight>.
         <ul>
-          <li><strong>مهام يومية (Daily):</strong> مهام تتجدد يومياً مثل التمرين، التغذية، والمرونة. بمجرد انتهاء اليوم (12 ظهراً في اليوم التالي)، يتم <Highlight $color="#0ea5e9">قفل النظام (System Locked)</Highlight> ولن تتمكن من تسجيل مهام الأمس.</li>
-          <li><strong>مهام الجمعة (Critical):</strong> مهام حاسمة تظهر يوم الجمعة فقط لتقييم الأسبوع بالكامل (الالتزام بالأوزان وتكملة التراكم).</li>
-          <li><strong>وضع الإصابة (Rehab Mode):</strong> إذا تعرضت لإصابة وتم تفعيل وضع التأهيل لك من قِبل الكوتش، ستتغير مهامك اليومية تلقائياً لمهام العلاج الطبيعي والكمادات بدلاً من التمرين القاسي.</li>
+          <li><strong>حسبة الـ EXP للوحوش:</strong><br/>
+            - اليوم المثالي الكامل يمنحك <strong>215 EXP</strong>.<br/>
+            - الأسبوع المثالي (متضمناً مهام الجمعة) يمنحك <strong>1,805 EXP</strong>.<br/>
+            - الشهر المثالي (متضمناً مهام الشهر واللوجستيات) يمنحك حوالي <strong>7,595 EXP</strong>.
+          </li>
+          <li><strong>صعوبة المستويات (Leveling):</strong><br/>
+            تحتاج مجهوداً مضاعفاً كلما ارتقيت. للانتقال من المستوى 1 إلى 2 ستحتاج 650 EXP فقط، بينما المستويات المتقدمة (فوق المستوى 25) تتطلب <strong>4,000 EXP</strong> كاملة للارتقاء لمستوى واحد!
+          </li>
+          <li><strong>مكافآت الترقية:</strong> عند الارتقاء لمستوى جديد، تحصل على مكافأة مالية قدرها <Highlight $color="#eab308">100 جولد</Highlight>. وتتضاعف هذه المكافأة لتصبح <Highlight $color="#eab308">200 جولد</Highlight> إذا كان المستوى ينقلك لرانك جديد (مضاعفات الـ 5).</li>
         </ul>
       </>
     )
   },
   {
     id: 3,
-    title: 'متتبع التغذية (Nutrition Tracker)',
-    icon: Flame,
-    color: '#f97316',
+    title: 'ساعة الصفر واليوم المثالي (Perfect Day)',
+    icon: Clock,
+    color: '#34d399',
     content: (
       <>
-        لن يمكنك ادعاء إتمام هدف التغذية دون دليل. النظام يراقبك.
+        الالتزام الصارم هو الفارق الوحيد بين العادي والنخبة.
         <ul>
-          <li><strong>الهدف الذكي:</strong> النظام يحسب هدف البروتين الخاص بك تلقائياً بناءً على وزنك (1.7g إلى 2.2g لكل كيلو).</li>
-          <li><strong>قفل المهمة:</strong> مهمة التغذية (Claim Mission) ستظل <Highlight $color="#f97316">مقفولة</Highlight> ولن تعطيك EXP حتى يمتلئ عداد البروتين للون الأخضر.</li>
-          <li><strong>قاعدة البيانات الشخصية:</strong> يمكنك إضافة وجباتك اليومية يدوياً (كتابة الماكروز والاسم) وسيحفظها النظام للأبد لتجدها في البحث في الأيام القادمة تحت وسم `[وجبتي]`.</li>
-          <li><strong>سجل اليوم:</strong> يمكنك مراجعة ما أكلته اليوم وحذف أي وجبة أضفتها بالخطأ ليتم خصمها من العداد تلقائياً.</li>
+          <li><strong>فترة السماح:</strong> يبدأ اليوم الجديد في 12:00 منتصف الليل، ولكن النظام يمنحك فترة سماح لتسجيل مهام "أمس" المنسية حتى الساعة <Highlight $color="#34d399">11:59 ظهراً</Highlight> من اليوم التالي.</li>
+          <li><strong>ساعة الصفر (12:00 ظهراً):</strong> بمجرد حلول الظهيرة، يتم <Highlight $color="#ef4444">إغلاق النظام (System Locked)</Highlight> ليوم الأمس ولن يمكنك تعديله نهائياً.</li>
+          <li><strong>اليوم المثالي:</strong> الـ Streak لا يرتفع إلا إذا أتممت <strong>المهام الأساسية الثلاث</strong> (التمرين، التغذية، المياه). إذا فوتّ مهمة واحدة، <Highlight $color="#ef4444">ينكسر الـ Streak للصفر</Highlight> وتُطبق عليك ضريبة الرانك وتخسر نقاط حياتك (HP)!</li>
         </ul>
       </>
     )
   },
   {
     id: 4,
-    title: 'خزنة النخبة (Elite Vault)',
-    icon: ShoppingCart,
-    color: '#eab308',
+    title: 'متتبع التغذية (Nutrition Tracker)',
+    icon: Flame,
+    color: '#f97316',
     content: (
       <>
-        الـ Gold الذي تجمعه من المهام له قيمة حقيقية هنا.
+        لن يمكنك ادعاء إتمام هدف التغذية دون دليل والتزام حقيقي.
         <ul>
-          <li><strong>المنتجات الحصرية (Exclusive):</strong> قطع فريدة (مثل تيشيرت الموسم) متوفرة بنسخة واحدة فقط (1/1) في السيرفر. أول شخص يشتريها يغلقها على الباقيين!</li>
-          <li><strong>العيادة المحدودة (Limited):</strong> فحوصات مثل InBody متوفرة بعدد محدود جداً كل شهر. الأولوية لمن يجمع الـ Gold أسرع.</li>
-          <li><strong>ألقاب الأبطال (Titles):</strong> يمكنك شراء ألقاب رياضية (مثل Speed Demon) لتظهر بجانب اسمك في الـ Leaderboard لفرض هيمنتك.</li>
+          <li><strong>الهدف الذكي:</strong> النظام يحسب هدف البروتين الخاص بك تلقائياً بناءً على وزنك (1.7g إلى 2.2g لكل كيلو).</li>
+          <li><strong>قفل المهمة:</strong> مهمة التغذية ستظل <Highlight $color="#f97316">مقفولة (Locked)</Highlight> ولن تعطيك EXP حتى يمتلئ عداد البروتين للون الأخضر.</li>
+          <li><strong>قاعدة البيانات الشخصية:</strong> أضف وجباتك يدوياً وسيحفظها النظام للأبد لتجدها في البحث في الأيام القادمة تحت وسم `[وجبتي]`.</li>
         </ul>
       </>
     )
   },
   {
     id: 5,
-    title: 'صالة الألعاب (Elite Arcade)',
-    icon: Gamepad2,
-    color: '#a855f7',
+    title: 'خزنة النخبة والغموض (Elite Vault)',
+    icon: Lock,
+    color: '#10b981',
     content: (
       <>
-        تدريب الـ (CNS) وسرعة استجابة الأعصاب هو ما يكمل قوتك العضلية.
+        الـ Gold هو ثروتك، ولكن بعض الغنائم تحتاج لما هو أكثر من المال.
         <ul>
-          <li>اضغط على <strong>أيقونة الـ Gamepad 🎮</strong> العائمة لفتح صالة الألعاب المصغرة.</li>
-          <li><strong>Reflex Arena:</strong> اختبر سرعة رد فعلك للألوان. يجب أن تدوس فوراً عند ظهور اللون الأخضر. يتم قياسها بالمللي ثانية.</li>
-          <li><strong>Finger Sprint:</strong> اختبر سرعة الانقباض العصبي. انقر بأقصى سرعة ممكنة خلال 10 ثواني (CPS Test).</li>
-          <li>أرقامك القياسية تُسجل تلقائياً في <Highlight $color="#a855f7">الـ Leaderboard العالمي</Highlight> الخاص بكل لعبة ليتنافس عليها جميع أبطال السيرفر.</li>
+          <li><strong>المنتجات الحصرية (Exclusive):</strong> قطع فريدة متوفرة بنسخ محدودة جداً في السيرفر. أول من يدفع، يغلقها على الباقيين!</li>
+          <li><strong>نظام الغموض (Mystery Locks):</strong> بعض المنتجات أو الاستشارات <Highlight $color="#10b981">تتطلب رانك معين</Highlight> لشرائها (مثل Diamond أو Platinum).</li>
+          <li>إذا كان رانكك أقل من المطلوب، سيظهر لك المنتج بشكل <Highlight $color="#64748b">ضبابي غامض (Blurred)</Highlight> وزر الشراء مغلق بقفل، لتشجيعك على القتال للوصول لهذا الرانك وفتح الغنيمة.</li>
+          <li><strong>ألقاب الأبطال (Titles):</strong> اشترِ ألقاباً رياضية مهيبة لتظهر بجانب اسمك في الـ Leaderboard.</li>
         </ul>
       </>
     )
   },
   {
     id: 6,
-    title: 'ميثاق الشرف والعقوبات',
+    title: 'صالة الألعاب (Elite Arcade)',
+    icon: Gamepad2,
+    color: '#a855f7',
+    content: (
+      <>
+        نحن نقيس التناسق والتركيز، وليس الحظ.
+        <ul>
+          <li>اضغط على <strong>أيقونة الـ Gamepad 🎮</strong> العائمة لفتح صالة الألعاب.</li>
+          <li><strong>Reflex Arena (معدل الاستجابة):</strong> لا تقاس سرعة رد فعلك من محاولة واحدة. يجب عليك اجتياز <Highlight $color="#a855f7">4 محاولات متتالية</Highlight>. النظام سيحسب (المتوسط - Average) لتلك المحاولات لضمان التناسق قبل إرسال نتيجتك.</li>
+          <li><strong>Finger Sprint:</strong> اختبر سرعة الانقباض العصبي عبر النقر بأقصى سرعة لمدة 10 ثواني.</li>
+          <li>أرقامك تُسجل في Leaderboard عالمي خاص بالألعاب لتحديد أسرع الأعصاب في السيرفر.</li>
+        </ul>
+      </>
+    )
+  },
+  {
+    id: 7,
+    title: 'ميثاق الشرف (Honor Code)',
     icon: Shield,
-    color: '#10b981',
+    color: '#ef4444',
     content: (
       <>
         <strong>"مَنْ غَشَّنَا فَلَيْسَ مِنَّا"</strong>
         <ul>
-          <li>نظامنا مبني على الثقة المتبادلة وعقلية البطل الحقيقي. الغش في تسجيل المهام يُفقدك احترامك لنفسك قبل أن يُفقدك ثقة الكوتش.</li>
-          <li><strong>نظام العقوبات (Penalties):</strong> إذا قمت بمخالفة خطيرة أو تكاسلت بشكل مستمر، سيقوم الكوتش بتفعيل <strong>"عقوبة إدارية"</strong> لك.</li>
-          <li>عند تفعيل العقوبة، ستظهر لك مهمة طارئة باللون الأحمر، ولن يُسمح لك بالتقدم أو المطالبة بالنقاط حتى تقوم بتنفيذ العقوبة ورفع دليل الإثبات للكوتش.</li>
+          <li>الضغط على مهام الشرف يظهر لك <Highlight $color="#ef4444">النافذة الحمراء</Highlight>. الغش في تسجيل المهام يُفقدك احترامك لنفسك قبل أن يُفقدك ثقة السيرفر.</li>
+          <li>إذا قمت بمخالفة خطيرة أو تكاسلت بشكل مستمر، سيقوم الكوتش بتفعيل <strong>"عقوبة إدارية"</strong> لك، والتي تجمد تقدمك بالكامل.</li>
+          <li>لا يتم فك التجميد إلا بتنفيذ عقوبة الكوتش ورفع إثبات موثق.</li>
         </ul>
       </>
     )
