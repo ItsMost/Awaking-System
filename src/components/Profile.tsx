@@ -889,4 +889,4 @@ const Profile = ({ player, setPlayer }: any) => {
   );
 };
 
-export default Profile; 
+export default Profile;

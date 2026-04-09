@@ -49,25 +49,46 @@ const playDashSound = (type: 'complete' | 'levelUp' | 'error' | 'request' | 'ope
     const now = ctx.currentTime;
 
     if (type === 'complete') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-      gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      osc.start(); osc.stop(now + 0.2);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+      gainNode.gain.setValueAtTime(0.2, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc.start();
+      osc.stop(now + 0.2);
     } else if (type === 'openMobility' || type === 'request') {
-      osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
-      gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      osc.start(); osc.stop(now + 0.2);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+      gainNode.gain.setValueAtTime(0.2, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc.start();
+      osc.stop(now + 0.2);
     } else if (type === 'levelUp') {
-      osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.2); osc.frequency.setValueAtTime(800, now + 0.4);
-      gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.8);
-      osc.start(); osc.stop(now + 0.8);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.setValueAtTime(600, now + 0.2);
+      osc.frequency.setValueAtTime(800, now + 0.4);
+      gainNode.gain.setValueAtTime(0.3, now);
+      gainNode.gain.linearRampToValueAtTime(0.01, now + 0.8);
+      osc.start();
+      osc.stop(now + 0.8);
     } else if (type === 'gameClick') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(1000, now); osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
-      gainNode.gain.setValueAtTime(0.1, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-      osc.start(); osc.stop(now + 0.1);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1000, now);
+      osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
+      gainNode.gain.setValueAtTime(0.1, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+      osc.start();
+      osc.stop(now + 0.1);
     } else {
-      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
-      gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-      osc.start(); osc.stop(now + 0.3);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+      gainNode.gain.setValueAtTime(0.3, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      osc.start();
+      osc.stop(now + 0.3);
     }
   } catch (error) {
     console.warn('Audio Context suppressed to prevent crash');
@@ -121,7 +142,7 @@ const getPenaltyStats = (level: number) => {
 // ==========================================
 // 3. التصميمات المفرودة بالكامل (Styled Components)
 // ==========================================
-const Container = styled.div`
+const Container = styled(motion.div)`
   padding: 20px;
   font-family: 'Oxanium', sans-serif;
   color: #fff;
@@ -1329,7 +1350,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
       
       let newXp = (currentPlayer.xp || 0) + quest.exp;
       
-      // 🚨 Fix: قراءة صحيحة للـ monthly_xp من قاعدة البيانات 🚨
       const currentMonthlyXp = currentPlayer.monthly_xp ?? currentPlayer.monthlyXp ?? 0;
       let newMonthlyXp = currentMonthlyXp + quest.exp;
       
@@ -1357,7 +1377,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       await supabase.from('shadow_hunters').update(dbUpdates).eq('name', currentPlayer.name);
       
       setCompletedQuests((prev) => [...prev, quest.title]);
-      setPlayer({ ...currentPlayer, ...dbUpdates, monthlyXp: newMonthlyXp }); // تحديث الواجهة
+      setPlayer({ ...currentPlayer, ...dbUpdates, monthlyXp: newMonthlyXp }); 
       playDashSound('complete'); 
       
       if (leveledUp) {
@@ -1396,7 +1416,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
       if (status === 'completed') {
         let newXp = Math.max(0, (currentPlayer.xp || 0) - quest.exp);
         
-        // 🚨 Fix: قراءة صحيحة للـ monthly_xp عند الإلغاء 🚨
         const currentMonthlyXp = currentPlayer.monthly_xp ?? currentPlayer.monthlyXp ?? 0;
         let newMonthlyXp = Math.max(0, currentMonthlyXp - quest.exp);
         
@@ -1438,7 +1457,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const currentMonthName = new Date().toLocaleString('en-US', { month: 'long' }).toUpperCase();
   const seasonName = `SEASON: ${currentMonthName} WARFARE`; 
   
-  // 🚨 حساب الـ Progress Bar للـ Season Pass بطريقة صحيحة 🚨
   const actualMonthlyXp = currentPlayer.monthly_xp ?? currentPlayer.monthlyXp ?? 0;
   const seasonLevel = Math.floor(actualMonthlyXp / 500) + 1; 
   const xpInCurrentLevel = actualMonthlyXp % 500;
@@ -1456,7 +1474,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
     <Container initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
       <Toaster position="top-center" theme="dark" />
       
-      {/* 🚨 الهيدر الديناميكي المربوط بالرانك 🚨 */}
       <DynamicHeader $color={rankInfo.color} $shadow={rankInfo.glow}>
         <div>
           <h1 style={{ margin: 0, fontSize: '20px', color: rankInfo.color, display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1611,7 +1628,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         {showGameModal && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
             <ModalContent $color={activeGame === 'reaction' ? '#a855f7' : '#0ea5e9'} initial={{ scale: 0.9 }}>
-              <button onClick={() => setShowGameModal(false)} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X /></button>
+              <button onClick={() => setShowGameModal(false)} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={24} /></button>
               <h2 style={{ color: activeGame === 'reaction' ? '#a855f7' : '#0ea5e9', fontSize: '18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: 8 }}><Gamepad2 size={20} /> ELITE ARCADE</h2>
               
               <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
@@ -1767,7 +1784,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
                           <div style={{ fontSize: '13px', fontWeight: 'bold', color: food.isCustom ? '#00f2ff' : '#fff' }}>
                             {food.name} {food.isCustom && <span style={{fontSize: 10, background: '#00f2ff20', padding: '2px 6px', borderRadius: 4, marginRight: 5}}>وجبتي</span>}
                           </div>
-                          <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>P:{food.protein} | C:{food.carbs} | F:{food.fats} | {food.calories}kcal</div>
+                          <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>P:{food.protein} | C:{food.carbs} | f:{food.fats} | {food.calories}kcal</div>
                         </div>
                         <button type="button" onClick={() => handleAddMacros(food)} style={{ background: '#f97316', border: 'none', padding: '6px 12px', borderRadius: '6px', color: '#000', fontWeight: 'bold', cursor: 'pointer' }}><Plus size={14} /></button>
                       </FoodItem>
@@ -1802,7 +1819,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
                         <FoodItem key={idx} style={{ borderColor: '#ef444450' }}>
                           <div>
                             <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>{item.name}</div>
-                            <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>P:{item.protein} | C:{item.carbs} | F:{item.fats} | {item.calories}kcal</div>
+                            <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>P:{item.protein} | C:{item.carbs} | f:{item.fats} | {item.calories}kcal</div>
                           </div>
                           <button type="button" onClick={() => handleRemoveConsumedFood(item)} style={{ background: '#2a0808', border: '1px solid #ef4444', padding: '6px', borderRadius: '6px', color: '#ef4444', cursor: 'pointer' }} title="مسح الوجبة"><Trash2 size={16} /></button>
                         </FoodItem>
