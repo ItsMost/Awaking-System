@@ -14,7 +14,7 @@ import {
 import { supabase } from '../lib/supabase';
 
 // ==========================================
-// 1. المحرك الصوتي المضاد للسبام (Anti-Spam Audio Shield)
+// 1. المحرك الصوتي
 // ==========================================
 let sharedAudioCtx: AudioContext | null = null;
 let lastPlayTime = 0;
@@ -49,46 +49,25 @@ const playDashSound = (type: 'complete' | 'levelUp' | 'error' | 'request' | 'ope
     const now = ctx.currentTime;
 
     if (type === 'complete') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, now);
-      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-      gainNode.gain.setValueAtTime(0.2, now);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      osc.start();
-      osc.stop(now + 0.2);
+      osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+      gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc.start(); osc.stop(now + 0.2);
     } else if (type === 'openMobility' || type === 'request') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(400, now);
-      osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
-      gainNode.gain.setValueAtTime(0.2, now);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      osc.start();
-      osc.stop(now + 0.2);
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+      gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc.start(); osc.stop(now + 0.2);
     } else if (type === 'levelUp') {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(400, now);
-      osc.frequency.setValueAtTime(600, now + 0.2);
-      osc.frequency.setValueAtTime(800, now + 0.4);
-      gainNode.gain.setValueAtTime(0.3, now);
-      gainNode.gain.linearRampToValueAtTime(0.01, now + 0.8);
-      osc.start();
-      osc.stop(now + 0.8);
+      osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.2); osc.frequency.setValueAtTime(800, now + 0.4);
+      gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.8);
+      osc.start(); osc.stop(now + 0.8);
     } else if (type === 'gameClick') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1000, now);
-      osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
-      gainNode.gain.setValueAtTime(0.1, now);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-      osc.start();
-      osc.stop(now + 0.1);
+      osc.type = 'sine'; osc.frequency.setValueAtTime(1000, now); osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
+      gainNode.gain.setValueAtTime(0.1, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+      osc.start(); osc.stop(now + 0.1);
     } else {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(200, now);
-      osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
-      gainNode.gain.setValueAtTime(0.3, now);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-      osc.start();
-      osc.stop(now + 0.3);
+      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+      gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      osc.start(); osc.stop(now + 0.3);
     }
   } catch (error) {
     console.warn('Audio Context suppressed to prevent crash');
@@ -117,7 +96,7 @@ const playHoverSound = () => {
 };
 
 // ==========================================
-// 2. Rank System Logistics (نظام الرانك للألوان)
+// 2. Rank System Logistics
 // ==========================================
 const getRankInfo = (level: number) => {
   if (level >= 30) return { name: 'ELITE', color: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)' };
@@ -139,8 +118,27 @@ const getPenaltyStats = (level: number) => {
   return { hp: 10, gold: 50 };
 };
 
+const calculateLevelData = (totalXp: number) => {
+  let level = 1;
+  let currentXp = totalXp;
+  let expNeededForNextLevel = 650;
+
+  while (currentXp >= expNeededForNextLevel) {
+    currentXp -= expNeededForNextLevel;
+    level++;
+    expNeededForNextLevel = Math.min(level * 150 + 500, 4000);
+  }
+
+  return { level, xpInCurrentLevel: currentXp, expNeededForNextLevel };
+};
+
+const getLocalYYYYMMDD = (date: Date) => {
+    const d = new Date(date);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 // ==========================================
-// 3. التصميمات المفرودة بالكامل (Styled Components)
+// 3. التصميمات
 // ==========================================
 const Container = styled(motion.div)`
   padding: 20px;
@@ -151,55 +149,6 @@ const Container = styled(motion.div)`
   max-width: 600px;
   margin: 0 auto;
   position: relative;
-`;
-
-const NewsTickerWrapper = styled.div`
-  background: #020617;
-  border: 1px solid #1e293b;
-  border-radius: 12px;
-  padding: 10px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-`;
-
-const TickerIcon = styled.div`
-  background: #0ea5e920;
-  color: #0ea5e9;
-  padding: 6px;
-  border-radius: 8px;
-  margin-right: 10px;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const marquee = keyframes`
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
-`;
-
-const TickerText = styled.div`
-  display: flex;
-  gap: 40px;
-  white-space: nowrap;
-  animation: ${marquee} 15s linear infinite;
-  font-size: 13px;
-  font-weight: bold;
-  color: #94a3b8;
-  direction: rtl;
-  
-  span {
-    color: #fff;
-  }
-  
-  strong {
-    color: #eab308;
-  }
 `;
 
 const DateNav = styled.div`
@@ -320,11 +269,11 @@ const ProgressBarBG = styled.div`
   width: 100%;
 `;
 
-const ProgressBarFill = styled.div<{ $progress: number }>`
-  background: #38bdf8;
+const ProgressBarFill = styled.div<{ $progress: number; $color?: string }>`
+  background: ${(props) => props.$color || '#38bdf8'};
   height: 100%;
   width: ${(props) => props.$progress}%;
-  box-shadow: 0 0 10px #38bdf8;
+  box-shadow: 0 0 10px ${(props) => props.$color || '#38bdf8'};
   transition: width 0.5s ease-out;
 `;
 
@@ -347,8 +296,7 @@ const PenaltyBanner = styled(motion.div)<{ $isPending: boolean }>`
 
 const DynamicHeader = styled.div<{ $color: string; $shadow: string }>`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   background: linear-gradient(90deg, #0f172a 0%, #020617 100%);
   border: 1px solid ${(props) => props.$color};
   padding: 20px;
@@ -421,368 +369,42 @@ const QuestCard = styled(motion.div)<{ $status: string; $isPenalty?: boolean; $i
   }
 `;
 
-const LeftContent = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex: 1;
-`;
+const LeftContent = styled.div` display: flex; align-items: center; gap: 15px; flex: 1; `;
+const IconWrapper = styled.div<{ $color: string }>` background: ${(props) => props.$color}15; border: 1px solid ${(props) => props.$color}40; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; `;
+const TextContent = styled.div` display: flex; flex-direction: column; gap: 4px; flex: 1; `;
+const QuestTitle = styled.div<{ $status: string; $isPenalty?: boolean }>` font-size: 15px; font-weight: bold; color: ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : props.$isPenalty ? '#fca5a5' : '#fff'}; text-decoration: ${(props) => (props.$status === 'completed' ? 'line-through' : 'none')}; line-height: 1.3; `;
+const QuestDesc = styled.div` font-size: 11px; color: #94a3b8; line-height: 1.4; `;
+const Rewards = styled.div` display: flex; gap: 10px; font-size: 11px; font-weight: 900; margin-top: 4px; `;
+const RightAction = styled.div<{ $type: string; $status: string }>` width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: ${(props) => props.$status === 'completed' ? '#10b98120' : props.$status === 'pending' ? '#facc1520' : props.$type === 'request' ? '#1e293b' : 'transparent'}; flex-shrink: 0; `;
 
-const IconWrapper = styled.div<{ $color: string }>`
-  background: ${(props) => props.$color}15;
-  border: 1px solid ${(props) => props.$color}40;
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-`;
+const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; `;
+const ModalContent = styled(motion.div)<{ $color: string; $width?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$color}; border-radius: 20px; padding: 30px; width: 100%; max-width: ${(props) => props.$width || '450px'}; position: relative; max-height: 85vh; overflow-y: auto; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: ${(props) => props.$color}; border-radius: 5px; } `;
+const HonorModalContent = styled(ModalContent)` box-shadow: 0 0 50px rgba(239, 68, 68, 0.4); text-align: center; border: 2px solid #ef4444; `;
+const UploadBtn = styled.label<{ $hasFile: boolean; $color: string }>` display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 20px; background: ${(props) => (props.$hasFile ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.05)')}; border: 2px dashed ${(props) => (props.$hasFile ? '#10b981' : '#334155')}; border-radius: 12px; color: ${(props) => (props.$hasFile ? '#10b981' : '#94a3b8')}; cursor: pointer; margin: 15px 0; transition: 0.3s; &:hover { background: rgba(255,255,255,0.1); border-color: ${(props) => props.$color}; color: ${(props) => props.$color}; } `;
+const ActionBtn = styled.button<{ $color: string; disabled?: boolean }>` width: 100%; padding: 15px; background: ${(props) => (props.disabled ? '#334155' : props.$color)}; color: ${(props) => (props.disabled ? '#94a3b8' : '#000')}; border: none; border-radius: 10px; font-family: 'Oxanium', sans-serif; font-size: 14px; font-weight: 900; cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')}; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; &:hover { filter: brightness(1.2); } `;
 
-const TextContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-`;
+const spin = keyframes` 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } `;
+const LoadingSpinner = styled(Loader)` animation: ${spin} 1s linear infinite; `;
+const SyncOverlay = styled.div` position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); `;
 
-const QuestTitle = styled.div<{ $status: string; $isPenalty?: boolean }>`
-  font-size: 15px;
-  font-weight: bold;
-  color: ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : props.$isPenalty ? '#fca5a5' : '#fff'};
-  text-decoration: ${(props) => (props.$status === 'completed' ? 'line-through' : 'none')};
-  line-height: 1.3;
-`;
+const MacroGrid = styled.div` display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; `;
+const MacroBox = styled.div` background: #020617; border: 1px solid #1e293b; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; `;
+const MacroLabel = styled.div<{ $color: string }>` font-size: 10px; font-weight: 900; color: ${(props) => props.$color}; text-transform: uppercase; `;
+const MacroValue = styled.div` font-size: 14px; font-weight: bold; color: #fff; `;
 
-const QuestDesc = styled.div`
-  font-size: 11px;
-  color: #94a3b8;
-  line-height: 1.4;
-`;
+const NutriTabs = styled.div` display: flex; gap: 10px; margin-bottom: 15px; `;
+const NutriTab = styled.button<{ $active: boolean }>` flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-family: 'Oxanium'; cursor: pointer; transition: 0.3s; background: ${(props) => props.$active ? '#f97316' : '#1e293b'}; color: ${(props) => props.$active ? '#000' : '#94a3b8'}; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; `;
+const FoodSearchInput = styled.input` width: 100%; background: #020617; border: 1px solid #334155; padding: 12px 15px; border-radius: 8px; color: #fff; font-family: 'Oxanium'; margin-bottom: 15px; outline: none; &:focus { border-color: #f97316; } `;
+const FoodList = styled.div` max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; direction: rtl; `;
+const FoodItem = styled.div` background: #1e293b50; border: 1px solid #334155; padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; `;
+const ManualInputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; `;
+const ResetMacrosBtn = styled.button` background: #2a0808; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; &:hover { background: #450a0a; } `;
 
-const Rewards = styled.div`
-  display: flex;
-  gap: 10px;
-  font-size: 11px;
-  font-weight: 900;
-  margin-top: 4px;
-`;
-
-const RightAction = styled.div<{ $type: string; $status: string }>`
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: ${(props) => props.$status === 'completed' ? '#10b98120' : props.$status === 'pending' ? '#facc1520' : props.$type === 'request' ? '#1e293b' : 'transparent'};
-  flex-shrink: 0;
-`;
-
-const ModalOverlay = styled(motion.div)`
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  backdrop-filter: blur(8px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const ModalContent = styled(motion.div)<{ $color: string; $width?: string }>`
-  background: #0b1120;
-  border: 2px solid ${(props) => props.$color};
-  border-radius: 20px;
-  padding: 30px;
-  width: 100%;
-  max-width: ${(props) => props.$width || '450px'};
-  position: relative;
-  max-height: 85vh;
-  overflow-y: auto;
-  
-  &::-webkit-scrollbar {
-    width: 5px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: ${(props) => props.$color};
-    border-radius: 5px;
-  }
-`;
-
-const HonorModalContent = styled(ModalContent)`
-  box-shadow: 0 0 50px rgba(239, 68, 68, 0.4);
-  text-align: center;
-  border: 2px solid #ef4444;
-`;
-
-const UploadBtn = styled.label<{ $hasFile: boolean; $color: string }>`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 20px;
-  background: ${(props) => (props.$hasFile ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.05)')};
-  border: 2px dashed ${(props) => (props.$hasFile ? '#10b981' : '#334155')};
-  border-radius: 12px;
-  color: ${(props) => (props.$hasFile ? '#10b981' : '#94a3b8')};
-  cursor: pointer;
-  margin: 15px 0;
-  transition: 0.3s;
-  
-  &:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: ${(props) => props.$color};
-    color: ${(props) => props.$color};
-  }
-`;
-
-const ActionBtn = styled.button<{ $color: string; disabled?: boolean }>`
-  width: 100%;
-  padding: 15px;
-  background: ${(props) => (props.disabled ? '#334155' : props.$color)};
-  color: ${(props) => (props.disabled ? '#94a3b8' : '#000')};
-  border: none;
-  border-radius: 10px;
-  font-family: 'Oxanium', sans-serif;
-  font-size: 14px;
-  font-weight: 900;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  transition: 0.3s;
-  
-  &:hover {
-    filter: brightness(1.2);
-  }
-`;
-
-const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
-const LoadingSpinner = styled(Loader)`
-  animation: ${spin} 1s linear infinite;
-`;
-
-const SyncOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(2, 6, 23, 0.9);
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(4px);
-`;
-
-const MacroGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
-`;
-
-const MacroBox = styled.div`
-  background: #020617;
-  border: 1px solid #1e293b;
-  padding: 10px;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  text-align: center;
-`;
-
-const MacroLabel = styled.div<{ $color: string }>`
-  font-size: 10px;
-  font-weight: 900;
-  color: ${(props) => props.$color};
-  text-transform: uppercase;
-`;
-
-const MacroValue = styled.div`
-  font-size: 14px;
-  font-weight: bold;
-  color: #fff;
-`;
-
-const NutriTabs = styled.div`
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-`;
-
-const NutriTab = styled.button<{ $active: boolean }>`
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  font-weight: bold;
-  font-family: 'Oxanium';
-  cursor: pointer;
-  transition: 0.3s;
-  background: ${(props) => props.$active ? '#f97316' : '#1e293b'};
-  color: ${(props) => props.$active ? '#000' : '#94a3b8'};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 12px;
-`;
-
-const FoodSearchInput = styled.input`
-  width: 100%;
-  background: #020617;
-  border: 1px solid #334155;
-  padding: 12px 15px;
-  border-radius: 8px;
-  color: #fff;
-  font-family: 'Oxanium';
-  margin-bottom: 15px;
-  outline: none;
-  
-  &:focus {
-    border-color: #f97316;
-  }
-`;
-
-const FoodList = styled.div`
-  max-height: 200px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-right: 5px;
-  direction: rtl;
-`;
-
-const FoodItem = styled.div`
-  background: #1e293b50;
-  border: 1px solid #334155;
-  padding: 10px 15px;
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: 0.3s;
-`;
-
-const ManualInputGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 15px;
-`;
-
-const ResetMacrosBtn = styled.button`
-  background: #2a0808;
-  color: #ef4444;
-  border: 1px solid #ef4444;
-  padding: 8px 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-  width: 100%;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  transition: 0.3s;
-  
-  &:hover {
-    background: #450a0a;
-  }
-`;
-
-const GameFAB = styled(motion.button)`
-  position: fixed;
-  bottom: 100px;
-  right: 20px;
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
-  border: 2px solid #d8b4fe;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
-  cursor: pointer;
-  z-index: 90;
-  transition: 0.3s;
-  
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
-  }
-`;
-
-const GameArea = styled.div<{ $state: string }>`
-  width: 100%;
-  height: 250px;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: ${(props) => props.$state === 'result_final' ? 'default' : 'pointer'};
-  user-select: none;
-  transition: background 0.1s;
-  background: ${(props) => props.$state === 'waiting' ? '#ef4444' : props.$state === 'ready' ? '#10b981' : props.$state === 'early' ? '#b45309' : (props.$state === 'result' || props.$state === 'result_final') ? '#0ea5e9' : '#1e293b' };
-  box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
-  border: 4px solid rgba(255,255,255,0.1);
-`;
-
-const GameText = styled.div`
-  font-size: 24px;
-  font-weight: 900;
-  text-transform: uppercase;
-  color: #fff;
-  letter-spacing: 2px;
-  text-align: center;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-`;
-
-const GameSubText = styled.div`
-  font-size: 12px;
-  color: rgba(255,255,255,0.7);
-  margin-top: 10px;
-  font-weight: bold;
-`;
-
-const GameSelectorBtn = styled.button<{ $active: boolean, $color: string }>`
-  flex: 1;
-  padding: 10px;
-  background: ${(props) => props.$active ? `${props.$color}20` : 'transparent'};
-  border: 1px solid ${(props) => props.$active ? props.$color : '#334155'};
-  color: ${(props) => props.$active ? props.$color : '#94a3b8'};
-  border-radius: 8px;
-  font-family: 'Oxanium';
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-`;
+const GameFAB = styled(motion.button)` position: fixed; bottom: 100px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: 2px solid #d8b4fe; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; &:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(168, 85, 247, 0.6); } `;
+const GameArea = styled.div<{ $state: string }>` width: 100%; height: 250px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: ${(props) => props.$state === 'result_final' ? 'default' : 'pointer'}; user-select: none; transition: background 0.1s; background: ${(props) => props.$state === 'waiting' ? '#ef4444' : props.$state === 'ready' ? '#10b981' : props.$state === 'early' ? '#b45309' : (props.$state === 'result' || props.$state === 'result_final') ? '#0ea5e9' : '#1e293b' }; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); border: 4px solid rgba(255,255,255,0.1); `;
+const GameText = styled.div` font-size: 24px; font-weight: 900; text-transform: uppercase; color: #fff; letter-spacing: 2px; text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,0.5); `;
+const GameSubText = styled.div` font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 10px; font-weight: bold; `;
+const GameSelectorBtn = styled.button<{ $active: boolean, $color: string }>` flex: 1; padding: 10px; background: ${(props) => props.$active ? `${props.$color}20` : 'transparent'}; border: 1px solid ${(props) => props.$active ? props.$color : '#334155'}; color: ${(props) => props.$active ? props.$color : '#94a3b8'}; border-radius: 8px; font-family: 'Oxanium'; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; `;
 
 // ==========================================
 // 4. الثوابت وقواعد البيانات (Constants & Arrays)
@@ -921,7 +543,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [systemLogs, setSystemLogs] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
 
-  // Time Anti-Spoofing State
   const [timeOffset, setTimeOffset] = useState<number>(0);
 
   const [showNutritionModal, setShowNutritionModal] = useState(false);
@@ -931,12 +552,10 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [foodSearchQuery, setFoodSearchQuery] = useState('');
   const [manualFood, setManualFood] = useState({ name: '', protein: '', carbs: '', fats: '', calories: '' });
 
-  // Arcade State
   const [showGameModal, setShowGameModal] = useState(false);
   const [gameTab, setGameTab] = useState<'play' | 'leaderboard'>('play');
   const [activeGame, setActiveGame] = useState<'reaction' | 'sprint'>('reaction');
   
-  // Reaction Game State
   const [gameState, setGameState] = useState<'idle' | 'waiting' | 'ready' | 'result' | 'early' | 'result_final'>('idle');
   const [reactionTime, setReactionTime] = useState<number | null>(null);
   const [gameStartTime, setGameStartTime] = useState<number>(0);
@@ -945,16 +564,15 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [reactionAttempt, setReactionAttempt] = useState(0);
   const [reactionTimes, setReactionTimes] = useState<number[]>([]);
 
-  // Sprint State
   const [sprintState, setSprintState] = useState<'idle' | 'playing' | 'result'>('idle');
   const [sprintScore, setSprintScore] = useState(0);
   const [sprintTimeLeft, setSprintTimeLeft] = useState(10);
   const [sprintLeaderboard, setSprintLeaderboard] = useState<any[]>([]);
 
-  // 👑 الحصول على بيانات الرانك الخاصة باللاعب الحالي
-  const rankInfo = getRankInfo(currentPlayer.lvl || 1);
+  const levelData = calculateLevelData(currentPlayer.xp || 0);
+  const currentVisualLvl = levelData.level;
+  const rankInfo = getRankInfo(currentVisualLvl);
 
-  // استدعاء توقيت السيرفر الحقيقي
   useEffect(() => {
     const fetchServerTime = async () => {
       try {
@@ -1060,14 +678,11 @@ const Dashboard = ({ player, setPlayer }: any) => {
     fetchRadarNews();
   }, []);
 
-  // المزامنة وتطبيق "نظام اليوم المثالي والضريبة الديناميكية"
   useEffect(() => {
     const syncData = async () => {
       setIsLoadingSync(true);
       const startOfDay = new Date(selectedDate); startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(selectedDate); endOfDay.setHours(23, 59, 59, 999);
-      const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-      const fourteenDaysAgo = new Date(selectedDate); fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
       
       try {
         const { data: userData } = await supabase.from('shadow_hunters').select('*').eq('name', currentPlayer.name).single();
@@ -1124,7 +739,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
           }
 
           if (applyPenalty) {
-            const penaltyStats = getPenaltyStats(userData.lvl || 1);
+            const penaltyStats = getPenaltyStats(calculateLevelData(userData.xp || 0).level);
             const hpLost = daysMissedCount * penaltyStats.hp;
             const goldLost = daysMissedCount * penaltyStats.gold;
             
@@ -1140,10 +755,25 @@ const Dashboard = ({ player, setPlayer }: any) => {
           setPlayer({ ...currentPlayer, ...userData, hp: fetchedHp, gold: fetchedGold, streak: fetchedStreak, custom_foods: fetchedCustomFoods });
         }
 
-        const { data: reqs } = await supabase.from('system_requests').select('*').eq('hunter_name', currentPlayer.name).gte('created_at', `${selStr}T00:00:00Z`).lt('created_at', `${getSystemDateStr(new Date(selectedDate.getTime() + 86400000))}T00:00:00Z`);
+        const fetchStart = new Date(selectedDate);
+        fetchStart.setDate(fetchStart.getDate() - 30); 
+
+        const { data: reqs } = await supabase.from('system_requests')
+          .select('*')
+          .eq('hunter_name', currentPlayer.name)
+          .gte('created_at', fetchStart.toISOString());
+
         if (reqs) {
-          setCompletedQuests(reqs.filter(r => r.status === 'approved').map(r => r.task_name));
-          setPendingQuests(reqs.filter(r => r.status === 'pending').map(r => r.task_name));
+          const validReqs = reqs.filter(r => {
+              const taskDate = new Date(r.created_at);
+              const taskDateStr = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, '0')}-${String(taskDate.getDate()).padStart(2, '0')}`;
+              
+              if (['Recovery Logistics', 'Supplement Inventory', 'InBody Assessment'].includes(r.task_name)) return true; 
+              return taskDateStr === selStr;
+          });
+
+          setCompletedQuests(validReqs.filter(r => r.status === 'approved').map(r => r.task_name));
+          setPendingQuests(validReqs.filter(r => r.status === 'pending').map(r => r.task_name));
         }
       } catch (e) { console.error(e); }
       setIsLoadingSync(false);
@@ -1151,7 +781,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
     syncData();
   }, [selStr, timeOffset]);
 
-  // 🚨 Arcade Game Handlers 🚨
   const fetchGameLeaderboards = async () => {
     try {
       const { data: reactData } = await supabase.from('reaction_scores').select('*').order('best_time', { ascending: true }).limit(10);
@@ -1245,14 +874,12 @@ const Dashboard = ({ player, setPlayer }: any) => {
     }
   };
 
-  // 🚨 دالة الفحص (بتفحص عن طريق اسم المهمة مش الآي دي) 🚨
   const getStatus = (title: string) => {
     if (completedQuests.includes(title)) return 'completed';
     if (pendingQuests.includes(title)) return 'pending';
     return 'idle';
   };
 
-  // 🚨 Quest Click Handler 🚨
   const handleQuestClick = (quest: any) => {
     if (isProcessing || isLoadingSync) return;
     
@@ -1349,32 +976,38 @@ const Dashboard = ({ player, setPlayer }: any) => {
       await supabase.from('system_requests').insert([{ hunter_name: currentPlayer.name, task_name: quest.title, evidence: 'Honor System', type: 'quest', status: 'approved', created_at: getLogDate() }]);
       
       let newXp = (currentPlayer.xp || 0) + quest.exp;
-      
       const currentMonthlyXp = currentPlayer.monthly_xp ?? currentPlayer.monthlyXp ?? 0;
       let newMonthlyXp = currentMonthlyXp + quest.exp;
-      
       let newGold = (currentPlayer.gold || 0) + quest.gold;
-      let newLvl = currentPlayer.lvl || 1;
+      
+      const oldLevelData = calculateLevelData(currentPlayer.xp || 0);
+      const newLevelData = calculateLevelData(newXp);
+      
       let leveledUp = false;
       let levelGoldBonus = 0;
 
-      let xpNeeded = Math.min(newLvl * 150 + 500, 4000);
-      
-      while (newXp >= xpNeeded) { 
-        newXp -= xpNeeded; 
-        newLvl += 1; 
+      if (newLevelData.level > oldLevelData.level) {
         leveledUp = true;
-        if (newLvl % 5 === 0) levelGoldBonus += 200;
-        else levelGoldBonus += 100;
-        xpNeeded = Math.min(newLvl * 150 + 500, 4000); 
+        const levelsGained = newLevelData.level - oldLevelData.level;
+        for(let i=1; i<=levelsGained; i++) {
+           let reachedLvl = oldLevelData.level + i;
+           if (reachedLvl % 5 === 0) levelGoldBonus += 200;
+           else levelGoldBonus += 100;
+        }
       }
       
       newGold += levelGoldBonus;
-
       let newHp = Math.min(100, (currentPlayer.hp || 100) + ((quest.id === SHARED_HYDRATION.id || quest.id === SHARED_NUTRITION.id) ? 5 : 0));
       
-      const dbUpdates = { xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, lvl: newLvl, hp: newHp };
+      const dbUpdates = { xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, lvl: newLevelData.level, hp: newHp };
       await supabase.from('shadow_hunters').update(dbUpdates).eq('name', currentPlayer.name);
+
+      await supabase.from('exp_history').insert([{
+        hunter_name: currentPlayer.name,
+        amount: quest.exp,
+        operation_type: 'increase',
+        reason: quest.title
+      }]);
       
       setCompletedQuests((prev) => [...prev, quest.title]);
       setPlayer({ ...currentPlayer, ...dbUpdates, monthlyXp: newMonthlyXp }); 
@@ -1383,7 +1016,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       if (leveledUp) {
         setTimeout(() => {
           playDashSound('levelUp');
-          toast.success(`RANK UP! You are now Level ${newLvl} (+${levelGoldBonus} GOLD 💰)`, { style: { background: '#020617', border: `2px solid ${rankInfo.color}`, color: rankInfo.color } });
+          toast.success(`RANK UP! You are now Level ${newLevelData.level} (+${levelGoldBonus} GOLD 💰)`, { style: { background: '#020617', border: `2px solid ${rankInfo.color}`, color: rankInfo.color } });
           confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 }, colors: [rankInfo.color, '#ffffff'] });
         }, 500);
       } else {
@@ -1411,27 +1044,56 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const undoQuest = async (quest: any, status: string) => {
     setIsProcessing(true);
     try {
-      await supabase.from('system_requests').delete().eq('hunter_name', currentPlayer.name).eq('task_name', quest.title).gte('created_at', `${selStr}T00:00:00Z`).lt('created_at', `${getSystemDateStr(new Date(selectedDate.getTime() + 86400000))}T00:00:00Z`);
-      
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const { data: existingReqs } = await supabase
+        .from('system_requests')
+        .select('id')
+        .eq('hunter_name', currentPlayer.name)
+        .eq('task_name', quest.title)
+        .gte('created_at', startOfDay.toISOString())
+        .lte('created_at', endOfDay.toISOString());
+
+      if (!existingReqs || existingReqs.length === 0) {
+        toast.error('المهمة دي ملغية بالفعل!');
+        if (status === 'completed') setCompletedQuests(prev => prev.filter(t => t !== quest.title));
+        else setPendingQuests(prev => prev.filter(t => t !== quest.title));
+        setIsProcessing(false);
+        return;
+      }
+
+      await supabase.from('system_requests').delete().eq('id', existingReqs[0].id);
+
       if (status === 'completed') {
         let newXp = Math.max(0, (currentPlayer.xp || 0) - quest.exp);
-        
         const currentMonthlyXp = currentPlayer.monthly_xp ?? currentPlayer.monthlyXp ?? 0;
         let newMonthlyXp = Math.max(0, currentMonthlyXp - quest.exp);
-        
         let newGold = Math.max(0, (currentPlayer.gold || 0) - quest.gold);
-        let newLvl = currentPlayer.lvl || 1;
+
+        const newLevelData = calculateLevelData(newXp);
+
+        await supabase.from('shadow_hunters').update({ xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, lvl: newLevelData.level }).eq('name', currentPlayer.name);
         
-        while (newXp < 0 && newLvl > 1) { newLvl -= 1; newXp = Math.min(newLvl * 150 + 500, 4000) + newXp; }
-        
-        await supabase.from('shadow_hunters').update({ xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, lvl: newLvl }).eq('name', currentPlayer.name);
+        await supabase.from('exp_history').insert([{
+          hunter_name: currentPlayer.name,
+          amount: quest.exp,
+          operation_type: 'decrease',
+          reason: `Player Reverted: ${quest.title}`
+        }]);
+
         setCompletedQuests(prev => prev.filter(t => t !== quest.title));
-        setPlayer({ ...currentPlayer, xp: newXp, monthly_xp: newMonthlyXp, monthlyXp: newMonthlyXp, gold: newGold, lvl: newLvl });
+        setPlayer({ ...currentPlayer, xp: newXp, monthly_xp: newMonthlyXp, monthlyXp: newMonthlyXp, gold: newGold, lvl: newLevelData.level });
       } else {
         setPendingQuests(prev => prev.filter(t => t !== quest.title));
       }
-      playDashSound('error'); toast.error('Reverted.');
-    } catch (err: any) { toast.error(err.message); }
+      playDashSound('error'); 
+      toast.error('Reverted.');
+    } catch (err: any) { 
+      toast.error(err.message); 
+    }
     setIsProcessing(false);
   };
 
@@ -1623,7 +1285,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
         );
       })}
 
-      {/* Arcade Games Modal */}
       <AnimatePresence>
         {showGameModal && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
@@ -1724,7 +1385,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
       <GameFAB onClick={() => { playHoverSound(); setShowGameModal(true); }}><Gamepad2 size={28} /></GameFAB>
 
-      {/* 🚨 نافذة التغذية الشاملة 🚨 */}
       <AnimatePresence>
         {showNutritionModal && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -1839,7 +1499,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
         )}
       </AnimatePresence>
 
-      {/* 🚨 نافذة "مَنْ غَشَّنَا فَلَيْسَ مِنَّا" بتصميم مرعب 🚨 */}
       <AnimatePresence>
         {honorQuestToConfirm && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -1863,7 +1522,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
         )}
       </AnimatePresence>
 
-      {/* 🚨 نافذة الإثبات العادية (تم إصلاح خطأ الـ Btn) 🚨 */}
       <AnimatePresence>
         {selectedQuest && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
