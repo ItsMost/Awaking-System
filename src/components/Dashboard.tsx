@@ -14,7 +14,7 @@ import {
 import { supabase } from '../lib/supabase';
 
 // ==========================================
-// 1. المحرك الصوتي
+// 1. المحرك الصوتي المضاد للسبام
 // ==========================================
 let sharedAudioCtx: AudioContext | null = null;
 let lastPlayTime = 0;
@@ -49,25 +49,46 @@ const playDashSound = (type: 'complete' | 'levelUp' | 'error' | 'request' | 'ope
     const now = ctx.currentTime;
 
     if (type === 'complete') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-      gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      osc.start(); osc.stop(now + 0.2);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+      gainNode.gain.setValueAtTime(0.2, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc.start();
+      osc.stop(now + 0.2);
     } else if (type === 'openMobility' || type === 'request') {
-      osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
-      gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      osc.start(); osc.stop(now + 0.2);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+      gainNode.gain.setValueAtTime(0.2, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc.start();
+      osc.stop(now + 0.2);
     } else if (type === 'levelUp') {
-      osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.2); osc.frequency.setValueAtTime(800, now + 0.4);
-      gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.8);
-      osc.start(); osc.stop(now + 0.8);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.setValueAtTime(600, now + 0.2);
+      osc.frequency.setValueAtTime(800, now + 0.4);
+      gainNode.gain.setValueAtTime(0.3, now);
+      gainNode.gain.linearRampToValueAtTime(0.01, now + 0.8);
+      osc.start();
+      osc.stop(now + 0.8);
     } else if (type === 'gameClick') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(1000, now); osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
-      gainNode.gain.setValueAtTime(0.1, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-      osc.start(); osc.stop(now + 0.1);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1000, now);
+      osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
+      gainNode.gain.setValueAtTime(0.1, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+      osc.start();
+      osc.stop(now + 0.1);
     } else {
-      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
-      gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-      osc.start(); osc.stop(now + 0.3);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+      gainNode.gain.setValueAtTime(0.3, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      osc.start();
+      osc.stop(now + 0.3);
     }
   } catch (error) {
     console.warn('Audio Context suppressed to prevent crash');
@@ -96,7 +117,7 @@ const playHoverSound = () => {
 };
 
 // ==========================================
-// 2. Rank System Logistics
+// 2. Rank System Logistics (نظام الرانك للألوان)
 // ==========================================
 const getRankInfo = (level: number) => {
   if (level >= 30) return { name: 'ELITE', color: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)' };
@@ -138,7 +159,7 @@ const getLocalYYYYMMDD = (date: Date) => {
 };
 
 // ==========================================
-// 3. التصميمات
+// 3. التصميمات المفرودة بالكامل (Styled Components)
 // ==========================================
 const Container = styled(motion.div)`
   padding: 20px;
@@ -149,6 +170,50 @@ const Container = styled(motion.div)`
   max-width: 600px;
   margin: 0 auto;
   position: relative;
+`;
+
+const NewsTickerWrapper = styled.div`
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+`;
+
+const TickerIcon = styled.div`
+  background: #0ea5e920;
+  color: #0ea5e9;
+  padding: 6px;
+  border-radius: 8px;
+  margin-right: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const marquee = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+`;
+
+const TickerText = styled.div`
+  display: flex;
+  gap: 40px;
+  white-space: nowrap;
+  animation: ${marquee} 15s linear infinite;
+  font-size: 13px;
+  font-weight: bold;
+  color: #94a3b8;
+  direction: rtl;
+  
+  span { color: #fff; }
+  strong { color: #eab308; }
 `;
 
 const DateNav = styled.div`
@@ -164,209 +229,48 @@ const DateNav = styled.div`
 `;
 
 const NavBtn = styled.button`
-  background: none;
-  border: none;
-  color: #00f2ff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px;
-  transition: 0.3s;
-  
-  &:disabled {
-    color: #334155;
-    cursor: not-allowed;
-  }
-  
-  &:hover:not(:disabled) {
-    filter: brightness(1.2);
-    transform: scale(1.1);
-  }
+  background: none; border: none; color: #00f2ff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; transition: 0.3s;
+  &:disabled { color: #334155; cursor: not-allowed; }
+  &:hover:not(:disabled) { filter: brightness(1.2); transform: scale(1.1); }
 `;
 
 const DateDisplay = styled.div`
   text-align: center;
-  
-  .day {
-    font-size: 15px;
-    font-weight: 900;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  
-  .full-date {
-    font-size: 10px;
-    color: #64748b;
-    margin-top: 2px;
-  }
+  .day { font-size: 15px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .full-date { font-size: 10px; color: #64748b; margin-top: 2px; }
 `;
 
 const SeasonCard = styled.div`
-  background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-  border: 1px solid #38bdf8;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 25px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15);
+  background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid #38bdf8; border-radius: 16px; padding: 20px; margin-bottom: 25px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15);
 `;
 
-const SeasonHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-`;
-
-const SeasonTitleText = styled.h2`
-  margin: 0;
-  font-size: 15px;
-  color: #38bdf8;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-transform: uppercase;
-  font-weight: 900;
-  letter-spacing: 1px;
-`;
-
-const CountdownBadge = styled.div`
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid #ef4444;
-  color: #ef4444;
-  padding: 5px 10px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
-`;
-
-const SeasonLevelInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #94a3b8;
-  font-weight: bold;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-`;
-
-const ProgressBarBG = styled.div`
-  background: #1e293b;
-  height: 8px;
-  border-radius: 4px;
-  overflow: hidden;
-  width: 100%;
-`;
-
-const ProgressBarFill = styled.div<{ $progress: number; $color?: string }>`
-  background: ${(props) => props.$color || '#38bdf8'};
-  height: 100%;
-  width: ${(props) => props.$progress}%;
-  box-shadow: 0 0 10px ${(props) => props.$color || '#38bdf8'};
-  transition: width 0.5s ease-out;
-`;
+const SeasonHeader = styled.div` display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; `;
+const SeasonTitleText = styled.h2` margin: 0; font-size: 15px; color: #38bdf8; display: flex; align-items: center; gap: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; `;
+const CountdownBadge = styled.div` background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 900; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); `;
+const SeasonLevelInfo = styled.div` display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; `;
+const ProgressBarBG = styled.div` background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; `;
+const ProgressBarFill = styled.div<{ $progress: number; $color?: string }>` background: ${(props) => props.$color || '#38bdf8'}; height: 100%; width: ${(props) => props.$progress}%; box-shadow: 0 0 10px ${(props) => props.$color || '#38bdf8'}; transition: width 0.5s ease-out; `;
 
 const PenaltyBanner = styled(motion.div)<{ $isPending: boolean }>`
-  background: ${(props) => (props.$isPending ? '#b45309' : '#2a0808')};
-  border: 1px dashed ${(props) => (props.$isPending ? '#fcd34d' : '#ef4444')};
-  color: ${(props) => (props.$isPending ? '#fef3c7' : '#fca5a5')};
-  padding: 12px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  margin-bottom: 20px;
-  box-shadow: 0 0 15px ${(props) => (props.$isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)')};
+  background: ${(props) => (props.$isPending ? '#b45309' : '#2a0808')}; border: 1px dashed ${(props) => (props.$isPending ? '#fcd34d' : '#ef4444')}; color: ${(props) => (props.$isPending ? '#fef3c7' : '#fca5a5')}; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; font-weight: 900; letter-spacing: 1px; margin-bottom: 20px; box-shadow: 0 0 15px ${(props) => (props.$isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)')};
 `;
 
 const DynamicHeader = styled.div<{ $color: string; $shadow: string }>`
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(90deg, #0f172a 0%, #020617 100%);
-  border: 1px solid ${(props) => props.$color};
-  padding: 20px;
-  border-radius: 16px;
-  margin-bottom: 25px;
-  box-shadow: 0 0 20px ${(props) => props.$shadow};
-  transition: all 0.5s ease;
+  display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #0f172a 0%, #020617 100%); border: 1px solid ${(props) => props.$color}; padding: 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 0 20px ${(props) => props.$shadow}; transition: all 0.5s ease;
 `;
 
-const SectionTitle = styled.h2<{ $color: string }>`
-  font-size: 14px;
-  color: ${(props) => props.$color};
-  letter-spacing: 2px;
-  margin: 30px 0 15px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-transform: uppercase;
-  border-bottom: 1px solid ${(props) => props.$color}40;
-  padding-bottom: 8px;
-`;
+const SectionTitle = styled.h2<{ $color: string }>` font-size: 14px; color: ${(props) => props.$color}; letter-spacing: 2px; margin: 30px 0 15px 0; display: flex; align-items: center; gap: 8px; text-transform: uppercase; border-bottom: 1px solid ${(props) => props.$color}40; padding-bottom: 8px; `;
 
-const pulseRed = keyframes`
-  0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
-  100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
-`;
+const pulseRed = keyframes` 0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); } 50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); } 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); } `;
 
 const UrgentCard = styled(motion.div)<{ $status: string; $isLocked?: boolean }>`
-  background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : 'linear-gradient(90deg, #450a0a 0%, #020617 100%)'};
-  border: 2px solid ${(props) => (props.$status === 'completed' ? '#10b981' : '#ef4444')};
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 15px;
-  cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')};
-  position: relative;
-  overflow: hidden;
-  opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)};
-  animation: ${(props) => (props.$status === 'idle' && !props.$isLocked ? pulseRed : 'none')} 2s infinite;
-  
-  &::before {
-    content: 'CRITICAL DIRECTIVE';
-    position: absolute;
-    top: 8px;
-    right: 15px;
-    font-size: 9px;
-    font-weight: 900;
-    color: #ef4444;
-    letter-spacing: 2px;
-  }
+  background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : 'linear-gradient(90deg, #450a0a 0%, #020617 100%)'}; border: 2px solid ${(props) => (props.$status === 'completed' ? '#10b981' : '#ef4444')}; border-radius: 16px; padding: 20px; margin-bottom: 15px; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; position: relative; overflow: hidden; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; animation: ${(props) => (props.$status === 'idle' && !props.$isLocked ? pulseRed : 'none')} 2s infinite;
+  &::before { content: 'CRITICAL DIRECTIVE'; position: absolute; top: 8px; right: 15px; font-size: 9px; font-weight: 900; color: #ef4444; letter-spacing: 2px; }
 `;
 
 const QuestCard = styled(motion.div)<{ $status: string; $isPenalty?: boolean; $isLocked?: boolean }>`
-  background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : props.$status === 'pending' ? 'rgba(234, 179, 8, 0.1)' : props.$isPenalty ? '#2a0808' : '#0b1120'};
-  border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#eab308' : props.$isPenalty ? '#ef4444' : '#1e293b'};
-  border-radius: 16px;
-  padding: 15px;
-  margin-bottom: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')};
-  transition: 0.3s;
-  opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)};
-  box-shadow: ${(props) => props.$isPenalty && props.$status === 'idle' && !props.$isLocked ? '0 0 15px rgba(239,68,68,0.3)' : '0 4px 6px rgba(0,0,0,0.2)'};
-  
-  &:hover {
-    background: ${(props) => props.$status === 'idle' && !props.$isLocked ? props.$isPenalty ? '#450a0a' : '#0f172a' : ''};
-    transform: ${(props) => (props.$status === 'idle' && !props.$isLocked ? 'translateY(-2px)' : 'none')};
-  }
+  background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : props.$status === 'pending' ? 'rgba(234, 179, 8, 0.1)' : props.$isPenalty ? '#2a0808' : '#0b1120'}; border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#eab308' : props.$isPenalty ? '#ef4444' : '#1e293b'}; border-radius: 16px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; transition: 0.3s; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; box-shadow: ${(props) => props.$isPenalty && props.$status === 'idle' && !props.$isLocked ? '0 0 15px rgba(239,68,68,0.3)' : '0 4px 6px rgba(0,0,0,0.2)'};
+  &:hover { background: ${(props) => props.$status === 'idle' && !props.$isLocked ? props.$isPenalty ? '#450a0a' : '#0f172a' : ''}; transform: ${(props) => (props.$status === 'idle' && !props.$isLocked ? 'translateY(-2px)' : 'none')}; }
 `;
 
 const LeftContent = styled.div` display: flex; align-items: center; gap: 15px; flex: 1; `;
@@ -376,13 +280,11 @@ const QuestTitle = styled.div<{ $status: string; $isPenalty?: boolean }>` font-s
 const QuestDesc = styled.div` font-size: 11px; color: #94a3b8; line-height: 1.4; `;
 const Rewards = styled.div` display: flex; gap: 10px; font-size: 11px; font-weight: 900; margin-top: 4px; `;
 const RightAction = styled.div<{ $type: string; $status: string }>` width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: ${(props) => props.$status === 'completed' ? '#10b98120' : props.$status === 'pending' ? '#facc1520' : props.$type === 'request' ? '#1e293b' : 'transparent'}; flex-shrink: 0; `;
-
 const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; `;
 const ModalContent = styled(motion.div)<{ $color: string; $width?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$color}; border-radius: 20px; padding: 30px; width: 100%; max-width: ${(props) => props.$width || '450px'}; position: relative; max-height: 85vh; overflow-y: auto; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: ${(props) => props.$color}; border-radius: 5px; } `;
 const HonorModalContent = styled(ModalContent)` box-shadow: 0 0 50px rgba(239, 68, 68, 0.4); text-align: center; border: 2px solid #ef4444; `;
 const UploadBtn = styled.label<{ $hasFile: boolean; $color: string }>` display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 20px; background: ${(props) => (props.$hasFile ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.05)')}; border: 2px dashed ${(props) => (props.$hasFile ? '#10b981' : '#334155')}; border-radius: 12px; color: ${(props) => (props.$hasFile ? '#10b981' : '#94a3b8')}; cursor: pointer; margin: 15px 0; transition: 0.3s; &:hover { background: rgba(255,255,255,0.1); border-color: ${(props) => props.$color}; color: ${(props) => props.$color}; } `;
 const ActionBtn = styled.button<{ $color: string; disabled?: boolean }>` width: 100%; padding: 15px; background: ${(props) => (props.disabled ? '#334155' : props.$color)}; color: ${(props) => (props.disabled ? '#94a3b8' : '#000')}; border: none; border-radius: 10px; font-family: 'Oxanium', sans-serif; font-size: 14px; font-weight: 900; cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')}; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; &:hover { filter: brightness(1.2); } `;
-
 const spin = keyframes` 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } `;
 const LoadingSpinner = styled(Loader)` animation: ${spin} 1s linear infinite; `;
 const SyncOverlay = styled.div` position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); `;
@@ -391,7 +293,6 @@ const MacroGrid = styled.div` display: grid; grid-template-columns: repeat(4, 1f
 const MacroBox = styled.div` background: #020617; border: 1px solid #1e293b; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; `;
 const MacroLabel = styled.div<{ $color: string }>` font-size: 10px; font-weight: 900; color: ${(props) => props.$color}; text-transform: uppercase; `;
 const MacroValue = styled.div` font-size: 14px; font-weight: bold; color: #fff; `;
-
 const NutriTabs = styled.div` display: flex; gap: 10px; margin-bottom: 15px; `;
 const NutriTab = styled.button<{ $active: boolean }>` flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-family: 'Oxanium'; cursor: pointer; transition: 0.3s; background: ${(props) => props.$active ? '#f97316' : '#1e293b'}; color: ${(props) => props.$active ? '#000' : '#94a3b8'}; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; `;
 const FoodSearchInput = styled.input` width: 100%; background: #020617; border: 1px solid #334155; padding: 12px 15px; border-radius: 8px; color: #fff; font-family: 'Oxanium'; margin-bottom: 15px; outline: none; &:focus { border-color: #f97316; } `;
@@ -399,7 +300,6 @@ const FoodList = styled.div` max-height: 200px; overflow-y: auto; display: flex;
 const FoodItem = styled.div` background: #1e293b50; border: 1px solid #334155; padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; `;
 const ManualInputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; `;
 const ResetMacrosBtn = styled.button` background: #2a0808; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; &:hover { background: #450a0a; } `;
-
 const GameFAB = styled(motion.button)` position: fixed; bottom: 100px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: 2px solid #d8b4fe; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; &:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(168, 85, 247, 0.6); } `;
 const GameArea = styled.div<{ $state: string }>` width: 100%; height: 250px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: ${(props) => props.$state === 'result_final' ? 'default' : 'pointer'}; user-select: none; transition: background 0.1s; background: ${(props) => props.$state === 'waiting' ? '#ef4444' : props.$state === 'ready' ? '#10b981' : props.$state === 'early' ? '#b45309' : (props.$state === 'result' || props.$state === 'result_final') ? '#0ea5e9' : '#1e293b' }; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); border: 4px solid rgba(255,255,255,0.1); `;
 const GameText = styled.div` font-size: 24px; font-weight: 900; text-transform: uppercase; color: #fff; letter-spacing: 2px; text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,0.5); `;
@@ -519,16 +419,16 @@ const INJURED_DAILY_QUESTS = [
 const PENALTY_QUEST = { id: 'penalty_q', title: 'Disciplinary Execution', desc: 'تنفيذ العقوبة الإدارية المطلوبة ورفع الإثبات لرفع تجميد النظام.', exp: 0, gold: 0, type: 'request', icon: ShieldAlert, color: '#ef4444', isPenalty: true };
 
 // ==========================================
-// 5. المكون الرئيسي (Dashboard)
+// 5. MAIN DASHBOARD COMPONENT
 // ==========================================
 const Dashboard = ({ player, setPlayer }: any) => {
   const currentPlayer = player || {
-    id: 'me', name: 'Athlete', lvl: 1, xp: 0, monthly_xp: 0, gold: 0, hp: 100,
-    isInjured: false, activePenalty: false, weight: 75, streak: 0,
+    id: 'me', name: 'Athlete', cumulative_xp: 0, monthly_xp: 0, gold: 0, hp: 100,
+    is_injured: false, active_penalty: false, weight: 75, streak: 0,
     last_active: null, last_penalty_check: null,
   };
 
-  const DAILY_QUESTS = currentPlayer.isInjured ? INJURED_DAILY_QUESTS : NORMAL_DAILY_QUESTS;
+  const DAILY_QUESTS = currentPlayer.is_injured ? INJURED_DAILY_QUESTS : NORMAL_DAILY_QUESTS;
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [completedQuests, setCompletedQuests] = useState<string[]>([]);
@@ -569,7 +469,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [sprintTimeLeft, setSprintTimeLeft] = useState(10);
   const [sprintLeaderboard, setSprintLeaderboard] = useState<any[]>([]);
 
-  const levelData = calculateLevelData(currentPlayer.xp || 0);
+  const levelData = calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0);
   const currentVisualLvl = levelData.level;
   const rankInfo = getRankInfo(currentVisualLvl);
 
@@ -678,14 +578,13 @@ const Dashboard = ({ player, setPlayer }: any) => {
     fetchRadarNews();
   }, []);
 
+  // 🚨 1. المزامنة مع elite_players و elite_quests 🚨
   useEffect(() => {
     const syncData = async () => {
       setIsLoadingSync(true);
-      const startOfDay = new Date(selectedDate); startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(selectedDate); endOfDay.setHours(23, 59, 59, 999);
       
       try {
-        const { data: userData } = await supabase.from('shadow_hunters').select('*').eq('name', currentPlayer.name).single();
+        const { data: userData } = await supabase.from('elite_players').select('*').eq('name', currentPlayer.name).single();
 
         if (userData && setPlayer) {
           let fetchedHp = userData.hp ?? 100;
@@ -701,7 +600,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
           if (lastMacroDate !== todayStr) {
              fetchedMacros = { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] };
-             await supabase.from('shadow_hunters').update({ daily_macros: fetchedMacros, last_macro_date: todayStr }).eq('name', currentPlayer.name);
+             await supabase.from('elite_players').update({ daily_macros: fetchedMacros, last_macro_date: todayStr }).eq('name', currentPlayer.name);
           }
           setDailyMacros(fetchedMacros);
 
@@ -719,9 +618,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
             const checkStr = getSystemDateStr(checkDate);
             if (checkStr === yesterdayStr && realNow.getHours() < 12) break; 
 
-            const { data: dayReqs } = await supabase.from('system_requests')
+            const { data: dayReqs } = await supabase.from('elite_quests')
               .select('task_name, status')
-              .eq('hunter_name', currentPlayer.name)
+              .eq('player_name', currentPlayer.name)
               .gte('created_at', `${checkStr}T00:00:00Z`)
               .lt('created_at', `${getSystemDateStr(new Date(checkDate.getTime() + 86400000))}T00:00:00Z`);
 
@@ -739,17 +638,17 @@ const Dashboard = ({ player, setPlayer }: any) => {
           }
 
           if (applyPenalty) {
-            const penaltyStats = getPenaltyStats(calculateLevelData(userData.xp || 0).level);
+            const penaltyStats = getPenaltyStats(calculateLevelData(userData.cumulative_xp || userData.xp || 0).level);
             const hpLost = daysMissedCount * penaltyStats.hp;
             const goldLost = daysMissedCount * penaltyStats.gold;
             
             fetchedHp = Math.max(0, fetchedHp - hpLost);
             fetchedGold = Math.max(0, fetchedGold - goldLost);
 
-            await supabase.from('shadow_hunters').update({ hp: fetchedHp, gold: fetchedGold, streak: 0, last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
+            await supabase.from('elite_players').update({ hp: fetchedHp, gold: fetchedGold, streak: 0, last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
             toast.error(`🩸 ضريبة الرانك: تم كسر الـ Streak وفقدت ${hpLost} HP و ${goldLost} Gold!`, { duration: 6000 });
           } else if (lastPenaltyCheck !== userData.last_penalty_check) {
-            await supabase.from('shadow_hunters').update({ last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
+            await supabase.from('elite_players').update({ last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
           }
 
           setPlayer({ ...currentPlayer, ...userData, hp: fetchedHp, gold: fetchedGold, streak: fetchedStreak, custom_foods: fetchedCustomFoods });
@@ -758,9 +657,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
         const fetchStart = new Date(selectedDate);
         fetchStart.setDate(fetchStart.getDate() - 30); 
 
-        const { data: reqs } = await supabase.from('system_requests')
+        const { data: reqs } = await supabase.from('elite_quests')
           .select('*')
-          .eq('hunter_name', currentPlayer.name)
+          .eq('player_name', currentPlayer.name)
           .gte('created_at', fetchStart.toISOString());
 
         if (reqs) {
@@ -918,7 +817,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     toast.success(`تمت إضافة ${food.name} بنجاح!`, { style: { background: '#020617', border: '1px solid #f97316', color: '#f97316' }});
 
     try {
-       await supabase.from('shadow_hunters').update({ daily_macros: newMacros }).eq('name', currentPlayer.name);
+       await supabase.from('elite_players').update({ daily_macros: newMacros }).eq('name', currentPlayer.name);
     } catch (e) { console.error("Failed to save macros to DB", e); }
   };
 
@@ -937,7 +836,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     toast.error(`تم مسح ${itemToRemove.name}`, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }});
 
     try {
-       await supabase.from('shadow_hunters').update({ daily_macros: newMacros }).eq('name', currentPlayer.name);
+       await supabase.from('elite_players').update({ daily_macros: newMacros }).eq('name', currentPlayer.name);
     } catch (e) {}
   };
 
@@ -956,7 +855,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     setManualFood({ name: '', protein: '', carbs: '', fats: '', calories: '' });
 
     try {
-      await supabase.from('shadow_hunters').update({ custom_foods: updatedCustomFoods }).eq('name', currentPlayer.name);
+      await supabase.from('elite_players').update({ custom_foods: updatedCustomFoods }).eq('name', currentPlayer.name);
     } catch (e) { console.error("Failed to save custom food to DB", e); }
   };
 
@@ -965,22 +864,23 @@ const Dashboard = ({ player, setPlayer }: any) => {
     const reset = { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] };
     setDailyMacros(reset);
     try {
-       await supabase.from('shadow_hunters').update({ daily_macros: reset }).eq('name', currentPlayer.name);
+       await supabase.from('elite_players').update({ daily_macros: reset }).eq('name', currentPlayer.name);
        toast.error('تم تصفير عداد الوجبات بنجاح!', { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }});
     } catch (e) {}
   };
 
+  // 🚨 2. الإضافة لـ elite_quests و elite_players و elite_economy 🚨
   const completeQuest = async (quest: any) => {
     setIsProcessing(true);
     try {
-      await supabase.from('system_requests').insert([{ hunter_name: currentPlayer.name, task_name: quest.title, evidence: 'Honor System', type: 'quest', status: 'approved', created_at: getLogDate() }]);
+      await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: quest.title, evidence: 'Honor System', type: 'quest', status: 'approved', created_at: getLogDate() }]);
       
-      let newXp = (currentPlayer.xp || 0) + quest.exp;
-      const currentMonthlyXp = currentPlayer.monthly_xp ?? currentPlayer.monthlyXp ?? 0;
+      let newXp = (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) + quest.exp;
+      const currentMonthlyXp = currentPlayer.monthly_xp || 0;
       let newMonthlyXp = currentMonthlyXp + quest.exp;
       let newGold = (currentPlayer.gold || 0) + quest.gold;
       
-      const oldLevelData = calculateLevelData(currentPlayer.xp || 0);
+      const oldLevelData = calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0);
       const newLevelData = calculateLevelData(newXp);
       
       let leveledUp = false;
@@ -999,18 +899,29 @@ const Dashboard = ({ player, setPlayer }: any) => {
       newGold += levelGoldBonus;
       let newHp = Math.min(100, (currentPlayer.hp || 100) + ((quest.id === SHARED_HYDRATION.id || quest.id === SHARED_NUTRITION.id) ? 5 : 0));
       
-      const dbUpdates = { xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, lvl: newLevelData.level, hp: newHp };
-      await supabase.from('shadow_hunters').update(dbUpdates).eq('name', currentPlayer.name);
+      const dbUpdates = { cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp };
+      await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
 
-      await supabase.from('exp_history').insert([{
-        hunter_name: currentPlayer.name,
+      await supabase.from('elite_economy').insert([{
+        player_name: currentPlayer.name,
         amount: quest.exp,
-        operation_type: 'increase',
+        currency: 'xp',
+        operation: 'increase',
         reason: quest.title
       }]);
+
+      if (levelGoldBonus > 0) {
+        await supabase.from('elite_economy').insert([{
+          player_name: currentPlayer.name,
+          amount: levelGoldBonus,
+          currency: 'gold',
+          operation: 'increase',
+          reason: 'Level Up Bonus'
+        }]);
+      }
       
       setCompletedQuests((prev) => [...prev, quest.title]);
-      setPlayer({ ...currentPlayer, ...dbUpdates, monthlyXp: newMonthlyXp }); 
+      setPlayer({ ...currentPlayer, ...dbUpdates }); 
       playDashSound('complete'); 
       
       if (leveledUp) {
@@ -1026,21 +937,23 @@ const Dashboard = ({ player, setPlayer }: any) => {
     setIsProcessing(false);
   };
 
+  // 🚨 الإرسال لـ elite_quests كطلب معلق (pending) 🚨
   const submitRequest = async () => {
     setIsProcessing(true);
     try {
-      await supabase.from('system_requests').insert([{ hunter_name: currentPlayer.name, task_name: selectedQuest.title, evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence', type: selectedQuest.isPenalty ? 'penalty' : 'quest', status: 'pending', created_at: getLogDate() }]);
+      await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: selectedQuest.title, evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence', type: selectedQuest.isPenalty ? 'penalty' : 'quest', status: 'pending', created_at: getLogDate() }]);
       
       let newHp = Math.min(100, (currentPlayer.hp || 100) + (selectedQuest.id === 'wq1' ? 20 : 0));
-      await supabase.from('shadow_hunters').update({ hp: newHp }).eq('name', currentPlayer.name);
+      await supabase.from('elite_players').update({ hp: newHp }).eq('name', currentPlayer.name);
       
       setPendingQuests((prev) => [...prev, selectedQuest.title]);
       setPlayer({ ...currentPlayer, hp: newHp });
-      playDashSound('request'); toast.success(`Request Sent!`);
+      playDashSound('request'); toast.success(`Request Sent to Coach Radar!`);
     } catch (err: any) { toast.error(err.message); }
     setSelectedQuest(null); setIsProcessing(false);
   };
 
+  // 🚨 3. الخصم والإلغاء مع elite_quests و elite_economy 🚨
   const undoQuest = async (quest: any, status: string) => {
     setIsProcessing(true);
     try {
@@ -1050,9 +963,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
       endOfDay.setHours(23, 59, 59, 999);
 
       const { data: existingReqs } = await supabase
-        .from('system_requests')
+        .from('elite_quests')
         .select('id')
-        .eq('hunter_name', currentPlayer.name)
+        .eq('player_name', currentPlayer.name)
         .eq('task_name', quest.title)
         .gte('created_at', startOfDay.toISOString())
         .lte('created_at', endOfDay.toISOString());
@@ -1065,27 +978,25 @@ const Dashboard = ({ player, setPlayer }: any) => {
         return;
       }
 
-      await supabase.from('system_requests').delete().eq('id', existingReqs[0].id);
+      await supabase.from('elite_quests').delete().eq('id', existingReqs[0].id);
 
       if (status === 'completed') {
-        let newXp = Math.max(0, (currentPlayer.xp || 0) - quest.exp);
-        const currentMonthlyXp = currentPlayer.monthly_xp ?? currentPlayer.monthlyXp ?? 0;
-        let newMonthlyXp = Math.max(0, currentMonthlyXp - quest.exp);
+        let newXp = Math.max(0, (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) - quest.exp);
+        let newMonthlyXp = Math.max(0, (currentPlayer.monthly_xp || 0) - quest.exp);
         let newGold = Math.max(0, (currentPlayer.gold || 0) - quest.gold);
 
-        const newLevelData = calculateLevelData(newXp);
-
-        await supabase.from('shadow_hunters').update({ xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, lvl: newLevelData.level }).eq('name', currentPlayer.name);
+        await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold }).eq('name', currentPlayer.name);
         
-        await supabase.from('exp_history').insert([{
-          hunter_name: currentPlayer.name,
+        await supabase.from('elite_economy').insert([{
+          player_name: currentPlayer.name,
           amount: quest.exp,
-          operation_type: 'decrease',
+          currency: 'xp',
+          operation: 'decrease',
           reason: `Player Reverted: ${quest.title}`
         }]);
 
         setCompletedQuests(prev => prev.filter(t => t !== quest.title));
-        setPlayer({ ...currentPlayer, xp: newXp, monthly_xp: newMonthlyXp, monthlyXp: newMonthlyXp, gold: newGold, lvl: newLevelData.level });
+        setPlayer({ ...currentPlayer, cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold });
       } else {
         setPendingQuests(prev => prev.filter(t => t !== quest.title));
       }
@@ -1119,7 +1030,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const currentMonthName = new Date().toLocaleString('en-US', { month: 'long' }).toUpperCase();
   const seasonName = `SEASON: ${currentMonthName} WARFARE`; 
   
-  const actualMonthlyXp = currentPlayer.monthly_xp ?? currentPlayer.monthlyXp ?? 0;
+  const actualMonthlyXp = currentPlayer.monthly_xp || 0;
   const seasonLevel = Math.floor(actualMonthlyXp / 500) + 1; 
   const xpInCurrentLevel = actualMonthlyXp % 500;
   const progressPercent = (xpInCurrentLevel / 500) * 100;
@@ -1167,7 +1078,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         </div>
       )}
 
-      {currentPlayer.activePenalty && (
+      {currentPlayer.active_penalty && (
         <PenaltyBanner $isPending={isPenaltyPending}>
           {isPenaltyPending ? <Clock size={18} /> : <AlertTriangle size={18} />}
           {isPenaltyPending ? 'DISCIPLINARY PENDING: AWAITING COACH VERIFICATION' : 'SYSTEM PENALTY ACTIVE: EXECUTE DISCIPLINARY DIRECTIVE'}
@@ -1183,7 +1094,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         <ProgressBarBG><ProgressBarFill $progress={progressPercent} /></ProgressBarBG>
       </SeasonCard>
 
-      {currentPlayer.activePenalty && (
+      {currentPlayer.active_penalty && (
         <>
           <SectionTitle $color="#ef4444"><ShieldAlert size={18} /> DISCIPLINARY QUEST</SectionTitle>
           <QuestCard $status={getStatus(PENALTY_QUEST.title)} $isPenalty={true} $isLocked={isLocked()} onClick={() => handleQuestClick(PENALTY_QUEST)} whileTap={{ scale: isLocked() ? 1 : 0.98 }}>

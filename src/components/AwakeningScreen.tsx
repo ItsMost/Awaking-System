@@ -329,7 +329,6 @@ const AwakeningScreen = ({ onAwaken }: any) => {
   const [selectedIcon, setSelectedIcon] = useState('Sword');
   const [accessKey, setAccessKey] = useState('');
 
-  // 🚨 State لاختيار النوع (Gender) 🚨
   const [gender, setGender] = useState<'Male' | 'Female' | null>(null);
 
   useEffect(() => {
@@ -388,11 +387,13 @@ const AwakeningScreen = ({ onAwaken }: any) => {
 
     try {
       if (mode === 'signup') {
+        // 🚨 التأكد من الجدول الجديد (elite_players)
         const { data: existingUser } = await supabase
-          .from('shadow_hunters')
+          .from('elite_players')
           .select('name')
           .ilike('name', name.trim())
           .single();
+          
         if (existingUser) {
           playAwakeningSound('error');
           setError('This Hunter Name is already registered! Please Login.');
@@ -420,26 +421,22 @@ const AwakeningScreen = ({ onAwaken }: any) => {
           return;
         }
 
+        // 🚨 إدخال الداتا للجدول الجديد
         const { error: insertError } = await supabase
-          .from('shadow_hunters')
+          .from('elite_players')
           .insert([
             {
               name: name.trim(),
               password: password,
               weight: weight,
               body_fat: bodyFat,
-              gender: gender, // 🚨 حفظ النوع في قاعدة البيانات 🚨
+              gender: gender, 
               selected_icon: selectedIcon,
-              xp: 0,
+              cumulative_xp: 0, 
               monthly_xp: 0,
               gold: 0,
-              lvl: 1,
               hp: 100,
-              rank: 'E-Rank',
               active_penalty: false,
-              titles: ['Newbie Hunter'],
-              quests_done: 0,
-              quests_missed: 0,
             },
           ]);
 
@@ -455,14 +452,15 @@ const AwakeningScreen = ({ onAwaken }: any) => {
           name: name.trim(),
           password,
           weight,
-          bodyFat,
+          body_fat: bodyFat,
           gender,
-          selectedIcon,
+          selected_icon: selectedIcon,
           isLogin: false,
         });
       } else if (mode === 'login') {
+        // 🚨 تسجيل الدخول من الجدول الجديد
         const { data: user, error: fetchError } = await supabase
-          .from('shadow_hunters')
+          .from('elite_players')
           .select('*')
           .ilike('name', name.trim())
           .single();
@@ -481,21 +479,7 @@ const AwakeningScreen = ({ onAwaken }: any) => {
         }
 
         playAwakeningSound('success');
-        onAwaken({
-          name: user.name,
-          password: user.password,
-          gender: user.gender,
-          selectedIcon: user.selected_icon,
-          xp: user.xp,
-          monthlyXp: user.monthly_xp,
-          gold: user.gold,
-          lvl: user.lvl,
-          hp: user.hp,
-          rank: user.rank,
-          activePenalty: user.active_penalty,
-          titles: user.titles,
-          isLogin: true,
-        });
+        onAwaken(user); // تمرير كل بيانات اليوزر الجديدة للأبلكيشن
       }
     } catch (err: any) {
       playAwakeningSound('error');
@@ -596,7 +580,6 @@ const AwakeningScreen = ({ onAwaken }: any) => {
                 </InputGroup>
               </div>
 
-              {/* 🚨 إضافة حقل اختيار النوع (Gender) 🚨 */}
               <InputGroup>
                 <Label>Identification</Label>
                 <GenderGrid>

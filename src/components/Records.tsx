@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled, { keyframes } from 'styled-components';
 import { Toaster, toast } from 'sonner';
-import useSound from 'use-sound';
 import { Medal, Clock, ShieldAlert, Zap, CheckCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '../lib/supabase';
@@ -11,8 +10,7 @@ import { supabase } from '../lib/supabase';
 // 1. المولد الصوتي المدمج
 // ==========================================
 const playRecordSound = (type: 'open' | 'submit' | 'error' | 'limitBroken') => {
-  const AudioContext =
-    window.AudioContext || (window as any).webkitAudioContext;
+  const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioContext) return;
   const ctx = new AudioContext();
   const osc = ctx.createOscillator();
@@ -55,6 +53,23 @@ const playRecordSound = (type: 'open' | 'submit' | 'error' | 'limitBroken') => {
     osc.start();
     osc.stop(ctx.currentTime + 0.1);
   }
+};
+
+const playHoverSound = () => {
+  const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+  if (!AudioContext) return;
+  const ctx = new AudioContext();
+  const osc = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+  osc.connect(gainNode);
+  gainNode.connect(ctx.destination);
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(800, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+  gainNode.gain.setValueAtTime(0.05, ctx.currentTime); 
+  gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.1);
 };
 
 // ==========================================
@@ -212,205 +227,67 @@ const PendingList = styled.div` margin-top: 40px; background: #0f172a; border: 1
 // 3. قاعدة البيانات
 // ==========================================
 const DEFAULT_RECORDS = [
-  {
-    id: '20m',
-    title: '20m Sprint',
-    value: 0,
-    unit: 'sec',
-    type: 'sprint',
-    category: 'SPRINTS',
-  },
-  {
-    id: '30m',
-    title: '30m Sprint',
-    value: 0,
-    unit: 'sec',
-    type: 'sprint',
-    category: 'SPRINTS',
-  },
-  {
-    id: '40m',
-    title: '40m Sprint',
-    value: 0,
-    unit: 'sec',
-    type: 'sprint',
-    category: 'SPRINTS',
-  },
-  {
-    id: '60m',
-    title: '60m Sprint',
-    value: 0,
-    unit: 'sec',
-    type: 'sprint',
-    category: 'SPRINTS',
-  },
-  {
-    id: '100m',
-    title: '100m Sprint',
-    value: 0,
-    unit: 'sec',
-    type: 'sprint',
-    category: 'SPRINTS',
-  },
-  {
-    id: '150m',
-    title: '150m Sprint',
-    value: 0,
-    unit: 'sec',
-    type: 'sprint',
-    category: 'SPRINTS',
-  },
-  {
-    id: '200m',
-    title: '200m Sprint',
-    value: 0,
-    unit: 'sec',
-    type: 'sprint',
-    category: 'SPRINTS',
-  },
-  {
-    id: '300m',
-    title: '300m Sprint',
-    value: 0,
-    unit: 'sec',
-    type: 'sprint',
-    category: 'SPRINTS',
-  },
-  {
-    id: '400m',
-    title: '400m Sprint',
-    value: 0,
-    unit: 'sec',
-    type: 'sprint',
-    category: 'SPRINTS',
-  },
-  {
-    id: 'lj',
-    title: 'Long Jump',
-    value: 0,
-    unit: 'm',
-    type: 'distance',
-    category: 'JUMPS & EXPLOSIVENESS',
-  },
-  {
-    id: 'tj',
-    title: 'Triple Jump',
-    value: 0,
-    unit: 'm',
-    type: 'distance',
-    category: 'JUMPS & EXPLOSIVENESS',
-  },
-  {
-    id: 'slj',
-    title: 'Standing Long Jump',
-    value: 0,
-    unit: 'm',
-    type: 'distance',
-    category: 'JUMPS & EXPLOSIVENESS',
-  },
-  {
-    id: 'bench',
-    title: 'Bench Press',
-    value: 0,
-    unit: 'KG',
-    type: 'weight',
-    category: 'STRENGTH & POWER',
-  },
-  {
-    id: 'deadlift',
-    title: 'Deadlift',
-    value: 0,
-    unit: 'KG',
-    type: 'weight',
-    category: 'STRENGTH & POWER',
-  },
-  {
-    id: 'squat',
-    title: 'Squat',
-    value: 0,
-    unit: 'KG',
-    type: 'weight',
-    category: 'STRENGTH & POWER',
-  },
+  { id: '20m', title: '20m Sprint', value: 0, unit: 'sec', type: 'sprint', category: 'SPRINTS' },
+  { id: '30m', title: '30m Sprint', value: 0, unit: 'sec', type: 'sprint', category: 'SPRINTS' },
+  { id: '40m', title: '40m Sprint', value: 0, unit: 'sec', type: 'sprint', category: 'SPRINTS' },
+  { id: '60m', title: '60m Sprint', value: 0, unit: 'sec', type: 'sprint', category: 'SPRINTS' },
+  { id: '100m', title: '100m Sprint', value: 0, unit: 'sec', type: 'sprint', category: 'SPRINTS' },
+  { id: '150m', title: '150m Sprint', value: 0, unit: 'sec', type: 'sprint', category: 'SPRINTS' },
+  { id: '200m', title: '200m Sprint', value: 0, unit: 'sec', type: 'sprint', category: 'SPRINTS' },
+  { id: '300m', title: '300m Sprint', value: 0, unit: 'sec', type: 'sprint', category: 'SPRINTS' },
+  { id: '400m', title: '400m Sprint', value: 0, unit: 'sec', type: 'sprint', category: 'SPRINTS' },
+  { id: 'lj', title: 'Long Jump', value: 0, unit: 'm', type: 'distance', category: 'JUMPS & EXPLOSIVENESS' },
+  { id: 'tj', title: 'Triple Jump', value: 0, unit: 'm', type: 'distance', category: 'JUMPS & EXPLOSIVENESS' },
+  { id: 'slj', title: 'Standing Long Jump', value: 0, unit: 'm', type: 'distance', category: 'JUMPS & EXPLOSIVENESS' },
+  { id: 'bench', title: 'Bench Press', value: 0, unit: 'KG', type: 'weight', category: 'STRENGTH & POWER' },
+  { id: 'deadlift', title: 'Deadlift', value: 0, unit: 'KG', type: 'weight', category: 'STRENGTH & POWER' },
+  { id: 'squat', title: 'Squat', value: 0, unit: 'KG', type: 'weight', category: 'STRENGTH & POWER' },
+  // 🚨 تم إضافة Power Clean بناءً على طلبك 🚨
+  { id: 'clean', title: 'Power Clean', value: 0, unit: 'KG', type: 'weight', category: 'STRENGTH & POWER' },
 ];
 
-const CATEGORY_STYLES: Record<
-  string,
-  { headerColor: string; btnBg: string; btnColor: string }
-> = {
+const CATEGORY_STYLES: Record<string, { headerColor: string; btnBg: string; btnColor: string }> = {
   SPRINTS: { headerColor: '#0ea5e9', btnBg: '#4c0519', btnColor: '#fda4af' },
-  'JUMPS & EXPLOSIVENESS': {
-    headerColor: '#c084fc',
-    btnBg: '#2e1065',
-    btnColor: '#d8b4fe',
-  },
-  'STRENGTH & POWER': {
-    headerColor: '#f43f5e',
-    btnBg: '#3f1900',
-    btnColor: '#fde047',
-  },
+  'JUMPS & EXPLOSIVENESS': { headerColor: '#c084fc', btnBg: '#2e1065', btnColor: '#d8b4fe' },
+  'STRENGTH & POWER': { headerColor: '#f43f5e', btnBg: '#3f1900', btnColor: '#fde047' },
 };
 
 // ==========================================
 // 4. المكون الرئيسي (Records)
 // ==========================================
 const Records = ({ player, setPlayer }: any) => {
-  const currentPlayer = player || {
-    name: 'Hunter',
-    records: DEFAULT_RECORDS,
-    pendingRecords: [],
-  };
+  const currentPlayer = player || { name: 'Hunter', records: DEFAULT_RECORDS, pendingRecords: [] };
 
-  const parsedRecords = Array.isArray(currentPlayer.records)
-    ? currentPlayer.records
-    : DEFAULT_RECORDS;
-  const mergedRecords = DEFAULT_RECORDS.map((defaultRec) => {
-    const existingRec = parsedRecords.find((r: any) => r.id === defaultRec.id);
-    return existingRec
-      ? { ...defaultRec, value: existingRec.value }
-      : defaultRec;
-  });
-
-  const [records, setRecords] = useState<any[]>(mergedRecords);
-  const [pendingRequests, setPendingRequests] = useState<any[]>(
-    currentPlayer.pendingRecords || []
-  );
+  const [records, setRecords] = useState<any[]>(DEFAULT_RECORDS);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [approvedPRs, setApprovedPRs] = useState<any[]>([]);
   const [inputs, setInputs] = useState<Record<string, string>>({});
-  const [playHover] = useSound('/sounds/hover.mp3', { volume: 0.3 });
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const syncRecordsData = async () => {
       try {
-        const { data: userData } = await supabase
-          .from('shadow_hunters')
-          .select('records')
-          .eq('name', currentPlayer.name)
-          .single();
-
-        if (userData && userData.records) {
-          let dbRecords = userData.records;
-          if (typeof dbRecords === 'string') dbRecords = JSON.parse(dbRecords);
-          if (Array.isArray(dbRecords)) {
-            const syncedRecords = DEFAULT_RECORDS.map((defaultRec) => {
-              const existingRec = dbRecords.find(
-                (r: any) => r.id === defaultRec.id
-              );
-              return existingRec
-                ? { ...defaultRec, value: existingRec.value }
-                : defaultRec;
-            });
-            setRecords(syncedRecords);
-            if (setPlayer)
-              setPlayer((prev: any) => ({ ...prev, records: syncedRecords }));
-          }
-        }
-
-        const { data: requests } = await supabase
-          .from('system_requests')
+        // 1. استدعاء خطوط الأساس من الجدول الجديد
+        const { data: dbRecords } = await supabase
+          .from('elite_records')
           .select('*')
-          .eq('hunter_name', currentPlayer.name)
+          .eq('player_name', currentPlayer.name);
+
+        let syncedRecords = [...DEFAULT_RECORDS];
+
+        if (dbRecords && dbRecords.length > 0) {
+          syncedRecords = DEFAULT_RECORDS.map((defaultRec) => {
+            const existingRec = dbRecords.find((r: any) => r.exercise_name === defaultRec.title);
+            return existingRec ? { ...defaultRec, value: Number(existingRec.weight_kg) } : defaultRec;
+          });
+        }
+        setRecords(syncedRecords);
+
+        // 2. استدعاء الطلبات والجوائز من جدول الطلبات الجديد
+        const { data: requests } = await supabase
+          .from('elite_quests')
+          .select('*')
+          .eq('player_name', currentPlayer.name)
           .eq('type', 'record');
 
         if (requests) {
@@ -444,13 +321,13 @@ const Records = ({ player, setPlayer }: any) => {
       }
     };
     syncRecordsData();
-  }, [currentPlayer.name, setPlayer]);
+  }, [currentPlayer.name]);
 
   const handleInputChange = (id: string, value: string) => {
     setInputs((prev) => ({ ...prev, [id]: value }));
   };
 
-  // 🚨 دالة استلام الجايزة وتحديث الفلوس في الواجهة 🚨
+  // 🚨 دالة استلام الجايزة وتحديث الفلوس 🚨
   const handleClaimPR = async (prId: string) => {
     playRecordSound('limitBroken');
     confetti({
@@ -461,18 +338,17 @@ const Records = ({ player, setPlayer }: any) => {
     });
 
     // 1. مسح الإشعار من الداتابيز عشان ميظهرش تاني
-    await supabase.from('system_requests').delete().eq('id', prId);
+    await supabase.from('elite_quests').delete().eq('id', prId);
     setApprovedPRs((prev) => prev.filter((p) => p.id !== prId));
 
-    // 2. تحديث فلوس اللاعب في الواجهة فوراً (السيرفر اتحدث خلاص من عند الكوتش)
+    // 2. تحديث فلوس اللاعب في الواجهة فوراً
     if (setPlayer) {
-      const newGold = (currentPlayer.gold || 0) + 200;
-      const updatedPlayer = { ...currentPlayer, gold: newGold };
-      setPlayer(updatedPlayer);
-      localStorage.setItem(
-        'elite_system_active_session',
-        JSON.stringify(updatedPlayer)
-      );
+      const { data: pData } = await supabase.from('elite_players').select('gold').eq('name', currentPlayer.name).single();
+      if (pData) {
+        const updatedPlayer = { ...currentPlayer, gold: pData.gold };
+        setPlayer(updatedPlayer);
+        localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
+      }
     }
   };
 
@@ -483,11 +359,7 @@ const Records = ({ player, setPlayer }: any) => {
     if (!inputValue || isNaN(parseFloat(inputValue))) {
       playRecordSound('error');
       toast.error('Please enter a valid number.', {
-        style: {
-          background: '#020617',
-          border: '1px solid #ef4444',
-          color: '#ef4444',
-        },
+        style: { background: '#020617', border: '1px solid #ef4444', color: '#ef4444' },
       });
       return;
     }
@@ -498,42 +370,23 @@ const Records = ({ player, setPlayer }: any) => {
 
     if (isBaseline) {
       playRecordSound('submit');
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        colors: ['#00f2ff', '#facc15', '#ffffff'],
-      });
+      confetti({ particleCount: 80, spread: 60, colors: ['#00f2ff', '#facc15', '#ffffff'] });
 
       const updatedRecords = records.map((r) =>
         r.id === record.id ? { ...r, value: newValue } : r
       );
       setRecords(updatedRecords);
 
-      if (setPlayer) {
-        const updatedPlayer = { ...currentPlayer, records: updatedRecords };
-        setPlayer(updatedPlayer);
-        localStorage.setItem(
-          'elite_system_active_session',
-          JSON.stringify(updatedPlayer)
-        );
-      }
-
       try {
-        await supabase
-          .from('shadow_hunters')
-          .update({ records: updatedRecords })
-          .eq('name', currentPlayer.name);
-        toast.success(
-          `[BASELINE SET]: ${record.title} initialized at ${newValue} ${record.unit}!`,
-          {
-            style: {
-              background: '#020617',
-              border: '1px solid #10b981',
-              color: '#10b981',
-              fontWeight: 'bold',
-            },
-          }
-        );
+        await supabase.from('elite_records').upsert({
+          player_name: currentPlayer.name,
+          exercise_name: record.title,
+          weight_kg: newValue
+        }, { onConflict: 'player_name, exercise_name' });
+        
+        toast.success(`[BASELINE SET]: ${record.title} initialized at ${newValue} ${record.unit}!`, {
+          style: { background: '#020617', border: '1px solid #10b981', color: '#10b981', fontWeight: 'bold' },
+        });
       } catch (err) {
         console.error('Failed to save baseline', err);
       }
@@ -548,34 +401,19 @@ const Records = ({ player, setPlayer }: any) => {
       if (difference < 0.04) {
         playRecordSound('error');
         const targetToBeat = (record.value - 0.04).toFixed(2);
-        toast.error(
-          `[SYSTEM REJECTED]: You must beat the record by at least 0.04s. Target: ${targetToBeat}s or lower.`,
-          {
-            duration: 5000,
-            style: {
-              background: '#000',
-              border: '2px solid #ef4444',
-              color: '#ef4444',
-              fontWeight: 'bold',
-            },
-          }
-        );
+        toast.error(`[SYSTEM REJECTED]: You must beat the record by at least 0.04s. Target: ${targetToBeat}s or lower.`, {
+          duration: 5000,
+          style: { background: '#000', border: '2px solid #ef4444', color: '#ef4444', fontWeight: 'bold' },
+        });
         setIsProcessing(false);
         return;
       }
     } else {
       if (newValue <= record.value) {
         playRecordSound('error');
-        toast.error(
-          `[SYSTEM REJECTED]: New record must be higher than ${record.value} ${record.unit}.`,
-          {
-            style: {
-              background: '#000',
-              border: '1px solid #ef4444',
-              color: '#ef4444',
-            },
-          }
-        );
+        toast.error(`[SYSTEM REJECTED]: New record must be higher than ${record.value} ${record.unit}.`, {
+          style: { background: '#000', border: '1px solid #ef4444', color: '#ef4444' },
+        });
         setIsProcessing(false);
         return;
       }
@@ -597,23 +435,10 @@ const Records = ({ player, setPlayer }: any) => {
     const updatedPending = [...pendingRequests, newRequest];
     setPendingRequests(updatedPending);
 
-    if (setPlayer) {
-      const updatedPlayer = {
-        ...currentPlayer,
-        pendingRecords: updatedPending,
-        records: records,
-      };
-      setPlayer(updatedPlayer);
-      localStorage.setItem(
-        'elite_system_active_session',
-        JSON.stringify(updatedPlayer)
-      );
-    }
-
     try {
-      await supabase.from('system_requests').insert([
+      await supabase.from('elite_quests').insert([
         {
-          hunter_name: currentPlayer.name,
+          player_name: currentPlayer.name,
           task_name: `[NEW PR] ${record.title}`,
           evidence: `Beat ${record.value}${record.unit} ➡️ Achieved ${newValue}${record.unit}`,
           type: 'record',
@@ -621,12 +446,7 @@ const Records = ({ player, setPlayer }: any) => {
         },
       ]);
       toast.success('[RECORD BROKEN]: Verification Request sent to Coach.', {
-        style: {
-          background: '#020617',
-          border: '1px solid #eab308',
-          color: '#eab308',
-          fontWeight: 'bold',
-        },
+        style: { background: '#020617', border: '1px solid #eab308', color: '#eab308', fontWeight: 'bold' },
       });
     } catch (err) {
       console.error('Failed to send request', err);
@@ -655,26 +475,11 @@ const Records = ({ player, setPlayer }: any) => {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.5, opacity: 0, transition: { duration: 0.3 } }}
           >
-            <div
-              style={{ position: 'absolute', top: 10, left: 10, opacity: 0.5 }}
-            >
-              <Zap size={40} color="#ef4444" />
-            </div>
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 10,
-                right: 10,
-                opacity: 0.5,
-              }}
-            >
-              <Zap size={40} color="#ef4444" />
-            </div>
+            <div style={{ position: 'absolute', top: 10, left: 10, opacity: 0.5 }}><Zap size={40} color="#ef4444" /></div>
+            <div style={{ position: 'absolute', bottom: 10, right: 10, opacity: 0.5 }}><Zap size={40} color="#ef4444" /></div>
 
             <LimitTitle>LIMIT BROKEN</LimitTitle>
-            <LimitSub>
-              NEW PERSONAL RECORD SET: {pr.task_name.replace('[NEW PR]', '')}
-            </LimitSub>
+            <LimitSub>NEW PERSONAL RECORD SET: {pr.task_name.replace('[NEW PR]', '')}</LimitSub>
 
             <RewardRow>
               <span>+0 EXP</span>
@@ -693,22 +498,13 @@ const Records = ({ player, setPlayer }: any) => {
           <Medal size={28} color="#00f2ff" />
           HALL OF RECORDS
         </Title>
-        <div
-          style={{
-            fontSize: '12px',
-            color: '#94a3b8',
-            textAlign: 'right',
-            fontWeight: 'bold',
-            letterSpacing: '1px',
-          }}
-        >
+        <div style={{ fontSize: '12px', color: '#94a3b8', textAlign: 'right', fontWeight: 'bold', letterSpacing: '1px' }}>
           TRACK YOUR LIMITS.
         </div>
       </Header>
 
       {Object.keys(groupedRecords).map((categoryName) => {
-        const style =
-          CATEGORY_STYLES[categoryName] || CATEGORY_STYLES['SPRINTS'];
+        const style = CATEGORY_STYLES[categoryName] || CATEGORY_STYLES['SPRINTS'];
         return (
           <div key={categoryName}>
             <CategoryHeader $color={style.headerColor}>
@@ -722,14 +518,12 @@ const Records = ({ player, setPlayer }: any) => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  onMouseEnter={() => playHover()}
+                  onMouseEnter={() => playHoverSound()}
                 >
                   <TopRow>
                     <ItemTitle>{record.title}</ItemTitle>
                     <ItemValue>
-                      {isBaseline
-                        ? 'No Record'
-                        : `${record.value} ${record.unit}`}
+                      {isBaseline ? 'No Record' : `${record.value} ${record.unit}`}
                     </ItemValue>
                   </TopRow>
                   <BottomRow>
@@ -738,9 +532,7 @@ const Records = ({ player, setPlayer }: any) => {
                       step="0.01"
                       placeholder={`New PR (${record.unit})`}
                       value={inputs[record.id] || ''}
-                      onChange={(e) =>
-                        handleInputChange(record.id, e.target.value)
-                      }
+                      onChange={(e) => handleInputChange(record.id, e.target.value)}
                     />
                     <UpdateBtn
                       $btnBg={style.btnBg}
@@ -761,69 +553,21 @@ const Records = ({ player, setPlayer }: any) => {
 
       {pendingRequests.length > 0 && (
         <PendingList>
-          <h3
-            style={{
-              margin: '0 0 15px 0',
-              fontSize: '14px',
-              color: '#eab308',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              letterSpacing: '1px',
-            }}
-          >
+          <h3 style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#eab308', display: 'flex', alignItems: 'center', gap: '10px', letterSpacing: '1px' }}>
             <Clock size={16} /> AWAITING MONARCH APPROVAL
           </h3>
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
-          >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {pendingRequests.map((req) => (
-              <div
-                key={req.id}
-                style={{
-                  background: '#020617',
-                  border: '1px solid #1e293b',
-                  padding: '15px',
-                  borderRadius: '10px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
+              <div key={req.id} style={{ background: '#020617', border: '1px solid #1e293b', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      color: '#fff',
-                    }}
-                  >
-                    {req.title}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                    Submitted: {req.date}
-                  </div>
+                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>{req.title}</div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Submitted: {req.date}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div
-                    style={{
-                      fontSize: '12px',
-                      color: '#64748b',
-                      textDecoration: 'line-through',
-                    }}
-                  >
-                    {req.oldValue === 0 || String(req.oldValue).startsWith('0')
-                      ? '---'
-                      : req.oldValue}
+                  <div style={{ fontSize: '12px', color: '#64748b', textDecoration: 'line-through' }}>
+                    {req.oldValue === 0 || String(req.oldValue).startsWith('0') ? '---' : req.oldValue}
                   </div>
-                  <div
-                    style={{
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      color: '#eab308',
-                      textShadow: '0 0 5px rgba(234, 179, 8, 0.3)',
-                    }}
-                  >
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#eab308', textShadow: '0 0 5px rgba(234, 179, 8, 0.3)' }}>
                     {req.newValue}
                   </div>
                 </div>

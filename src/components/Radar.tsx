@@ -1,339 +1,232 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ShieldAlert, Gavel, Radio, CheckCircle, XCircle, 
-  Users, Zap, Skull, Send, Key, Loader, Lock, AlertTriangle, X
-} from 'lucide-react';
+import { Globe, Radio, Send, Trash2, ShieldAlert, Terminal, MessageSquare, Clock, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast, Toaster } from 'sonner';
 
 // ==========================================
-// التصميمات (Styled Components)
+// 1. المحرك الصوتي
 // ==========================================
-const Container = styled(motion.div)` padding: 20px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; direction: rtl; `;
-const Header = styled.div` display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #450a0a 0%, #020617 100%); border: 1px solid #ef4444; padding: 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2); `;
-const Title = styled.h1` font-size: 20px; margin: 0; color: #ef4444; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 2px; font-weight: 900; `;
+let sharedAudioCtx: AudioContext | null = null;
+let lastPlayTime = 0;
 
-const LoginBox = styled(motion.div)` background: #0b1120; border: 1px solid #ef4444; padding: 30px; border-radius: 16px; text-align: center; margin-top: 50px; box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); `;
-const Input = styled.input` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Oxanium'; font-size: 16px; text-align: center; outline: none; transition: 0.3s; &:focus { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); } `;
-const Btn = styled.button<{ $color: string }>` width: 100%; background: ${(props) => props.$color}; color: #000; font-weight: 900; font-family: 'Oxanium'; padding: 15px; border: none; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; &:hover { filter: brightness(1.2); transform: translateY(-2px); } `;
+const getAudioContext = () => {
+  if (!sharedAudioCtx) {
+    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+    if (Ctx) sharedAudioCtx = new Ctx();
+  }
+  if (sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume();
+  }
+  return sharedAudioCtx;
+};
 
-const TabsWrapper = styled.div` display: flex; gap: 10px; margin-bottom: 20px; `;
-const Tab = styled.button<{ $active: boolean, $color: string }>` flex: 1; padding: 12px; background: ${(props) => props.$active ? `${props.$color}20` : '#0f172a'}; border: 1px solid ${(props) => props.$active ? props.$color : '#1e293b'}; color: ${(props) => props.$active ? props.$color : '#94a3b8'}; border-radius: 12px; font-weight: 900; font-family: 'Oxanium'; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; `;
+const canPlay = () => {
+  const now = Date.now();
+  if (now - lastPlayTime < 50) return false;
+  lastPlayTime = now;
+  return true;
+};
 
-const Card = styled.div<{ $color: string }>` background: #0b1120; border: 1px solid ${(props) => props.$color}50; padding: 20px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); `;
-const Select = styled.select` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Oxanium'; outline: none; `;
-const TextArea = styled.textarea` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Oxanium'; outline: none; min-height: 100px; resize: vertical; `;
+const playClick = () => {
+  if (!canPlay()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+  gain.gain.setValueAtTime(0.1, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+  osc.start(); osc.stop(ctx.currentTime + 0.1);
+};
 
-const spin = keyframes` 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } `;
-const Spinner = styled(Loader)` animation: ${spin} 1s linear infinite; `;
-
-const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); `;
-const ModalContent = styled(motion.div)` background: #0b1120; border: 2px solid #10b981; border-radius: 20px; padding: 25px; width: 100%; max-width: 400px; position: relative; `;
+const playBroadcast = () => {
+  if (!canPlay()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'square'; osc.frequency.setValueAtTime(300, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.5);
+  gain.gain.setValueAtTime(0.3, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+  osc.start(); osc.stop(ctx.currentTime + 0.5);
+};
 
 // ==========================================
-// المكون الرئيسي (The Punisher Radar)
+// 2. التصميمات والأنيميشن
+// ==========================================
+const Container = styled(motion.div)` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; `;
+const Header = styled.div` display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #0f172a 0%, #020617 100%); border: 1px solid #0ea5e9; padding: 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(14, 165, 233, 0.2); `;
+const Title = styled.h1` font-size: 20px; margin: 0; color: #0ea5e9; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(14, 165, 233, 0.5); `;
+
+const LockedOverlay = styled.div` background: #020617; border: 1px solid #ef4444; padding: 40px 20px; border-radius: 16px; text-align: center; color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); margin-top: 50px; `;
+
+const sweep = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+const pulse = keyframes`
+  0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
+  70% { box-shadow: 0 0 0 20px rgba(14, 165, 233, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+`;
+
+const RadarAnimationBox = styled.div`
+  width: 120px; height: 120px; border-radius: 50%; background: #0f172a; border: 2px solid #0ea5e9; margin: 0 auto 30px auto; position: relative; overflow: hidden; animation: ${pulse} 2s infinite; display: flex; align-items: center; justify-content: center;
+  &::after {
+    content: ''; position: absolute; top: 50%; left: 50%; width: 50%; height: 2px; background: linear-gradient(90deg, #0ea5e9, transparent); transform-origin: 0% 50%; animation: ${sweep} 3s linear infinite; box-shadow: 0 0 15px #0ea5e9;
+  }
+`;
+
+const FormCard = styled.div` background: #0b1120; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); `;
+const InputLabel = styled.div` font-size: 11px; color: #0ea5e9; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; `;
+const StyledInput = styled.input` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; font-family: 'Oxanium'; font-size: 14px; outline: none; transition: 0.3s; margin-bottom: 15px; &:focus { border-color: #0ea5e9; box-shadow: 0 0 15px rgba(14, 165, 233, 0.2); } `;
+const StyledTextarea = styled.textarea` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; font-family: 'Oxanium'; font-size: 14px; outline: none; transition: 0.3s; margin-bottom: 20px; resize: vertical; min-height: 100px; &:focus { border-color: #0ea5e9; box-shadow: 0 0 15px rgba(14, 165, 233, 0.2); } `;
+
+const SendBtn = styled.button<{ disabled: boolean }>`
+  width: 100%; background: ${(props) => props.disabled ? '#334155' : '#0ea5e9'}; color: ${(props) => props.disabled ? '#94a3b8' : '#000'}; border: none; padding: 16px; border-radius: 12px; font-family: 'Oxanium'; font-size: 14px; font-weight: 900; letter-spacing: 2px; cursor: ${(props) => props.disabled ? 'not-allowed' : 'pointer'}; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s;
+  &:hover { filter: ${(props) => props.disabled ? 'none' : 'brightness(1.2)'}; box-shadow: ${(props) => props.disabled ? 'none' : '0 0 20px rgba(14, 165, 233, 0.4)'}; }
+`;
+
+const SectionTitle = styled.h2` font-size: 14px; color: #94a3b8; margin: 30px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; `;
+
+const LogCard = styled(motion.div)` background: #0f172a; border-left: 3px solid #0ea5e9; border-radius: 8px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; `;
+const LogTitle = styled.div` font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; `;
+const LogContent = styled.div` font-size: 12px; color: #cbd5e1; line-height: 1.4; margin-bottom: 8px; direction: rtl; text-align: right; `;
+const LogDate = styled.div` font-size: 10px; color: #64748b; display: flex; align-items: center; gap: 4px; `;
+const DeleteBtn = styled.button` background: #2a0808; border: 1px solid #ef4444; color: #ef4444; padding: 8px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; flex-shrink: 0; &:hover { background: #ef4444; color: #000; } `;
+
+// ==========================================
+// 3. المكون الرئيسي (Radar)
 // ==========================================
 const Radar = () => {
-  const [isAuthorized, setIsAuthorized] = useState(localStorage.getItem('elite_coach_mode') === 'true');
-  const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState('punish'); // punish, pending, broadcast
-  const [isLoading, setIsLoading] = useState(false);
-
-  // States
-  const [players, setPlayers] = useState<any[]>([]);
-  const [requests, setRequests] = useState<any[]>([]);
-  
-  // Punisher Form
-  const [punishData, setPunishData] = useState({ playerName: '', hpDeduct: 10, goldDeduct: 50, reason: '' });
-  
-  // Broadcast Form
-  const [broadcastMsg, setBroadcastMsg] = useState('');
-
-  // Approve Modal
-  const [approveModal, setApproveModal] = useState<{ show: boolean, req: any, exp: number, gold: number }>({ show: false, req: null, exp: 100, gold: 30 });
+  const isCoachMode = localStorage.getItem('elite_coach_mode') === 'true';
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [logs, setLogs] = useState<any[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    if (isAuthorized) {
-      fetchPlayers();
-      fetchRequests();
-    }
-  }, [isAuthorized]);
+    if (isCoachMode) fetchLogs();
+  }, [isCoachMode]);
 
-  const fetchPlayers = async () => {
-    try { const { data } = await supabase.from('shadow_hunters').select('*'); if (data) setPlayers(data); } catch (e) {}
-  };
-
-  const fetchRequests = async () => {
-    try { const { data } = await supabase.from('system_requests').select('*').eq('status', 'pending').order('created_at', { ascending: false }); if (data) setRequests(data); } catch (e) {}
-  };
-
-  const handleLogin = () => {
-    if (password === 'coach2026') {
-      localStorage.setItem('elite_coach_mode', 'true');
-      setIsAuthorized(true);
-      toast.success('ACCESS GRANTED: COMMAND CENTER ONLINE');
-    } else {
-      toast.error('ACCESS DENIED');
-    }
-  };
-
-  // 1. تنفيذ العقوبة (The Punisher)
-  const executePenalty = async () => {
-    if (!punishData.playerName) return toast.error('اختر اللاعب أولاً!');
-    if (!window.confirm(`متأكد إنك عايز تعاقب ${punishData.playerName} وتجمد حسابه؟`)) return;
-
-    setIsLoading(true);
+  const fetchLogs = async () => {
     try {
-      const targetPlayer = players.find(p => p.name === punishData.playerName);
-      if (!targetPlayer) throw new Error("Player not found");
+      const { data } = await supabase.from('global_news').select('*').order('created_at', { ascending: false }).limit(20);
+      setLogs(data || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-      const newHp = Math.max(0, targetPlayer.hp - punishData.hpDeduct);
-      const newGold = Math.max(0, targetPlayer.gold - punishData.goldDeduct);
+  const handleBroadcast = async () => {
+    if (!title.trim() || !content.trim()) {
+      toast.error('Title and Message are required!');
+      return;
+    }
 
-      // تحديث بيانات اللاعب (تفعيل العقوبة والخصم)
-      await supabase.from('shadow_hunters').update({
-        hp: newHp,
-        gold: newGold,
-        active_penalty: true,
-        streak: 0 // تصفير الـ Streak كعقاب
-      }).eq('name', punishData.playerName);
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase.from('global_news').insert([{
+        title: title.trim(),
+        content: content.trim()
+      }]);
 
-      // إرسال رسالة الرادار (فضيحة علنية)
-      const newsMsg = `⚠️ THE PUNISHER: تمت معاقبة [${punishData.playerName}] - ${punishData.reason || 'للتكاسل ومخالفة القوانين'}.`;
-      await supabase.from('global_news').insert([{ title: 'SYSTEM PENALTY', content: newsMsg }]);
+      if (error) throw error;
 
-      toast.success(`تم تدمير اللاعب ${punishData.playerName} بنجاح!`, { style: { background: '#450a0a', color: '#ef4444' } });
-      setPunishData({ ...punishData, reason: '' });
-      fetchPlayers();
+      playBroadcast();
+      toast.success('BROADCAST TRANSMITTED!', { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' } });
+      setTitle('');
+      setContent('');
+      fetchLogs();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error('Transmission Failed.');
     }
-    setIsLoading(false);
+    setIsProcessing(false);
   };
 
-  // 2. قبول الطلبات (Approve Intel)
-  const handleApproveClick = (req: any) => {
-    // تحديد مكافأة افتراضية حسب نوع المهمة
-    let defExp = 100; let defGold = 30;
-    if (req.task_name.includes('InBody')) { defExp = 75; defGold = 200; }
-    if (req.task_name.includes('Logistics') || req.task_name.includes('Inventory')) { defExp = 100; defGold = 50; }
-    if (req.task_name.includes('Friday')) { defExp = 150; defGold = 100; }
-    if (req.type === 'penalty') { defExp = 0; defGold = 0; } // العقوبة مفيهاش مكافأة
-
-    setApproveModal({ show: true, req, exp: defExp, gold: defGold });
-  };
-
-  const confirmApprove = async () => {
-    const { req, exp, gold } = approveModal;
-    setIsLoading(true);
+  const handleDelete = async (id: string) => {
+    playClick();
+    if (!window.confirm('Delete this broadcast from the server?')) return;
     try {
-      const targetPlayer = players.find(p => p.name === req.hunter_name);
-      if (targetPlayer) {
-        let newXp = (targetPlayer.xp || 0) + Number(exp);
-        let newMonthlyXp = (targetPlayer.monthly_xp || 0) + Number(exp);
-        let newGold = (targetPlayer.gold || 0) + Number(gold);
-        let newLvl = targetPlayer.lvl || 1;
-
-        let xpNeeded = Math.min(newLvl * 150 + 500, 4000);
-        while (newXp >= xpNeeded) {
-          newXp -= xpNeeded;
-          newLvl += 1;
-          xpNeeded = Math.min(newLvl * 150 + 500, 4000);
-        }
-
-        // لو دي كانت مهمة عقوبة (Penalty)، بنفك التجميد
-        let penaltyStatus = targetPlayer.active_penalty;
-        if (req.type === 'penalty') penaltyStatus = false;
-
-        await supabase.from('shadow_hunters').update({
-          xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, lvl: newLvl, active_penalty: penaltyStatus
-        }).eq('name', req.hunter_name);
-      }
-
-      await supabase.from('system_requests').update({ status: 'approved' }).eq('id', req.id);
-      
-      toast.success('تم قبول المهمة ومنح المكافآت!');
-      setApproveModal({ show: false, req: null, exp: 0, gold: 0 });
-      fetchRequests();
-      fetchPlayers();
-    } catch (err: any) { toast.error('حدث خطأ أثناء القبول'); }
-    setIsLoading(false);
+      await supabase.from('global_news').delete().eq('id', id);
+      setLogs(prev => prev.filter(log => log.id !== id));
+      toast.success('Broadcast Deleted.');
+    } catch (err) {
+      toast.error('Failed to delete.');
+    }
   };
 
-  // 3. رفض الطلبات (Reject Intel)
-  const handleReject = async (id: string) => {
-    if (!window.confirm('متأكد إنك عايز ترفض وتمسح المهمة دي؟')) return;
-    setIsLoading(true);
-    try {
-      await supabase.from('system_requests').delete().eq('id', id);
-      toast.error('تم رفض وحذف المهمة');
-      fetchRequests();
-    } catch (err) { toast.error('خطأ'); }
-    setIsLoading(false);
-  };
-
-  // 4. إرسال للرادار (Broadcast)
-  const sendBroadcast = async () => {
-    if (!broadcastMsg) return;
-    setIsLoading(true);
-    try {
-      await supabase.from('global_news').insert([{ title: 'COACH DIRECTIVE', content: broadcastMsg }]);
-      toast.success('تم إرسال التعميم للسيرفر بالكامل!');
-      setBroadcastMsg('');
-    } catch (err) { toast.error('خطأ في الإرسال'); }
-    setIsLoading(false);
-  };
-
-
-  if (!isAuthorized) {
+  if (!isCoachMode) {
     return (
       <Container initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <Toaster position="top-center" theme="dark" />
-        <LoginBox>
-          <Lock size={50} color="#ef4444" style={{ margin: '0 auto 20px auto' }} />
-          <h2 style={{ color: '#ef4444', marginBottom: 20, letterSpacing: 2 }}>RESTRICTED AREA</h2>
-          <Input type="password" placeholder="Enter Coach Override Key..." value={password} onChange={(e) => setPassword(e.target.value)} />
-          <Btn $color="#ef4444" onClick={handleLogin}><Key size={18} /> INITIATE OVERRIDE</Btn>
-        </LoginBox>
+        <LockedOverlay>
+          <ShieldAlert size={60} style={{ margin: '0 auto 20px auto' }} />
+          <h2 style={{ margin: 0, fontSize: '20px', letterSpacing: '2px' }}>ACCESS DENIED</h2>
+          <p style={{ fontSize: '12px', color: '#fca5a5', marginTop: '10px' }}>COACH OVERRIDE REQUIRED TO ACCESS RADAR COMMAND CENTER.</p>
+        </LockedOverlay>
       </Container>
     );
   }
 
   return (
-    <Container initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+    <Container initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
       <Toaster position="top-center" theme="dark" />
 
       <Header>
-        <Title><ShieldAlert size={24} /> COMMAND CENTER</Title>
-        <button onClick={() => { localStorage.removeItem('elite_coach_mode'); setIsAuthorized(false); }} style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '5px 10px', borderRadius: '8px', cursor: 'pointer' }}>LOCK</button>
+        <Title><Globe size={24} /> COMMAND RADAR</Title>
+        <Radio size={24} color="#0ea5e9" className="animate-pulse" />
       </Header>
 
-      <TabsWrapper>
-        <Tab $active={activeTab === 'punish'} $color="#ef4444" onClick={() => setActiveTab('punish')}><Gavel size={16} /> المطرقة</Tab>
-        <Tab $active={activeTab === 'pending'} $color="#10b981" onClick={() => setActiveTab('pending')}>
-          <CheckCircle size={16} /> الطلبات {requests.length > 0 && <span style={{ background: '#10b981', color: '#000', padding: '2px 6px', borderRadius: '10px', fontSize: 10 }}>{requests.length}</span>}
-        </Tab>
-        <Tab $active={activeTab === 'broadcast'} $color="#38bdf8" onClick={() => setActiveTab('broadcast')}><Radio size={16} /> الرادار</Tab>
-      </TabsWrapper>
+      <RadarAnimationBox>
+        <Globe size={40} color="rgba(14, 165, 233, 0.3)" />
+      </RadarAnimationBox>
 
-      {/* ======================= TAB: THE PUNISHER ======================= */}
-      {activeTab === 'punish' && (
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <Card $color="#ef4444">
-            <h3 style={{ color: '#ef4444', marginTop: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Skull size={18} /> THE PUNISHER PROTOCOL</h3>
-            <p style={{ fontSize: 12, color: '#94a3b8', marginBottom: 20 }}>اختر اللاعب، طبق الخصم، وقم بتجميد حسابه حتى يُنفذ عقوبة (التكفير عن الذنب).</p>
-            
-            <Select value={punishData.playerName} onChange={(e) => setPunishData({...punishData, playerName: e.target.value})}>
-              <option value="">-- حدد الهدف (اللاعب) --</option>
-              {players.map(p => <option key={p.id} value={p.name}>{p.name} (HP: {p.hp} | Gold: {p.gold})</option>)}
-            </Select>
+      <FormCard>
+        <InputLabel><Terminal size={14} /> Transmission Title (العنوان)</InputLabel>
+        <StyledInput 
+          type="text" 
+          placeholder="e.g. تحديث هام, رسالة اليوم..." 
+          value={title} 
+          onChange={(e) => setTitle(e.target.value)} 
+        />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 15 }}>
-              <div>
-                <label style={{ fontSize: 11, color: '#fca5a5' }}>خصم HP (النزيف)</label>
-                <Input type="number" value={punishData.hpDeduct} onChange={(e) => setPunishData({...punishData, hpDeduct: Number(e.target.value)})} style={{ borderColor: '#ef444450' }} />
+        <InputLabel><MessageSquare size={14} /> Transmission Payload (الرسالة)</InputLabel>
+        <StyledTextarea 
+          placeholder="اكتب رسالتك هنا... ستصل كإشعار فوري لجميع اللاعبين." 
+          value={content} 
+          onChange={(e) => setContent(e.target.value)} 
+          style={{ direction: 'rtl' }}
+        />
+
+        <SendBtn disabled={isProcessing || !title.trim() || !content.trim()} onClick={handleBroadcast}>
+          {isProcessing ? 'TRANSMITTING...' : 'SEND GLOBAL BROADCAST'} <Send size={18} />
+        </SendBtn>
+      </FormCard>
+
+      <SectionTitle><Radio size={16} /> TRANSMISSION HISTORY</SectionTitle>
+      
+      {logs.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#0f172a', borderRadius: '12px' }}>
+          No broadcasts transmitted yet.
+        </div>
+      ) : (
+        <AnimatePresence>
+          {logs.map((log) => (
+            <LogCard key={log.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.9 }}>
+              <div style={{ flex: 1 }}>
+                <LogTitle>{log.title}</LogTitle>
+                <LogContent>{log.content}</LogContent>
+                <LogDate><Clock size={12} /> {new Date(log.created_at).toLocaleString()}</LogDate>
               </div>
-              <div>
-                <label style={{ fontSize: 11, color: '#fde047' }}>خصم Gold (الغرامة)</label>
-                <Input type="number" value={punishData.goldDeduct} onChange={(e) => setPunishData({...punishData, goldDeduct: Number(e.target.value)})} style={{ borderColor: '#eab30850' }} />
-              </div>
-            </div>
-
-            <label style={{ fontSize: 11, color: '#cbd5e1' }}>رسالة العقوبة (تظهر في الرادار العام)</label>
-            <TextArea placeholder="مثال: تم التجميد لتفويت تمرين الرجل والتهرب من الكارديو..." value={punishData.reason} onChange={(e) => setPunishData({...punishData, reason: e.target.value})} />
-
-            <Btn $color="#ef4444" onClick={executePenalty} disabled={isLoading}>
-              {isLoading ? <Spinner size={20} /> : <><Gavel size={20} /> EXECUTE PENALTY & FREEZE</>}
-            </Btn>
-          </Card>
-        </motion.div>
+              <DeleteBtn onClick={() => handleDelete(log.id)} title="Delete Broadcast">
+                <Trash2 size={16} />
+              </DeleteBtn>
+            </LogCard>
+          ))}
+        </AnimatePresence>
       )}
-
-      {/* ======================= TAB: PENDING INTEL ======================= */}
-      {activeTab === 'pending' && (
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          {requests.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}><CheckCircle size={40} style={{ opacity: 0.5, marginBottom: 10 }} /><br/>ALL CLEAR. NO PENDING INTEL.</div>
-          ) : (
-            requests.map(req => (
-              <Card key={req.id} $color={req.type === 'penalty' ? '#ef4444' : '#10b981'}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                  <div>
-                    <div style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>{req.hunter_name}</div>
-                    <div style={{ fontSize: 12, color: req.type === 'penalty' ? '#ef4444' : '#38bdf8', marginTop: 4 }}>{req.task_name} {req.type === 'penalty' && '(عقوبة)'}</div>
-                  </div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>{new Date(req.created_at).toLocaleString()}</div>
-                </div>
-                
-                <div style={{ background: '#020617', padding: 10, borderRadius: 8, fontSize: 12, color: '#cbd5e1', marginBottom: 15, borderLeft: '3px solid #334155' }}>
-                  {req.evidence}
-                </div>
-
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <Btn $color="#10b981" onClick={() => handleApproveClick(req)} disabled={isLoading} style={{ padding: '10px' }}>
-                    <CheckCircle size={16} /> قبول
-                  </Btn>
-                  <Btn $color="#ef4444" onClick={() => handleReject(req.id)} disabled={isLoading} style={{ padding: '10px', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444' }}>
-                    <XCircle size={16} /> رفض
-                  </Btn>
-                </div>
-              </Card>
-            ))
-          )}
-        </motion.div>
-      )}
-
-      {/* ======================= TAB: BROADCAST ======================= */}
-      {activeTab === 'broadcast' && (
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <Card $color="#38bdf8">
-            <h3 style={{ color: '#38bdf8', marginTop: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Radio size={18} /> SERVER BROADCAST</h3>
-            <p style={{ fontSize: 12, color: '#94a3b8', marginBottom: 20 }}>أرسل إشعار أو تحذير ليظهر في شريط الأخبار المتحرك لكل اللاعبين.</p>
-            
-            <TextArea placeholder="اكتب رسالتك هنا..." value={broadcastMsg} onChange={(e) => setBroadcastMsg(e.target.value)} />
-            
-            <Btn $color="#38bdf8" onClick={sendBroadcast} disabled={isLoading}>
-              {isLoading ? <Spinner size={20} /> : <><Send size={20} /> TRANSMIT MESSAGE</>}
-            </Btn>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* 🚨 MODAL: APPROVE & REWARD 🚨 */}
-      <AnimatePresence>
-        {approveModal.show && approveModal.req && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ModalContent initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
-              <button onClick={() => setApproveModal({ show: false, req: null, exp: 0, gold: 0 })} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20} /></button>
-              <h3 style={{ color: '#10b981', marginTop: 0, display: 'flex', alignItems: 'center', gap: 8 }}><CheckCircle size={20} /> تحديد المكافأة</h3>
-              <p style={{ fontSize: 12, color: '#94a3b8', marginBottom: 15 }}>لاعب: {approveModal.req.hunter_name}<br/>مهمة: {approveModal.req.task_name}</p>
-              
-              {approveModal.req.type !== 'penalty' ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
-                  <div>
-                    <label style={{ fontSize: 11, color: '#38bdf8' }}>+ EXP</label>
-                    <Input type="number" value={approveModal.exp} onChange={(e) => setApproveModal({...approveModal, exp: Number(e.target.value)})} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, color: '#eab308' }}>+ GOLD</label>
-                    <Input type="number" value={approveModal.gold} onChange={(e) => setApproveModal({...approveModal, gold: Number(e.target.value)})} />
-                  </div>
-                </div>
-              ) : (
-                <div style={{ padding: 15, background: '#10b98120', color: '#10b981', borderRadius: 8, fontSize: 12, marginBottom: 20, textAlign: 'center' }}>
-                  بمجرد القبول، سيتم فك التجميد (System Unfreeze) عن اللاعب ولن يحصل على مكافآت.
-                </div>
-              )}
-
-              <Btn $color="#10b981" onClick={confirmApprove} disabled={isLoading}>
-                {isLoading ? <Spinner size={20} /> : 'CONFIRM & APPROVE'}
-              </Btn>
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>
 
     </Container>
   );

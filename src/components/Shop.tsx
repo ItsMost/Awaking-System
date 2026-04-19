@@ -87,6 +87,20 @@ const getRankInfo = (level: number) => {
   return { name: 'BRONZE', color: '#b45309' };
 };
 
+const calculateLevelData = (totalXp: number) => {
+  let level = 1;
+  let currentXp = totalXp;
+  let expNeededForNextLevel = 650;
+
+  while (currentXp >= expNeededForNextLevel) {
+    currentXp -= expNeededForNextLevel;
+    level++;
+    expNeededForNextLevel = Math.min(level * 150 + 500, 4000);
+  }
+
+  return { level, xpInCurrentLevel: currentXp, expNeededForNextLevel };
+};
+
 // ==========================================
 // 3. التصميمات المفرودة
 // ==========================================
@@ -153,7 +167,9 @@ const LockedText = styled.div<{ $color: string }>`
 // 4. المكون الرئيسي (Shop)
 // ==========================================
 const Shop = ({ player, setPlayer }: any) => {
-  const currentPlayerLevel = player?.lvl || 1;
+  const levelData = calculateLevelData(player?.cumulative_xp ?? player?.xp ?? 0);
+  const currentPlayerLevel = levelData.level;
+  
   const [gold, setGold] = useState(player?.gold || 0);
   const [dbItems, setDbItems] = useState<any[]>([]);
   const [claimsList, setClaimsList] = useState<any[]>([]);
@@ -174,10 +190,10 @@ const Shop = ({ player, setPlayer }: any) => {
   const fetchShopData = async () => {
     setLoading(true);
     try {
-      const { data: hunterData } = await supabase.from('shadow_hunters').select('gold, lvl').eq('name', player.name).single();
+      const { data: hunterData } = await supabase.from('elite_players').select('gold').eq('name', player.name).single();
       if (hunterData) {
         setGold(hunterData.gold);
-        setPlayer((prev: any) => ({ ...prev, gold: hunterData.gold, lvl: hunterData.lvl }));
+        setPlayer((prev: any) => ({ ...prev, gold: hunterData.gold }));
       }
 
       const { data: items, error: itemsErr } = await supabase.from('shop_items').select('*').order('created_at', { ascending: true });
@@ -186,8 +202,8 @@ const Shop = ({ player, setPlayer }: any) => {
 
       const date = new Date();
       const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
-      const { data: claims } = await supabase.from('system_requests')
-        .select('hunter_name, task_name')
+      const { data: claims } = await supabase.from('elite_quests')
+        .select('player_name, task_name')
         .like('task_name', '%CLAIM]%')
         .gte('created_at', firstDay);
 
@@ -223,10 +239,10 @@ const Shop = ({ player, setPlayer }: any) => {
       if (item.category === 'title') taskName = `[TITLE UNLOCKED] ${item.name}`;
 
       if (item.category === 'exclusive' || item.category === 'limited') {
-        const { data: checkStock } = await supabase.from('system_requests')
-          .select('hunter_name').eq('task_name', taskName).gte('created_at', firstDay);
+        const { data: checkStock } = await supabase.from('elite_quests')
+          .select('player_name').eq('task_name', taskName).gte('created_at', firstDay);
           
-        const currentClaimers = checkStock ? checkStock.map(c => c.hunter_name) : [];
+        const currentClaimers = checkStock ? checkStock.map(c => c.player_name) : [];
         if (item.max_stock && currentClaimers.length >= item.max_stock) {
           playError(); toast.error('Sold Out!'); setIsProcessing(false); return;
         }
@@ -244,13 +260,18 @@ const Shop = ({ player, setPlayer }: any) => {
         updatePayload.titles = newTitles;
       }
 
-      const { error: updateError } = await supabase.from('shadow_hunters').update(updatePayload).eq('name', player.name);
+      const { error: updateError } = await supabase.from('elite_players').update(updatePayload).eq('name', player.name);
       if (updateError) throw updateError;
       
-      const { error: reqError } = await supabase.from('system_requests').insert([{
-        hunter_name: player.name, task_name: taskName, evidence: `Paid ${item.price} Gold.`, type: 'request', status: 'pending' 
+      const { error: reqError } = await supabase.from('elite_quests').insert([{
+        player_name: player.name, task_name: taskName, evidence: `Paid ${item.price} Gold.`, type: 'request', status: 'pending' 
       }]);
       if (reqError) throw reqError;
+
+      // 🚨 تسجيل الخصم في الاقتصاد 🚨
+      await supabase.from('elite_economy').insert([{
+        player_name: player.name, amount: item.price, currency: 'gold', operation: 'decrease', reason: taskName
+      }]);
 
       playBuy();
       setGold(newGold);
@@ -364,7 +385,7 @@ const Shop = ({ player, setPlayer }: any) => {
           <SectionTitle $color="#eab308"><Flame size={18} /> SEASON EXCLUSIVE</SectionTitle>
           {exclusiveItems.map(item => {
             const itemClaims = claimsList.filter(c => c.task_name === `[EXCLUSIVE CLAIM] ${item.name}`);
-            const claimers = itemClaims.map(c => c.hunter_name);
+            const claimers = itemClaims.map(c => c.player_name);
             const isSoldOut = item.max_stock ? claimers.length >= item.max_stock : false;
             const Icon = getIcon(item.icon);
             
@@ -414,7 +435,7 @@ const Shop = ({ player, setPlayer }: any) => {
           <SectionTitle $color="#10b981"><Activity size={18} /> ELITE CLINIC (LIMITED)</SectionTitle>
           {limitedItems.map(item => {
             const itemClaims = claimsList.filter(c => c.task_name === `[LIMITED CLAIM] ${item.name}`);
-            const claimers = itemClaims.map(c => c.hunter_name);
+            const claimers = itemClaims.map(c => c.player_name);
             const isSoldOut = item.max_stock ? claimers.length >= item.max_stock : false;
             const playerHasIt = claimers.includes(player.name);
             const remaining = item.max_stock ? item.max_stock - claimers.length : '∞';
@@ -571,7 +592,6 @@ const Shop = ({ player, setPlayer }: any) => {
                 <option value="general">General Store</option>
               </EditSelect>
 
-              {/* 🚨 اختيار الرانك المطلوب 🚨 */}
               <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>الرانك المطلوب (للقفل)</div>
               <EditSelect value={formData.required_rank} onChange={(e) => setFormData({...formData, required_rank: Number(e.target.value)})}>
                 <option value={1}>BRONZE (متاح للكل)</option>

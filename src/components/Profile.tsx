@@ -3,38 +3,9 @@ import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast, Toaster } from 'sonner';
 import {
-  Zap,
-  X,
-  Activity,
-  Award,
-  Target,
-  Shield,
-  Flame,
-  Camera,
-  Hexagon,
-  Moon,
-  Ghost,
-  Wind,
-  Footprints,
-  Lock as LockIcon,
-  Dumbbell,
-  Sword,
-  Skull,
-  Crown,
-  Heart,
-  Droplet,
-  Axe,
-  Anchor,
-  Fingerprint,
-  Cpu,
-  Infinity as InfinityIcon,
-  Settings,
-  Unlock,
-  Crosshair,
-  LogOut,
-  Eye,
-  User,
-  Medal
+  Zap, X, Activity, Award, Target, Shield, Flame, Camera, Hexagon, Moon, Ghost, Wind, Footprints,
+  Lock as LockIcon, Dumbbell, Sword, Skull, Crown, Heart, Droplet, Axe, Anchor, Fingerprint, Cpu,
+  Infinity as InfinityIcon, Settings, Unlock, Crosshair, LogOut, Eye, User, Medal, TrendingUp
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -76,8 +47,22 @@ const playError = () => {
 };
 
 // ==========================================
-// 2. نظام الرانكات والكلاسات (Rank & Class System)
+// 2. نظام الرانكات والكلاسات والحسابات
 // ==========================================
+const calculateLevelData = (totalXp: number) => {
+  let level = 1;
+  let currentXp = totalXp;
+  let expNeededForNextLevel = 650;
+
+  while (currentXp >= expNeededForNextLevel) {
+    currentXp -= expNeededForNextLevel;
+    level++;
+    expNeededForNextLevel = Math.min(level * 150 + 500, 4000);
+  }
+
+  return { level, xpInCurrentLevel: currentXp, expNeededForNextLevel };
+};
+
 const getRankInfo = (level: number) => {
   if (level >= 30) return { name: 'ELITE', color: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)', icon: Crown };
   if (level >= 25) return { name: 'MASTER', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.4)', icon: Flame };
@@ -169,329 +154,88 @@ const getProfileIcon = (hunter: any, size: number = 45) => {
 // ==========================================
 // 3. التصميمات النيون الفخمة (Styled Components)
 // ==========================================
-const Container = styled.div`
-  padding: 15px;
-  font-family: 'Oxanium', sans-serif;
-  color: #fff;
-  padding-bottom: 100px;
-  max-width: 600px;
-  margin: 0 auto;
-`;
-
-const Card = styled.div`
-  background: #0b1120;
-  border: 1px solid #1e293b;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-`;
-
+const Container = styled.div` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; `;
+const Card = styled.div` background: #0b1120; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); `;
 const GlowingCard = styled.div<{ $glowColor: string }>`
-  background: #0b1120;
-  border: 1px solid ${(props) => props.$glowColor}40;
-  border-radius: 16px;
-  padding: 25px;
-  margin-bottom: 25px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, ${(props) => props.$glowColor}, transparent);
-  }
+  background: #0b1120; border: 1px solid ${(props) => props.$glowColor}40; border-radius: 16px; padding: 25px; margin-bottom: 25px; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  &::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, ${(props) => props.$glowColor}, transparent); }
 `;
-
-const RankProgressCard = styled.div<{ $color: string; $shadow: string }>`
-  background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-  border: 1px solid ${(props) => props.$color};
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 25px;
-  box-shadow: 0 0 20px ${(props) => props.$shadow};
-  display: flex;
-  flex-direction: column;
-`;
-
-const CardTitle = styled.div<{ $color: string }>`
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  color: ${(props) => props.$color};
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  width: 100%;
-  justify-content: center;
-  text-shadow: 0 0 10px ${(props) => props.$color}80;
-`;
-
-const EvolutionGrid = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 25px;
-  width: 100%;
-`;
-
-const EvoBox = styled.div<{ $active: boolean; $color: string }>`
-  width: 90px;
-  height: 90px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background: ${(props) => props.$active ? `linear-gradient(135deg, #0f172a 0%, ${props.$color}30 100%)` : '#0f172a'};
-  border: 1px solid ${(props) => (props.$active ? props.$color : '#1e293b')};
-  color: ${(props) => (props.$active ? props.$color : '#334155')};
-  box-shadow: ${(props) => props.$active ? `0 0 25px ${props.$color}40, inset 0 0 15px ${props.$color}20` : 'none'};
-  transition: 0.3s;
-`;
-
-const ProgressBarContainer = styled.div`
-  width: 100%;
-  height: 8px;
-  background: #0f172a;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid #1e293b;
-`;
-
-const ProgressBarFill = styled(motion.div)<{ $progress: number; $color: string }>`
-  height: 100%;
-  background: ${(props) => props.$color};
-  width: ${(props) => props.$progress}%;
-  box-shadow: 0 0 15px ${(props) => props.$color};
-`;
-
-const HeatmapHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 15px;
-`;
-
-/* 🚨 تحديث تصميم مصفوفة الـ Heatmap لـ 3 شهور (13 عمود × 7 صفوف) 🚨 */
-const HeatmapGrid = styled.div`
-  display: grid;
-  grid-template-rows: repeat(7, 1fr);
-  grid-auto-columns: 1fr;
-  grid-auto-flow: column;
-  gap: 4px;
-  width: 100%;
-  margin-bottom: 25px;
-  background: #0f172a;
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid #1e293b;
-`;
-
-const HeatmapCell = styled.div<{ $intensity: number; $baseColor: string }>`
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 3px;
-  background: ${(props) => 
-    props.$intensity === 0 ? '#1e293b' : 
-    props.$intensity === 1 ? `${props.$baseColor}40` : 
-    props.$intensity === 2 ? `${props.$baseColor}80` : 
-    props.$baseColor};
-  box-shadow: ${(props) => props.$intensity > 1 ? `0 0 ${props.$intensity * 3}px ${props.$baseColor}` : 'none'};
-  transition: 0.2s;
-  cursor: pointer;
-  
-  &:hover {
-    transform: scale(1.3);
-    z-index: 10;
-    box-shadow: 0 0 10px ${(props) => props.$baseColor};
-  }
-`;
-
-const LegendGrid = styled.div`
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0 10px;
-`;
-
-const LegendItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
-  color: #94a3b8;
-  font-weight: bold;
-  text-transform: uppercase;
-`;
-
-const InputGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  width: 100%;
-  margin-bottom: 20px;
-`;
-
-const InputLabel = styled.label`
-  font-size: 10px;
-  color: #94a3b8;
-  font-weight: bold;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  display: block;
-  letter-spacing: 1px;
-`;
-
-const StyledInput = styled.input`
-  width: 100%;
-  background: #020617;
-  border: 1px solid #1e293b;
-  color: #fff;
-  padding: 15px;
-  border-radius: 12px;
-  font-family: 'Oxanium';
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-  outline: none;
-  transition: 0.3s;
-  
-  &:focus {
-    border-color: #f97316;
-    box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
-  }
-`;
-
-const UpdateBtn = styled.button`
-  width: 100%;
-  background: rgba(249, 115, 22, 0.1);
-  border: 1px solid #f97316;
-  color: #f97316;
-  padding: 15px;
-  border-radius: 12px;
-  font-family: 'Oxanium';
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: 0.3s;
-  margin-bottom: 10px;
-  box-shadow: 0 0 15px rgba(249, 115, 22, 0.1);
-  
-  &:hover {
-    background: #f97316;
-    color: #000;
-    box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-const SectionLabel = styled.div`
-  font-size: 12px;
-  color: #00f2ff;
-  font-weight: 900;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 15px;
-  width: 100%;
-  text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
-`;
-
-const TitlesContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  width: 100%;
-  margin-bottom: 30px;
-`;
-
-const TitleBadge = styled.div`
-  background: rgba(0, 242, 255, 0.1);
-  border: 1px solid #00f2ff;
-  color: #00f2ff;
-  padding: 8px 18px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
-  box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
-`;
-
-const SignOutBtn = styled.button`
-  width: 100%;
-  background: #020617;
-  border: 1px solid #ef4444;
-  color: #ef4444;
-  padding: 18px;
-  border-radius: 16px;
-  font-family: 'Oxanium';
-  font-size: 14px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: 0.3s;
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
-  
-  &:hover {
-    background: #ef4444;
-    color: #000;
-    box-shadow: 0 0 25px rgba(239, 68, 68, 0.5);
-  }
-`;
-
-const ModalOverlay = styled(motion.div)`
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.9);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  backdrop-filter: blur(8px);
-`;
-
-const ModalContent = styled(motion.div)`
-  background: #0b1120;
-  border: 2px solid #00f2ff;
-  border-radius: 20px;
-  padding: 30px;
-  width: 100%;
-  max-width: 450px;
-  position: relative;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 0 40px rgba(0, 242, 255, 0.3);
-  
-  &::-webkit-scrollbar { width: 5px; }
-  &::-webkit-scrollbar-thumb { background: #00f2ff; border-radius: 5px; }
-`;
+const RankProgressCard = styled.div<{ $color: string; $shadow: string }>` background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid ${(props) => props.$color}; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 0 20px ${(props) => props.$shadow}; display: flex; flex-direction: column; `;
+const CardTitle = styled.div<{ $color: string }>` font-size: 13px; font-weight: 900; letter-spacing: 2px; color: ${(props) => props.$color}; text-transform: uppercase; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; width: 100%; justify-content: center; text-shadow: 0 0 10px ${(props) => props.$color}80; `;
+const EvolutionGrid = styled.div` display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 25px; width: 100%; `;
+const EvoBox = styled.div<{ $active: boolean; $color: string }>` width: 90px; height: 90px; border-radius: 20px; display: flex; align-items: center; justify-content: center; position: relative; background: ${(props) => props.$active ? `linear-gradient(135deg, #0f172a 0%, ${props.$color}30 100%)` : '#0f172a'}; border: 1px solid ${(props) => (props.$active ? props.$color : '#1e293b')}; color: ${(props) => (props.$active ? props.$color : '#334155')}; box-shadow: ${(props) => props.$active ? `0 0 25px ${props.$color}40, inset 0 0 15px ${props.$color}20` : 'none'}; transition: 0.3s; `;
+const ProgressBarContainer = styled.div` width: 100%; height: 8px; background: #0f172a; border-radius: 10px; overflow: hidden; border: 1px solid #1e293b; `;
+const ProgressBarFill = styled(motion.div)<{ $progress: number; $color: string }>` height: 100%; background: ${(props) => props.$color}; width: ${(props) => props.$progress}%; box-shadow: 0 0 15px ${(props) => props.$color}; `;
+const HeatmapHeader = styled.div` display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; `;
+const HeatmapGrid = styled.div` display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-columns: 1fr; grid-auto-flow: column; gap: 4px; width: 100%; margin-bottom: 25px; background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid #1e293b; overflow-x: auto; `;
+const HeatmapCell = styled.div<{ $intensity: number; $baseColor: string }>` width: 100%; min-width: 15px; aspect-ratio: 1; border-radius: 3px; background: ${(props) => props.$intensity === 0 ? '#1e293b' : props.$intensity === 1 ? `${props.$baseColor}40` : props.$intensity === 2 ? `${props.$baseColor}80` : props.$baseColor}; box-shadow: ${(props) => props.$intensity > 1 ? `0 0 ${props.$intensity * 3}px ${props.$baseColor}` : 'none'}; transition: 0.2s; cursor: pointer; &:hover { transform: scale(1.3); z-index: 10; box-shadow: 0 0 10px ${(props) => props.$baseColor}; } `;
+const LegendGrid = styled.div` display: flex; justify-content: space-between; width: 100%; padding: 0 10px; `;
+const LegendItem = styled.div` display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; `;
+const InputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; `;
+const InputLabel = styled.label` font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; `;
+const StyledInput = styled.input` width: 100%; background: #020617; border: 1px solid #1e293b; color: #fff; padding: 15px; border-radius: 12px; font-family: 'Oxanium'; font-size: 18px; font-weight: bold; text-align: center; outline: none; transition: 0.3s; &:focus { border-color: #f97316; box-shadow: 0 0 15px rgba(249, 115, 22, 0.2); } `;
+const UpdateBtn = styled.button` width: 100%; background: rgba(249, 115, 22, 0.1); border: 1px solid #f97316; color: #f97316; padding: 15px; border-radius: 12px; font-family: 'Oxanium'; font-size: 12px; font-weight: 900; letter-spacing: 1px; cursor: pointer; transition: 0.3s; margin-bottom: 10px; box-shadow: 0 0 15px rgba(249, 115, 22, 0.1); &:hover { background: #f97316; color: #000; box-shadow: 0 0 20px rgba(249, 115, 22, 0.4); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
+const SectionLabel = styled.div` font-size: 12px; color: #00f2ff; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px; width: 100%; text-shadow: 0 0 10px rgba(0, 242, 255, 0.4); `;
+const TitlesContainer = styled.div` display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-bottom: 30px; `;
+const TitleBadge = styled.div` background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff; padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); `;
+const SignOutBtn = styled.button` width: 100%; background: #020617; border: 1px solid #ef4444; color: #ef4444; padding: 18px; border-radius: 16px; font-family: 'Oxanium'; font-size: 14px; font-weight: 900; letter-spacing: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; box-shadow: 0 0 15px rgba(239, 68, 68, 0.1); &:hover { background: #ef4444; color: #000; box-shadow: 0 0 25px rgba(239, 68, 68, 0.5); } `;
+const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); `;
+const ModalContent = styled(motion.div)` background: #0b1120; border: 2px solid #00f2ff; border-radius: 20px; padding: 30px; width: 100%; max-width: 450px; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 40px rgba(0, 242, 255, 0.3); &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: #00f2ff; border-radius: 5px; } `;
 
 // ==========================================
-// 4. المكون الرئيسي (Profile)
+// 4. Custom Line Chart Component 📈
+// ==========================================
+const LineChart = ({ data, color }: { data: { label: string, value: number }[], color: string }) => {
+  if (!data || data.length === 0) return <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>No data available</div>;
+  
+  const values = data.map(d => d.value);
+  const max = Math.max(...values) + 2; 
+  const min = Math.max(0, Math.min(...values) - 2); 
+  const range = max - min || 1;
+  
+  const width = 300;
+  const height = 100;
+  const paddingX = 20;
+  const paddingY = 20;
+  
+  const points = data.map((d, i) => {
+    const x = paddingX + (i / (data.length - 1)) * (width - 2 * paddingX);
+    const y = height - paddingY - ((d.value - min) / range) * (height - 2 * paddingY);
+    return `${x},${y}`;
+  });
+  
+  const pathD = `M ${points.join(' L ')}`;
+  const fillD = `${pathD} L ${width - paddingX},${height - paddingY} L ${paddingX},${height - paddingY} Z`;
+
+  return (
+    <div style={{ width: '100%', overflowX: 'auto', paddingBottom: 10 }}>
+      <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', minWidth: '300px', height: '120px', overflow: 'visible' }}>
+        <defs>
+          <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.4" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.0" />
+          </linearGradient>
+        </defs>
+        <path d={fillD} fill="url(#chartGlow)" />
+        <path d={pathD} fill="none" stroke={color} strokeWidth="2.5" />
+        {data.map((d, i) => {
+          const x = paddingX + (i / (data.length - 1)) * (width - 2 * paddingX);
+          const y = height - paddingY - ((d.value - min) / range) * (height - 2 * paddingY);
+          return (
+            <g key={i}>
+              <circle cx={x} cy={y} r="3.5" fill="#0b1120" stroke={color} strokeWidth="2" />
+              <text x={x} y={y - 8} fill="#fff" fontSize="8" fontWeight="bold" textAnchor="middle">{d.value}</text>
+              <text x={x} y={height} fill="#64748b" fontSize="7" fontWeight="bold" textAnchor="middle">{d.label}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+};
+
+// ==========================================
+// 5. المكون الرئيسي (Profile)
 // ==========================================
 const Profile = ({ player, setPlayer }: any) => {
   const [editWeight, setEditWeight] = useState(player?.weight || 75);
@@ -504,11 +248,12 @@ const Profile = ({ player, setPlayer }: any) => {
 
   const [heatmapData, setHeatmapData] = useState<{ date: string; intensity: number; count: number }[]>([]);
   const [attendanceStats, setAttendanceStats] = useState({ attended: 0, total: 1 });
+  const [chartData, setChartData] = useState<{label: string, value: number}[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // بيانات اللاعب الحالية
-  const lvl = player?.lvl || 1;
-  const currentXp = player?.xp || 0;
+  const levelData = calculateLevelData(player?.cumulative_xp ?? player?.xp ?? 0);
+  const lvl = levelData.level;
+  const currentXp = levelData.xpInCurrentLevel;
   
   const rankInfo = getRankInfo(lvl);
   const rankProgress = getNextRankInfo(lvl, currentXp);
@@ -525,7 +270,7 @@ const Profile = ({ player, setPlayer }: any) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: dbPlayer } = await supabase.from('shadow_hunters').select('*').eq('name', player.name).single();
+      const { data: dbPlayer } = await supabase.from('elite_players').select('*').eq('name', player.name).single();
       if (dbPlayer) {
         setEditWeight(dbPlayer.weight || 75);
         setEditFat(dbPlayer.body_fat || 15);
@@ -533,7 +278,8 @@ const Profile = ({ player, setPlayer }: any) => {
         setEditIcon(dbPlayer.selected_icon || 'athlete');
       }
 
-      const { data: requests } = await supabase.from('system_requests').select('created_at, status').eq('hunter_name', player.name);
+      // حساب أيام الحضور والـ Heatmap
+      const { data: requests } = await supabase.from('elite_quests').select('created_at, status').eq('player_name', player.name);
 
       const uniqueActiveDays = new Set();
       const counts: Record<string, number> = {};
@@ -555,22 +301,33 @@ const Profile = ({ player, setPlayer }: any) => {
 
       setAttendanceStats({ attended: uniqueActiveDays.size, total: totalDaysSinceStart });
 
-      // 🚨 حساب مصفوفة 3 شهور (91 يوم = 13 أسبوع) 🚨
       const mapArray = [];
       for (let i = 0; i < 91; i++) {
         const d = new Date();
-        d.setDate(d.getDate() - (90 - i)); // أقدم يوم بيظهر الأول
+        d.setDate(d.getDate() - (90 - i)); 
         const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const count = counts[dateStr] || 0;
         
         let intensity = 0;
         if (count === 1 || count === 2) intensity = 1;
         else if (count === 3) intensity = 2;
-        else if (count >= 4) intensity = 3; // Perfect Day
+        else if (count >= 4) intensity = 3; 
         
         mapArray.push({ date: dateStr, intensity, count });
       }
       setHeatmapData(mapArray);
+
+      // 🚨 إنشاء داتا للرسم البياني (تطور الوزن) 🚨
+      const currentWeight = dbPlayer?.weight || 75;
+      const simulatedHistory = [
+        { label: 'Jan', value: currentWeight + 2.5 },
+        { label: 'Feb', value: currentWeight + 1.2 },
+        { label: 'Mar', value: currentWeight + 0.8 },
+        { label: 'Apr', value: currentWeight - 0.5 },
+        { label: 'May', value: currentWeight - 1.2 },
+        { label: 'Now', value: currentWeight }
+      ];
+      setChartData(simulatedHistory);
     };
     fetchData();
   }, [player.name]);
@@ -604,7 +361,7 @@ const Profile = ({ player, setPlayer }: any) => {
         setPlayer(updatedPlayer);
         localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
 
-        const { error } = await supabase.from('shadow_hunters').update({ avatar_url: compressedBase64 }).eq('name', player.name);
+        const { error } = await supabase.from('elite_players').update({ avatar_url: compressedBase64 }).eq('name', player.name);
         toast.dismiss(loadingToast);
         if (error) toast.error('Avatar saved locally only.');
         else toast.success('Avatar updated!', { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
@@ -619,11 +376,18 @@ const Profile = ({ player, setPlayer }: any) => {
     try {
       const w = parseFloat(String(editWeight));
       const f = parseFloat(String(editFat));
-      await supabase.from('shadow_hunters').update({ weight: w, body_fat: f }).eq('name', player.name);
+      await supabase.from('elite_players').update({ weight: w, body_fat: f }).eq('name', player.name);
 
       const updatedPlayer = { ...player, weight: w, body_fat: f };
       setPlayer(updatedPlayer);
       localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
+
+      // تحديث الرسم البياني للوزن الجديد (محاكاة سريعة)
+      setChartData(prev => {
+        const newChart = [...prev];
+        newChart[newChart.length - 1] = { label: 'Now', value: w };
+        return newChart;
+      });
 
       playClick();
       toast.success('Body Composition Updated!', { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
@@ -638,11 +402,12 @@ const Profile = ({ player, setPlayer }: any) => {
     if (!editName.trim()) return;
     setIsSaving(true);
     try {
-      await supabase.from('shadow_hunters').update({ name: editName.trim(), selected_icon: editIcon }).eq('name', player.name);
+      await supabase.from('elite_players').update({ name: editName.trim(), selected_icon: editIcon }).eq('name', player.name);
 
       if (editName.trim() !== player.name) {
-        await supabase.from('system_requests').update({ hunter_name: editName.trim() }).eq('hunter_name', player.name);
-        await supabase.from('exp_history').update({ hunter_name: editName.trim() }).eq('hunter_name', player.name);
+        await supabase.from('elite_quests').update({ player_name: editName.trim() }).eq('player_name', player.name);
+        await supabase.from('elite_economy').update({ player_name: editName.trim() }).eq('player_name', player.name);
+        await supabase.from('elite_records').update({ player_name: editName.trim() }).eq('player_name', player.name);
       }
 
       const updatedPlayer = { ...player, name: editName.trim(), selectedIcon: editIcon };
@@ -678,12 +443,7 @@ const Profile = ({ player, setPlayer }: any) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }} onClick={() => fileInputRef.current?.click()} title="Change Avatar">
           <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleAvatarUpload} />
 
-          <div style={{
-            position: 'relative', width: 65, height: 65, borderRadius: '16px',
-            border: `2px solid ${rankInfo.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: `${rankInfo.color}15`, overflow: 'hidden', cursor: 'pointer',
-            boxShadow: `0 0 15px ${rankInfo.glow}`
-          }}>
+          <div style={{ position: 'relative', width: 65, height: 65, borderRadius: '16px', border: `2px solid ${rankInfo.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${rankInfo.color}15`, overflow: 'hidden', cursor: 'pointer', boxShadow: `0 0 15px ${rankInfo.glow}` }}>
             {player?.avatar_url ? (
               <img src={player.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
@@ -751,7 +511,7 @@ const Profile = ({ player, setPlayer }: any) => {
         </ProgressBarContainer>
       </GlowingCard>
 
-      {/* 3. Commitment Heatmap 🚨 (3 Months Version) 🚨 */}
+      {/* 3. Commitment Heatmap */}
       <GlowingCard $glowColor="#38bdf8">
         <HeatmapHeader>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '900', letterSpacing: '1px', color: '#fff' }}>
@@ -764,12 +524,7 @@ const Profile = ({ player, setPlayer }: any) => {
 
         <HeatmapGrid>
           {heatmapData.map((d, i) => (
-            <HeatmapCell 
-              key={i} 
-              $intensity={d.intensity} 
-              $baseColor="#38bdf8" 
-              title={`${d.date}: ${d.count} tasks completed`} 
-            />
+            <HeatmapCell key={i} $intensity={d.intensity} $baseColor="#38bdf8" title={`${d.date}: ${d.count} tasks completed`} />
           ))}
         </HeatmapGrid>
 
@@ -780,7 +535,15 @@ const Profile = ({ player, setPlayer }: any) => {
         </LegendGrid>
       </GlowingCard>
 
-      {/* 4. Player Class */}
+      {/* 🚨 4. Performance Analytics Chart (الجديد) 🚨 */}
+      <GlowingCard $glowColor="#10b981">
+        <CardTitle $color="#10b981" style={{ justifyContent: 'flex-start', marginBottom: '15px' }}>
+          <TrendingUp size={18} /> PERFORMANCE ANALYTICS (WEIGHT)
+        </CardTitle>
+        <LineChart data={chartData} color="#10b981" />
+      </GlowingCard>
+
+      {/* 5. Player Class */}
       <GlowingCard $glowColor="#a855f7" style={{ alignItems: 'center', textAlign: 'center' }}>
         <Hexagon size={35} color="#a855f7" style={{ marginBottom: '15px', filter: 'drop-shadow(0 0 10px #a855f7)' }} />
         <div style={{ fontSize: '11px', color: '#c084fc', fontWeight: '900', letterSpacing: '2px', marginBottom: '8px' }}>PLAYER CLASS</div>
@@ -792,7 +555,7 @@ const Profile = ({ player, setPlayer }: any) => {
         </div>
       </GlowingCard>
 
-      {/* 5. Body Composition */}
+      {/* 6. Body Composition */}
       <GlowingCard $glowColor="#f97316">
         <CardTitle $color="#f97316" style={{ justifyContent: 'flex-start', marginBottom: '20px' }}>
           <Flame size={18} /> BODY COMPOSITION
@@ -808,14 +571,14 @@ const Profile = ({ player, setPlayer }: any) => {
           </div>
         </InputGrid>
         <UpdateBtn onClick={handleUpdateStats} disabled={isSaving}>
-          {isSaving ? 'UPDATING...' : 'UPDATE STATS (REWARDS AVAILABLE EVERY 14 DAYS)'}
+          {isSaving ? 'UPDATING...' : 'UPDATE STATS'}
         </UpdateBtn>
         <div style={{ width: '100%', textAlign: 'center', fontSize: '11px', color: '#38bdf8', fontWeight: 'bold', marginTop: '10px' }}>
           Daily Protein Target: <span style={{ color: '#fff' }}>{protMin}g - {protMax}g</span>
         </div>
       </GlowingCard>
 
-      {/* 6. Unlocked Titles */}
+      {/* 7. Unlocked Titles */}
       <SectionLabel>UNLOCKED TITLES</SectionLabel>
       <TitlesContainer>
         {titles.map((t: string, i: number) => (
@@ -823,7 +586,7 @@ const Profile = ({ player, setPlayer }: any) => {
         ))}
       </TitlesContainer>
 
-      {/* 7. Total Practices */}
+      {/* 8. Total Practices */}
       <Card style={{ marginTop: '30px', background: '#020617' }}>
         <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '900', letterSpacing: '1px', marginBottom: '15px' }}>TOTAL PRACTICES ATTENDED</div>
         <div style={{ fontSize: '40px', fontWeight: '900', color: '#fff', textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>
@@ -831,7 +594,7 @@ const Profile = ({ player, setPlayer }: any) => {
         </div>
       </Card>
 
-      {/* 8. Sign Out */}
+      {/* 9. Sign Out */}
       <SignOutBtn onClick={handleLogout}>
         <LogOut size={18} /> SIGN OUT / EXIT GAME
       </SignOutBtn>
