@@ -151,6 +151,10 @@ const getProfileIcon = (hunter: any, size: number = 45) => {
   return <cls.baseIcon size={size} color={cls.color} />;
 };
 
+const getSystemDateStr = (date: Date) => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 // ==========================================
 // 3. التصميمات النيون الفخمة (Styled Components)
 // ==========================================
@@ -271,7 +275,25 @@ const Profile = ({ player, setPlayer }: any) => {
   useEffect(() => {
     const fetchData = async () => {
       const { data: dbPlayer } = await supabase.from('elite_players').select('*').eq('name', player.name).single();
+      
+      // 🚨 نظام التصفير التلقائي لعداد التغذية (Auto-Reset Macros) 🚨
       if (dbPlayer) {
+        let fetchedMacros = dbPlayer.daily_macros || { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] };
+        let lastMacroDate = dbPlayer.last_macro_date;
+        const todayStr = getSystemDateStr(new Date());
+
+        // لو التاريخ المسجل مختلف عن النهاردة، يبقى ده يوم جديد ولازم نرستر
+        if (lastMacroDate !== todayStr) {
+          fetchedMacros = { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] };
+          await supabase.from('elite_players').update({ 
+            daily_macros: fetchedMacros, 
+            last_macro_date: todayStr 
+          }).eq('name', player.name);
+          
+          // تحديث بيانات اللاعب الحالية
+          setPlayer((prev: any) => ({ ...prev, daily_macros: fetchedMacros, last_macro_date: todayStr }));
+        }
+
         setEditWeight(dbPlayer.weight || 75);
         setEditFat(dbPlayer.body_fat || 15);
         setEditName(dbPlayer.name);
@@ -288,7 +310,7 @@ const Profile = ({ player, setPlayer }: any) => {
         requests.forEach((req) => {
           if (req.status === 'approved') {
             const d = new Date(req.created_at);
-            const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            const dateStr = getSystemDateStr(d);
             uniqueActiveDays.add(dateStr);
             counts[dateStr] = (counts[dateStr] || 0) + 1;
           }
@@ -305,7 +327,7 @@ const Profile = ({ player, setPlayer }: any) => {
       for (let i = 0; i < 91; i++) {
         const d = new Date();
         d.setDate(d.getDate() - (90 - i)); 
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const dateStr = getSystemDateStr(d);
         const count = counts[dateStr] || 0;
         
         let intensity = 0;
@@ -317,7 +339,7 @@ const Profile = ({ player, setPlayer }: any) => {
       }
       setHeatmapData(mapArray);
 
-      // 🚨 إنشاء داتا للرسم البياني (تطور الوزن) 🚨
+      // إنشاء داتا للرسم البياني (تطور الوزن)
       const currentWeight = dbPlayer?.weight || 75;
       const simulatedHistory = [
         { label: 'Jan', value: currentWeight + 2.5 },

@@ -5,7 +5,7 @@ import {
   Sword, LogOut, CheckSquare, Medal, ShoppingCart, Store as Storefront, Shield, User,
   Book, Activity, Moon, Eye, Wind, Dumbbell, Zap, Footprints, Lock as LockIcon, Flame,
   Crown, Skull, Target, Heart, Droplet, Axe, Anchor, Fingerprint, Cpu, Infinity as InfinityIcon,
-  Hexagon, Globe, Terminal, Power, Bell, X, MessageSquare
+  Hexagon, Globe, Terminal, Power, Bell, X, MessageSquare, WifiOff
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 
@@ -444,6 +444,7 @@ const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isBooting, setIsBooting] = useState(false);
   const [bootText, setBootText] = useState('');
+  const [isOffline, setIsOffline] = useState(!navigator.onLine); // 🚨 حالة الأوفلاين 🚨
 
   // 🚨 Notifications State 🚨
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -457,6 +458,26 @@ const App = () => {
     "CALIBRATING CUMULATIVE EXP MATRIX...",
     "WELCOME TO THE ELITE SYSTEM."
   ];
+
+  // 🚨 مراقبة حالة الإنترنت (Online/Offline) 🚨
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      toast.success('SYSTEM ONLINE: Neural Link Restored.', { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' } });
+    };
+    const handleOffline = () => {
+      setIsOffline(true);
+      toast.error('SYSTEM OFFLINE: Operating on Local Cache.', { duration: 10000, style: { background: '#2a0808', border: '1px solid #ef4444', color: '#fca5a5' } });
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     const savedData = localStorage.getItem('elite_system_active_session');
@@ -478,6 +499,11 @@ const App = () => {
 
       const fetchLatestData = async () => {
         try {
+          if (!navigator.onLine) {
+            // لو أوفلاين، اعتمد على الكاش فوراً
+            setPlayer(parsedData);
+            return;
+          }
           const { data, error } = await supabase.from('elite_players').select('*').eq('name', parsedData.name).single();
           if (data && !error) {
             const updatedPlayer = { ...parsedData, ...data };
@@ -503,7 +529,7 @@ const App = () => {
 
   // 🚨 REAL-TIME SUBSCRIPTIONS (PUSH NOTIFICATIONS) 🚨
   useEffect(() => {
-    if (!player || isBooting) return;
+    if (!player || isBooting || isOffline) return; // توقف المراقبة لو أوفلاين
 
     // 1. Fetch historical broadcasts
     const fetchInitialNotifications = async () => {
@@ -569,7 +595,7 @@ const App = () => {
       supabase.removeChannel(questSub);
       supabase.removeChannel(playerSub);
     };
-  }, [player, isBooting]);
+  }, [player, isBooting, isOffline]);
 
   useEffect(() => {
     if (player && !isBooting) {
@@ -663,9 +689,18 @@ const App = () => {
       <BackgroundGrid />
       <Toaster position="top-center" theme="dark" />
       
+      {/* 🚨 شريط الأوفلاين 🚨 */}
+      <AnimatePresence>
+        {isOffline && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ background: '#b45309', color: '#fef3c7', padding: '8px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <WifiOff size={14} /> OFFLINE MODE: Using Local Cache. Some features may be restricted.
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <StatusBar>
         <TopRightControls>
-          <IconButton onClick={openNotificationCenter} $hasUnread={unreadCount > 0} title="Notifications">
+          <IconButton onClick={openNotificationCenter} $hasUnread={unreadCount > 0} title="Notifications" style={{ display: 'none' }}>
             <Bell size={18} />
             {unreadCount > 0 && <UnreadDot>{unreadCount}</UnreadDot>}
           </IconButton>
