@@ -5,9 +5,10 @@ import {
   Sword, LogOut, CheckSquare, Medal, ShoppingCart, Store as Storefront, Shield, User,
   Book, Activity, Moon, Eye, Wind, Dumbbell, Zap, Footprints, Lock as LockIcon, Flame,
   Crown, Skull, Target, Heart, Droplet, Axe, Anchor, Fingerprint, Cpu, Infinity as InfinityIcon,
-  Hexagon, Globe, Terminal, Power, Bell, X, MessageSquare, WifiOff
+  Hexagon, Globe, Terminal, Power, Bell, X, MessageSquare, WifiOff, Volume2, VolumeX
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
+import { Howl, Howler } from 'howler';
 
 import AwakeningScreen from './components/AwakeningScreen';
 import Dashboard from './components/Dashboard';
@@ -22,18 +23,46 @@ import Radar from './components/Radar';
 import { supabase } from './lib/supabase';
 
 // ==========================================
-// 1. ADVANCED AUDIO ENGINE (محرك صوتي سينمائي)
+// 1. ADVANCED AUDIO ENGINE (Howler + Web Audio)
 // ==========================================
+const bgmMain = new Howl({
+  src: ['https://actions.google.com/sounds/v1/science_fiction/dark_ambient_loop.ogg'],
+  loop: true,
+  volume: 0.15,
+});
+
+const bgmShop = new Howl({
+  src: ['https://actions.google.com/sounds/v1/science_fiction/cyberpunk_city.ogg'],
+  loop: true,
+  volume: 0.15,
+});
+
+let currentBGM = bgmMain;
+
 const createAudioContext = () => {
   const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioContext) return null;
   return new AudioContext();
 };
 
+let sharedAudioCtx: AudioContext | null = null;
+let lastPlayTime = 0;
+
+const canPlay = () => {
+  const now = Date.now();
+  if (now - lastPlayTime < 50) return false;
+  lastPlayTime = now;
+  return true;
+};
+
 const playSound = (type: 'shield' | 'click' | 'startup' | 'boot' | 'glitch' | 'notification') => {
   try {
-    const ctx = createAudioContext();
-    if (!ctx) return;
+    if (!canPlay()) return;
+    if (!sharedAudioCtx) sharedAudioCtx = createAudioContext();
+    if (!sharedAudioCtx) return;
+    if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
+    
+    const ctx = sharedAudioCtx;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -70,9 +99,10 @@ const playSound = (type: 'shield' | 'click' | 'startup' | 'boot' | 'glitch' | 'n
 
 const playAuraSound = (hunter: any) => {
   try {
+    if (!sharedAudioCtx) sharedAudioCtx = createAudioContext();
+    if (!sharedAudioCtx) return;
     const iconStr = String(hunter?.selectedIcon || hunter?.selected_icon || hunter?.icon || hunter?.class || '').toLowerCase().trim();
-    const ctx = createAudioContext();
-    if (!ctx) return;
+    const ctx = sharedAudioCtx;
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gainNode = ctx.createGain();
@@ -444,7 +474,10 @@ const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isBooting, setIsBooting] = useState(false);
   const [bootText, setBootText] = useState('');
-  const [isOffline, setIsOffline] = useState(!navigator.onLine); // 🚨 حالة الأوفلاين 🚨
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  
+  // 🚨 BGM Controls 🚨
+  const [isMusicMuted, setIsMusicMuted] = useState(false);
 
   // 🚨 Notifications State 🚨
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -459,7 +492,11 @@ const App = () => {
     "WELCOME TO THE ELITE SYSTEM."
   ];
 
-  // 🚨 مراقبة حالة الإنترنت (Online/Offline) 🚨
+  // 🚨 التعامل مع الميوت (Mute) لكل مزيكا Howler 🚨
+  useEffect(() => {
+    Howler.mute(isMusicMuted);
+  }, [isMusicMuted]);
+
   useEffect(() => {
     const handleOnline = () => {
       setIsOffline(false);
@@ -500,7 +537,6 @@ const App = () => {
       const fetchLatestData = async () => {
         try {
           if (!navigator.onLine) {
-            // لو أوفلاين، اعتمد على الكاش فوراً
             setPlayer(parsedData);
             return;
           }
@@ -509,6 +545,26 @@ const App = () => {
             const updatedPlayer = { ...parsedData, ...data };
             setPlayer(updatedPlayer);
             localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
+
+            // 🚨 SNAPSHOT SYSTEM (تخزين سجل النقط باليوم) 🚨
+            let lastMacroDate = data.last_macro_date;
+            const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
+            if (lastMacroDate && lastMacroDate !== todayStr) {
+               await supabase.from('player_snapshots').insert([{
+                 player_name: updatedPlayer.name,
+                 snapshot_date: lastMacroDate,
+                 xp: data.cumulative_xp || data.xp || 0,
+                 gold: data.gold || 0,
+                 hp: data.hp || 100
+               }]);
+               
+               let fetchedMacros = { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] };
+               await supabase.from('elite_players').update({ 
+                 daily_macros: fetchedMacros, 
+                 last_macro_date: todayStr 
+               }).eq('name', updatedPlayer.name);
+            }
+
           } else {
             setPlayer(parsedData);
           }
@@ -519,6 +575,10 @@ const App = () => {
           setTimeout(() => {
             setIsBooting(false);
             playSound('startup');
+            
+            if (!bgmMain.playing()) {
+              bgmMain.play();
+            }
           }, 2500); 
         }
       };
@@ -527,11 +587,10 @@ const App = () => {
     }
   }, []);
 
-  // 🚨 REAL-TIME SUBSCRIPTIONS (PUSH NOTIFICATIONS) 🚨
+  // REAL-TIME SUBSCRIPTIONS
   useEffect(() => {
-    if (!player || isBooting || isOffline) return; // توقف المراقبة لو أوفلاين
+    if (!player || isBooting || isOffline) return;
 
-    // 1. Fetch historical broadcasts
     const fetchInitialNotifications = async () => {
       try {
         const { data } = await supabase.from('global_news').select('*').order('created_at', { ascending: false }).limit(10);
@@ -545,7 +604,6 @@ const App = () => {
     };
     fetchInitialNotifications();
 
-    // 2. Listen to Global Broadcasts (Radar)
     const newsSub = supabase.channel('public:global_news')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_news' }, payload => {
         const newNotif = { 
@@ -557,7 +615,6 @@ const App = () => {
         toast(payload.new.title, { description: payload.new.content, style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' } });
       }).subscribe();
 
-    // 3. Listen to Quest Approvals (Coach actions)
     const questSub = supabase.channel('public:elite_quests')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'elite_quests', filter: `player_name=eq.${player.name}` }, payload => {
         if (payload.new.status !== payload.old.status) {
@@ -581,7 +638,6 @@ const App = () => {
         }
       }).subscribe();
 
-    // 4. Listen to Player Punishments
     const playerSub = supabase.channel('public:elite_players')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'elite_players', filter: `name=eq.${player.name}` }, payload => {
         if (payload.new.active_penalty && !payload.old.active_penalty) {
@@ -610,6 +666,9 @@ const App = () => {
     setTimeout(() => {
       setIsBooting(false);
       playSound('startup');
+      if (!bgmMain.playing()) {
+        bgmMain.play();
+      }
     }, 2000);
   };
 
@@ -617,6 +676,7 @@ const App = () => {
     playSound('click');
     localStorage.removeItem('elite_system_active_session');
     localStorage.removeItem('elite_coach_mode');
+    Howler.stop(); 
     setPlayer(null);
   };
 
@@ -624,14 +684,41 @@ const App = () => {
     if (tabId === 'rank' || tabId === 'profile') playSound('shield');
     else if (tabId === 'records' || tabId === 'rehab') playAuraSound(player);
     else playSound('click');
+    
+    if (tabId === 'shop' || tabId === 'store') {
+      if (currentBGM !== bgmShop) {
+        currentBGM.fade(0.15, 0, 800);
+        setTimeout(() => {
+          currentBGM.pause();
+          bgmShop.play();
+          bgmShop.fade(0, 0.15, 800);
+          currentBGM = bgmShop;
+        }, 800);
+      }
+    } else {
+      if (currentBGM !== bgmMain) {
+        currentBGM.fade(0.15, 0, 800);
+        setTimeout(() => {
+          currentBGM.pause();
+          bgmMain.play();
+          bgmMain.fade(0, 0.15, 800);
+          currentBGM = bgmMain;
+        }, 800);
+      }
+    }
+
     setActiveTab(tabId);
   };
 
   const openNotificationCenter = () => {
     playSound('click');
     setShowNotifications(true);
-    // Mark all as read
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const toggleMute = () => {
+    playSound('click');
+    setIsMusicMuted(!isMusicMuted);
   };
 
   if (!player) return <AwakeningScreen onAwaken={handleAwaken} />;
@@ -689,7 +776,6 @@ const App = () => {
       <BackgroundGrid />
       <Toaster position="top-center" theme="dark" />
       
-      {/* 🚨 شريط الأوفلاين 🚨 */}
       <AnimatePresence>
         {isOffline && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ background: '#b45309', color: '#fef3c7', padding: '8px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -700,6 +786,10 @@ const App = () => {
 
       <StatusBar>
         <TopRightControls>
+          <IconButton onClick={toggleMute} title={isMusicMuted ? "Unmute Music" : "Mute Music"}>
+            {isMusicMuted ? <VolumeX size={18} color="#ef4444" /> : <Volume2 size={18} color="#10b981" />}
+          </IconButton>
+
           <IconButton onClick={openNotificationCenter} $hasUnread={unreadCount > 0} title="Notifications" style={{ display: 'none' }}>
             <Bell size={18} />
             {unreadCount > 0 && <UnreadDot>{unreadCount}</UnreadDot>}
