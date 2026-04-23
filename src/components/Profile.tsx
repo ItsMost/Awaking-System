@@ -7,7 +7,7 @@ import { loadFull } from "tsparticles";
 import {
   Zap, X, Activity, Award, Target, Shield, Flame, Camera, Hexagon, Moon, Ghost, Wind, Footprints,
   Lock as LockIcon, Dumbbell, Sword, Skull, Crown, Heart, Droplet, Axe, Anchor, Fingerprint, Cpu,
-  Infinity as InfinityIcon, Settings, Unlock, Crosshair, LogOut, Eye, User, Medal, TrendingUp
+  Infinity as InfinityIcon, Settings, Unlock, Crosshair, LogOut, Eye, User, Medal, TrendingUp, Radar
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -157,7 +157,7 @@ const getSystemDateStr = (date: Date) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
-// 🚨 نظام ألوان الهالة (Streak Aura System) 🚨
+// 🚨 نظام ألوان الهالة 🚨
 const getStreakAura = (streak: number) => {
   if (streak >= 30) return { name: 'MONARCH AURA', color: '#a855f7', icon: Crown };
   if (streak >= 15) return { name: 'LIGHTNING AURA', color: '#0ea5e9', icon: Zap };
@@ -167,7 +167,7 @@ const getStreakAura = (streak: number) => {
 };
 
 // ==========================================
-// 3. التصميمات النيون الفخمة (Styled Components)
+// 3. التصميمات النيون الفخمة
 // ==========================================
 const Container = styled.div` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; `;
 const Card = styled.div` background: #0b1120; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10; `;
@@ -225,7 +225,7 @@ const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: 
 const ModalContent = styled(motion.div)` background: #0b1120; border: 2px solid #00f2ff; border-radius: 20px; padding: 30px; width: 100%; max-width: 450px; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 40px rgba(0, 242, 255, 0.3); &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: #00f2ff; border-radius: 5px; } `;
 
 // ==========================================
-// 4. Custom Line Chart Component 📈
+// 4. Custom Components (LineChart & RadarChart) 📈
 // ==========================================
 const LineChart = ({ data, color }: { data: { label: string, value: number }[], color: string }) => {
   if (!data || data.length === 0) return <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>No data available</div>;
@@ -276,6 +276,56 @@ const LineChart = ({ data, color }: { data: { label: string, value: number }[], 
   );
 };
 
+// 🚨 الرسم البياني العنكبوتي (Radar Chart) المضاف حديثاً 🚨
+const CustomRadarChart = ({ stats, color }: { stats: { label: string, value: number }[], color: string }) => {
+  const size = 260;
+  const center = size / 2;
+  const radius = 80;
+  
+  const getPoint = (value: number, index: number, total: number) => {
+    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / total;
+    const x = center + Math.cos(angle) * radius * (value / 10);
+    const y = center + Math.sin(angle) * radius * (value / 10);
+    return { x, y };
+  };
+
+  const points = stats.map((s, i) => getPoint(s.value, i, stats.length));
+  const pathD = `M ${points.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
+
+  return (
+    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+      <svg width="100%" height="260px" viewBox={`0 0 ${size} ${size}`} style={{ maxWidth: '300px' }}>
+        {/* رسم الحلقات الخلفية */}
+        {[2, 4, 6, 8, 10].map((level) => {
+          const webPoints = stats.map((_, i) => getPoint(level, i, stats.length));
+          const webPath = `M ${webPoints.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
+          return <path key={level} d={webPath} fill="none" stroke="#1e293b" strokeWidth="1" />;
+        })}
+        {/* رسم الخطوط المتقاطعة */}
+        {stats.map((_, i) => {
+          const p = getPoint(10, i, stats.length);
+          return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="#1e293b" strokeWidth="1" />;
+        })}
+        {/* رسم شكل الإحصائيات (المضلع الملون) */}
+        <path d={pathD} fill={`${color}40`} stroke={color} strokeWidth="2" style={{ filter: `drop-shadow(0 0 5px ${color})` }} />
+        
+        {/* النقاط والنصوص */}
+        {stats.map((s, i) => {
+          const p = getPoint(s.value, i, stats.length);
+          const labelP = getPoint(12.5, i, stats.length); 
+          return (
+            <g key={i}>
+              <circle cx={p.x} cy={p.y} r="4" fill="#0b1120" stroke={color} strokeWidth="2" />
+              <text x={labelP.x} y={labelP.y} fill="#94a3b8" fontSize="12" fontWeight="bold" textAnchor="middle" dominantBaseline="middle" fontFamily="Oxanium">{s.label}</text>
+              <text x={labelP.x} y={labelP.y + 14} fill="#fff" fontSize="11" fontWeight="900" textAnchor="middle" dominantBaseline="middle" fontFamily="Oxanium">{s.value.toFixed(1)}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+};
+
 // ==========================================
 // 5. المكون الرئيسي (Profile)
 // ==========================================
@@ -291,6 +341,10 @@ const Profile = ({ player, setPlayer }: any) => {
   const [heatmapData, setHeatmapData] = useState<{ date: string; intensity: number; count: number }[]>([]);
   const [attendanceStats, setAttendanceStats] = useState({ attended: 0, total: 1 });
   const [chartData, setChartData] = useState<{label: string, value: number}[]>([]);
+  
+  // 🚨 تم إضافة الستريك المباشر لحل المشكلة 🚨
+  const [liveStreak, setLiveStreak] = useState(player?.streak || 0);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const levelData = calculateLevelData(player?.cumulative_xp ?? player?.xp ?? 0);
@@ -308,12 +362,10 @@ const Profile = ({ player, setPlayer }: any) => {
   const evoProgress = Math.min(100, (lvl / 20) * 100);
 
   const titles = player?.titles || ['Awakened', 'Gate Closer'];
-  const currentStreak = player?.streak || 0;
   
-  const auraInfo = getStreakAura(currentStreak);
+  const auraInfo = getStreakAura(liveStreak);
   const AuraIcon = auraInfo.icon;
 
-  // 🚨 إعدادات الجزيئات (Particles) الخاصة بالهالة 🚨
   const particlesInit = useCallback(async (engine: any) => {
     await loadFull(engine);
   }, []);
@@ -325,10 +377,10 @@ const Profile = ({ player, setPlayer }: any) => {
     let links = false;
     let particleCount = 0;
 
-    if (streak >= 30) { color = "#a855f7"; speed = 0.5; direction = "top"; particleCount = 40; } // Monarch
-    else if (streak >= 15) { color = "#0ea5e9"; speed = 3; direction = "none"; links = true; particleCount = 50; } // Lightning
-    else if (streak >= 7) { color = "#10b981"; speed = 1.5; direction = "top"; particleCount = 30; } // Toxic
-    else if (streak >= 1) { color = "#f97316"; speed = 2.5; direction = "top"; particleCount = 25; } // Flame
+    if (streak >= 30) { color = "#a855f7"; speed = 0.5; direction = "top"; particleCount = 40; } 
+    else if (streak >= 15) { color = "#0ea5e9"; speed = 3; direction = "none"; links = true; particleCount = 50; } 
+    else if (streak >= 7) { color = "#10b981"; speed = 1.5; direction = "top"; particleCount = 30; } 
+    else if (streak >= 1) { color = "#f97316"; speed = 2.5; direction = "top"; particleCount = 25; } 
 
     return {
       fullScreen: { enable: false, zIndex: 0 },
@@ -349,6 +401,9 @@ const Profile = ({ player, setPlayer }: any) => {
       const { data: dbPlayer } = await supabase.from('elite_players').select('*').eq('name', player.name).single();
       
       if (dbPlayer) {
+        // 🚨 تحديث الستريك الحي 🚨
+        setLiveStreak(dbPlayer.streak || 0);
+
         let fetchedMacros = dbPlayer.daily_macros || { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] };
         let lastMacroDate = dbPlayer.last_macro_date;
         const todayStr = getSystemDateStr(new Date());
@@ -522,14 +577,23 @@ const Profile = ({ player, setPlayer }: any) => {
   const protMin = Math.round(editWeight * 1.7);
   const protMax = Math.round(editWeight * 2.2);
 
+  // 🚨 بيانات الرسم البياني العنكبوتي (Radar Stats) 🚨
+  const attRate = attendanceStats.total > 0 ? (attendanceStats.attended / attendanceStats.total) * 100 : 0;
+  const radarStats = [
+    { label: 'القوة', value: Math.min(10, 3 + (lvl / 6)) },
+    { label: 'الحيوية', value: Math.min(10, 2 + (attRate / 15)) },
+    { label: 'الرشاقة', value: Math.min(10, 4 + (lvl / 10)) },
+    { label: 'التعافي', value: Math.min(10, ((player.hp || 100) / 10)) },
+    { label: 'التركيز', value: Math.min(10, 2 + (liveStreak / 4)) }
+  ];
+
   return (
     <Container initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <Toaster position="top-center" theme="dark" />
 
-      {/* 🚨 تشغيل جزيئات الهالة (Aura Particles) 🚨 */}
-      {currentStreak > 0 && (
+      {liveStreak > 0 && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'auto' }}>
-          <Particles id="tsparticles-profile" init={particlesInit} options={getParticleConfig(currentStreak)} style={{ width: '100%', height: '100%', position: 'absolute' }} />
+          <Particles id="tsparticles-profile" init={particlesInit} options={getParticleConfig(liveStreak)} style={{ width: '100%', height: '100%', position: 'absolute' }} />
         </div>
       )}
 
@@ -604,13 +668,13 @@ const Profile = ({ player, setPlayer }: any) => {
         </ProgressBarContainer>
       </GlowingCard>
 
-      <GlowingCard $glowColor={auraInfo.color} $isAura={currentStreak > 0}>
+      <GlowingCard $glowColor={auraInfo.color} $isAura={liveStreak > 0}>
         <HeatmapHeader>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '900', letterSpacing: '1px', color: '#fff' }}>
             <AuraIcon size={16} color={auraInfo.color} /> {auraInfo.name} HEATMAP
           </div>
           <div style={{ fontSize: '12px', fontWeight: '900', color: auraInfo.color, display: 'flex', alignItems: 'center', gap: '4px' }}>
-            STREAK: {currentStreak} <Flame size={14} color="#ef4444" fill="#ef4444" />
+            STREAK: {liveStreak} <Flame size={14} color="#ef4444" fill="#ef4444" />
           </div>
         </HeatmapHeader>
 
@@ -625,6 +689,25 @@ const Profile = ({ player, setPlayer }: any) => {
           <LegendItem>15 STREAK<Zap size={18} color="#0ea5e9" fill="#0ea5e9" style={{ filter: 'drop-shadow(0 0 5px #0ea5e9)' }} /> Spark</LegendItem>
           <LegendItem>30 STREAK<Crown size={18} color="#a855f7" fill="#a855f7" style={{ filter: 'drop-shadow(0 0 5px #a855f7)' }} /> Monarch</LegendItem>
         </LegendGrid>
+      </GlowingCard>
+
+      {/* 🚨 قسم الإحصائيات العنكبوتية (Radar Chart) 🚨 */}
+      <GlowingCard $glowColor="#a855f7">
+        <CardTitle $color="#a855f7" style={{ justifyContent: 'center', marginBottom: '5px' }}>
+          <Radar size={18} /> روح الصياد (HUNTER'S SOUL)
+        </CardTitle>
+        <div style={{ textAlign: 'center', fontSize: '10px', color: '#cbd5e1', marginBottom: '15px' }}>تحليل القوة الشامل بناءً على إنجازاتك والمستوى</div>
+        
+        <CustomRadarChart stats={radarStats} color="#a855f7" />
+        
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '15px' }}>
+          {radarStats.map((s, i) => (
+            <div key={i} style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '8px', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.3)', display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+              <span style={{ color: '#cbd5e1' }}>{s.label}</span>
+              <span style={{ color: '#00f2ff', fontWeight: 'bold' }}>{s.value.toFixed(1)}/10</span>
+            </div>
+          ))}
+        </div>
       </GlowingCard>
 
       <GlowingCard $glowColor="#10b981">
