@@ -20,6 +20,7 @@ import Records from './components/Records';
 import Rules from './components/Rules';
 import Rehab from './components/Rehab';
 import Radar from './components/Radar';
+import CoachPanel from './components/CoachPanel'; // 🚨 تم إضافة مركز القيادة هنا 🚨
 import { supabase } from './lib/supabase';
 
 // ==========================================
@@ -415,7 +416,6 @@ const NavButton = styled(motion.button)<{ $active: boolean; $color: string; }>`
   }
 `;
 
-// 🚨 تحديث ترتيب أزرار الكنترول عشان ميبقاش فوق ה-HP 🚨
 const TopRightControls = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -478,10 +478,8 @@ const App = () => {
   const [bootText, setBootText] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   
-  // 🚨 BGM Controls 🚨
   const [isMusicMuted, setIsMusicMuted] = useState(false);
 
-  // 🚨 Notifications State 🚨
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -493,6 +491,9 @@ const App = () => {
     "CALIBRATING CUMULATIVE EXP MATRIX...",
     "WELCOME TO THE ELITE SYSTEM."
   ];
+
+  // 🚨 التحقق من حالة الـ Coach Mode 🚨
+  const isCoachMode = localStorage.getItem('elite_coach_mode') === 'true';
 
   useEffect(() => {
     Howler.mute(isMusicMuted);
@@ -587,7 +588,6 @@ const App = () => {
     }
   }, []);
 
-  // REAL-TIME SUBSCRIPTIONS
   useEffect(() => {
     if (!player || isBooting || isOffline) return;
 
@@ -753,6 +753,7 @@ const App = () => {
   const currentStreak = player.streak || 0;
   const streakColor = getStreakColor(currentStreak);
 
+  // 🚨 تم تعديل المصفوفة لإضافة زرار الكوتش هنا 🚨
   const TABS = [
     { id: 'dashboard', label: 'QUESTS', icon: CheckSquare, color: '#00f2ff' },
     { id: 'radar', label: 'RADAR', icon: Globe, color: '#0ea5e9' },
@@ -763,6 +764,7 @@ const App = () => {
     { id: 'profile', label: 'PROFILE', icon: User, color: '#ec4899' },
     { id: 'rules', label: 'RULES', icon: Book, color: '#f43f5e' },
     { id: 'rehab', label: 'CLINIC', icon: Activity, color: '#10b981' },
+    ...(isCoachMode ? [{ id: 'coach', label: 'COMMAND', icon: Terminal, color: '#ef4444' }] : []),
   ];
 
   const pageVariants = {
@@ -785,7 +787,6 @@ const App = () => {
       </AnimatePresence>
 
       <StatusBar>
-        {/* 🚨 أزرار التحكم بقت في سطر لوحدها فوق عشان متداريش على ה-HP 🚨 */}
         <TopRightControls>
           <IconButton onClick={toggleMute} title={isMusicMuted ? "Unmute Music" : "Mute Music"}>
             {isMusicMuted ? <VolumeX size={18} color="#ef4444" /> : <Volume2 size={18} color="#10b981" />}
@@ -868,11 +869,12 @@ const App = () => {
             {activeTab === 'records' && <Records player={player} setPlayer={setPlayer} />}
             {activeTab === 'rules' && <Rules />}
             {activeTab === 'rehab' && <Rehab />}
+            {/* 🚨 إظهار شاشة مركز القيادة 🚨 */}
+            {activeTab === 'coach' && <CoachPanel />}
           </motion.div>
         </AnimatePresence>
       </ContentWrapper>
 
-      {/* 🚨 Notification Center Modal 🚨 */}
       <AnimatePresence>
         {showNotifications && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
