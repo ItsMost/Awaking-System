@@ -5,7 +5,7 @@ import {
   Sword, LogOut, CheckSquare, Medal, ShoppingCart, Store as Storefront, Shield, User,
   Book, Activity, Moon, Eye, Wind, Dumbbell, Zap, Footprints, Lock as LockIcon, Flame,
   Crown, Skull, Target, Heart, Droplet, Axe, Anchor, Fingerprint, Cpu, Infinity as InfinityIcon,
-  Hexagon, Globe, Terminal, Power, Bell, X, MessageSquare, WifiOff, Volume2, VolumeX
+  Hexagon, Globe, Terminal, Power, Bell, X, MessageSquare, WifiOff, Volume2, VolumeX, Package
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { Howl, Howler } from 'howler';
@@ -19,21 +19,21 @@ import Profile from './components/Profile';
 import Records from './components/Records';
 import Rules from './components/Rules';
 import Rehab from './components/Rehab';
-import Radar from './components/Radar';
-import CoachPanel from './components/CoachPanel'; // 🚨 تم إضافة مركز القيادة هنا 🚨
+import Vault from './components/Vault'; // 🚨 تم إضافة الخزنة بدل الرادار 🚨
+import CoachPanel from './components/CoachPanel'; 
 import { supabase } from './lib/supabase';
 
 // ==========================================
 // 1. ADVANCED AUDIO ENGINE (Howler + Web Audio)
 // ==========================================
 const bgmMain = new Howl({
-  src: ['https://actions.google.com/sounds/v1/science_fiction/dark_ambient_loop.ogg'],
+  src: ['https://cdn.freesound.org/previews/514/514214_10901551-lq.mp3'], // 🚨 رابط موسيقى جديد شغال 🚨
   loop: true,
   volume: 0.15,
 });
 
 const bgmShop = new Howl({
-  src: ['https://actions.google.com/sounds/v1/science_fiction/cyberpunk_city.ogg'],
+  src: ['https://cdn.freesound.org/previews/612/612085_5674468-lq.mp3'], // 🚨 رابط موسيقى جديد شغال 🚨
   loop: true,
   volume: 0.15,
 });
@@ -492,7 +492,6 @@ const App = () => {
     "WELCOME TO THE ELITE SYSTEM."
   ];
 
-  // 🚨 التحقق من حالة الـ Coach Mode 🚨
   const isCoachMode = localStorage.getItem('elite_coach_mode') === 'true';
 
   useEffect(() => {
@@ -753,10 +752,10 @@ const App = () => {
   const currentStreak = player.streak || 0;
   const streakColor = getStreakColor(currentStreak);
 
-  // 🚨 تم تعديل المصفوفة لإضافة زرار الكوتش هنا 🚨
+  // 🚨 تم استبدال الرادار بالخزنة 🚨
   const TABS = [
     { id: 'dashboard', label: 'QUESTS', icon: CheckSquare, color: '#00f2ff' },
-    { id: 'radar', label: 'RADAR', icon: Globe, color: '#0ea5e9' },
+    { id: 'vault', label: 'VAULT', icon: Package, color: '#818cf8' }, 
     { id: 'records', label: 'RECORDS', icon: Medal, color: '#facc15' },
     { id: 'shop', label: 'SHOP', icon: ShoppingCart, color: '#38bdf8' },
     { id: 'store', label: 'STORE', icon: Storefront, color: '#10b981' },
@@ -861,7 +860,7 @@ const App = () => {
         <AnimatePresence mode="wait">
           <motion.div key={activeTab} initial="initial" animate="in" exit="out" variants={pageVariants}>
             {activeTab === 'dashboard' && <Dashboard player={player} setPlayer={setPlayer} />}
-            {activeTab === 'radar' && <Radar />}
+            {activeTab === 'vault' && <Vault player={player} setPlayer={setPlayer} />} {/* 🚨 الخزنة هنا 🚨 */}
             {activeTab === 'rank' && <Rank player={player} setPlayer={setPlayer} />}
             {activeTab === 'shop' && <Shop player={player} setPlayer={setPlayer} />}
             {activeTab === 'store' && <Store player={player} setPlayer={setPlayer} />}

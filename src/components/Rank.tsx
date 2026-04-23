@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import styled, { keyframes } from 'styled-components';
+import { Toaster, toast } from 'sonner';
+import { Canvas, useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 import {
   Trophy, Medal, Shield, User, ChevronUp, Activity, Target, Zap, Crown, Lock, Unlock,
   ShieldAlert, HeartPulse, Scale, Percent, CheckCircle, Clock, X, Database, Dumbbell,
@@ -10,7 +13,6 @@ import {
   Fingerprint, Hexagon, Cpu, RotateCcw, Ghost, Award, Star, RefreshCcw, Filter, CheckSquare
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { toast, Toaster } from 'sonner';
 
 // ==========================================
 // 1. المحرك الصوتي
@@ -95,16 +97,30 @@ const calculateLevelData = (totalXp: number) => {
 };
 
 // ==========================================
-// 3. قوائم المهام والمكافآت
+// 3. مكونات الـ 3D (المجسم الدوار)
 // ==========================================
-const NORMAL_DAILY_QUESTS = ['Practice', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility', 'Recovery Cooldown'];
-const INJURED_DAILY_QUESTS = ['Practice (Rehab)', 'Hydration Target (3L)', 'Tissue Repair Nutrition', 'Rehab Mobility Protocol', 'Thermal / Cryotherapy'];
-const FRIDAY_DIRECTIVES = ['Weekly Volume Compliance', 'Perfect Microcycle Streak'];
-const BIWEEKLY_QUESTS = ['Recovery Logistics'];
-const MONTHLY_QUESTS = ['Supplement Inventory', 'InBody Assessment'];
+const FloatingCrystal = ({ color }: { color: string }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.01;
+      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime) * 0.2;
+      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.2;
+    }
+  });
+  return (
+    <mesh ref={meshRef}>
+      <octahedronGeometry args={[1.8, 0]} />
+      <meshStandardMaterial color={color} wireframe emissive={color} emissiveIntensity={0.8} />
+    </mesh>
+  );
+};
 
+// ==========================================
+// 4. Rank System, Class Mapping & 🚨 QUEST REWARDS (القاموس المفقود) 🚨
+// ==========================================
 const QUEST_REWARDS: Record<string, { exp: number; gold: number }> = {
-  Practice: { exp: 100, gold: 30 },
+  'Practice': { exp: 100, gold: 30 },
   'Practice (Rehab)': { exp: 90, gold: 30 },
   'Hydration Target (3L)': { exp: 30, gold: 10 },
   'Nutritional Compliance': { exp: 30, gold: 10 },
@@ -120,9 +136,12 @@ const QUEST_REWARDS: Record<string, { exp: number; gold: number }> = {
   'Disciplinary Execution': { exp: 0, gold: 0 },
 };
 
-// ==========================================
-// 4. Rank System & Class Mapping
-// ==========================================
+const NORMAL_DAILY_QUESTS = ['Practice', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility', 'Recovery Cooldown'];
+const INJURED_DAILY_QUESTS = ['Practice (Rehab)', 'Hydration Target (3L)', 'Tissue Repair Nutrition', 'Rehab Mobility Protocol', 'Thermal / Cryotherapy'];
+const FRIDAY_DIRECTIVES = ['Weekly Volume Compliance', 'Perfect Microcycle Streak'];
+const BIWEEKLY_QUESTS = ['Recovery Logistics'];
+const MONTHLY_QUESTS = ['Supplement Inventory', 'InBody Assessment'];
+
 const getRankInfo = (level: number) => {
   if (level >= 30) return { name: 'ELITE', color: '#a855f7', glow: 'rgba(168, 85, 247, 0.3)' };
   if (level >= 25) return { name: 'MASTER', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.3)' };
@@ -218,20 +237,20 @@ const TabsGrid = styled.div`
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;
 `;
 
-const Tab = styled.button<{ $active: boolean }>`
+const Tab = styled.button<{ $active: boolean; $glowColor?: string }>`
   padding: 12px; border-radius: 12px; border: none; font-family: 'Oxanium', sans-serif; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;
-  background: ${(props) => (props.$active ? '#0ea5e9' : '#0f172a')};
+  background: ${(props) => (props.$active ? props.$glowColor || '#0ea5e9' : '#0f172a')};
   color: ${(props) => (props.$active ? '#fff' : '#94a3b8')};
-  box-shadow: ${(props) => props.$active ? '0 4px 15px rgba(14, 165, 233, 0.4)' : 'none'};
+  box-shadow: ${(props) => props.$active ? `0 4px 15px ${props.$glowColor}40` : 'none'};
 `;
 
-const BannerWrapper = styled.div`
-  background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 25px 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+const BannerWrapper3D = styled.div<{ $borderColor: string }>`
+  background: #020617; border: 1px solid ${(props) => props.$borderColor}; border-radius: 16px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 30px ${(props) => props.$borderColor}40; position: relative; overflow: hidden; height: 260px;
 `;
 
-const BannerIcon = styled.div` margin-bottom: 10px; `;
-const BannerTitle = styled.h2` margin: 0; color: #0ea5e9; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; font-weight: 900; text-align: center; `;
-const BannerSub = styled.p` margin: 5px 0 0 0; color: #64748b; font-size: 12px; text-align: center; `;
+const BannerTitle = styled.h2` margin: 0; font-size: 22px; letter-spacing: 4px; text-transform: uppercase; font-weight: 900; text-align: center; text-shadow: 0 0 15px currentColor; `;
+const BannerSub = styled.p` margin: 5px 0 0 0; color: #cbd5e1; font-size: 12px; text-align: center; font-weight: bold; letter-spacing: 1px; `;
+
 const SearchContainer = styled.div` position: relative; margin-bottom: 25px; `;
 const SearchIconBox = styled.div` position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #0ea5e9; `;
 
@@ -369,7 +388,6 @@ const Rank = ({ player, setPlayer }: any) => {
         return;
       }
 
-      // 🚨 تحويل الأرقام التراكمية لشكل مرئي
       const processedHunters = hunters.map(h => {
         const levelData = calculateLevelData(h.cumulative_xp || 0);
         const monthlyData = calculateLevelData(h.monthly_xp || 0);
@@ -725,12 +743,13 @@ const Rank = ({ player, setPlayer }: any) => {
   if (activeBoard === 'female') displayBoard = femaleLeaderboard;
   const filteredBoard = displayBoard.filter((h) => h.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
+  // 🚨 تم إضافة لون لكل قسم عشان الكريستالة ה-3D تاخد لونه 🚨
   const getBannerInfo = () => {
     switch (activeBoard) {
-      case 'monthly': return { title: 'MONTHLY CHAMPIONS', sub: 'أبطال الشهر الحالي', icon: <Trophy size={32} color="#0ea5e9" /> };
-      case 'male': return { title: 'MALE DIVISION', sub: 'تصنيف الشباب العام', icon: <Sword size={32} color="#0ea5e9" /> };
-      case 'female': return { title: 'FEMALE DIVISION', sub: 'تصنيف البنات العام', icon: <Crown size={32} color="#ec4899" /> };
-      default: return { title: 'ALL-TIME HALL OF FAME', sub: 'الترتيب العام الشامل لجميع اللاعبين', icon: <Globe size={32} color="#0ea5e9" /> };
+      case 'monthly': return { title: 'MONTHLY CHAMPIONS', sub: 'أبطال الشهر الحالي', color: '#0ea5e9' };
+      case 'male': return { title: 'MALE DIVISION', sub: 'تصنيف الشباب العام', color: '#38bdf8' };
+      case 'female': return { title: 'FEMALE DIVISION', sub: 'تصنيف البنات العام', color: '#ec4899' };
+      default: return { title: 'ALL-TIME HALL OF FAME', sub: 'الترتيب العام الشامل لجميع اللاعبين', color: '#a855f7' };
     }
   };
   const bannerInfo = getBannerInfo();
@@ -930,17 +949,24 @@ const Rank = ({ player, setPlayer }: any) => {
       </AnimatePresence>
 
       <TabsGrid>
-        <Tab $active={activeBoard === 'global'} onClick={() => { playClick(); setActiveBoard('global'); }}>الترتيب العام <Globe size={16} /></Tab>
-        <Tab $active={activeBoard === 'monthly'} onClick={() => { playClick(); setActiveBoard('monthly'); }}>بطل الشهر <Trophy size={16} /></Tab>
-        <Tab $active={activeBoard === 'male'} onClick={() => { playClick(); setActiveBoard('male'); }}>تصنيف الشباب <Sword size={16} /></Tab>
-        <Tab $active={activeBoard === 'female'} onClick={() => { playClick(); setActiveBoard('female'); }}>تصنيف البنات <Crown size={16} /></Tab>
+        <Tab $active={activeBoard === 'global'} $glowColor="#a855f7" onClick={() => { playClick(); setActiveBoard('global'); }}>الترتيب العام <Globe size={16} /></Tab>
+        <Tab $active={activeBoard === 'monthly'} $glowColor="#0ea5e9" onClick={() => { playClick(); setActiveBoard('monthly'); }}>بطل الشهر <Trophy size={16} /></Tab>
+        <Tab $active={activeBoard === 'male'} $glowColor="#38bdf8" onClick={() => { playClick(); setActiveBoard('male'); }}>تصنيف الشباب <Sword size={16} /></Tab>
+        <Tab $active={activeBoard === 'female'} $glowColor="#ec4899" onClick={() => { playClick(); setActiveBoard('female'); }}>تصنيف البنات <Crown size={16} /></Tab>
       </TabsGrid>
 
-      <BannerWrapper>
-        <BannerIcon>{bannerInfo.icon}</BannerIcon>
-        <BannerTitle>{bannerInfo.title}</BannerTitle>
-        <BannerSub>{bannerInfo.sub}</BannerSub>
-      </BannerWrapper>
+      {/* 🚨 غرفة الـ 3D بدل البانر العادي 🚨 */}
+      <BannerWrapper3D $borderColor={bannerInfo.color}>
+        <Canvas camera={{ position: [0, 0, 5] }}>
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} intensity={1} />
+          <FloatingCrystal color={bannerInfo.color} />
+        </Canvas>
+        <div style={{ position: 'absolute', bottom: '20px', width: '100%', textAlign: 'center', pointerEvents: 'none' }}>
+          <BannerTitle style={{ color: bannerInfo.color, textShadow: `0 0 20px ${bannerInfo.color}` }}>{bannerInfo.title}</BannerTitle>
+          <BannerSub>{bannerInfo.sub}</BannerSub>
+        </div>
+      </BannerWrapper3D>
 
       <SearchContainer>
         <SearchIconBox><Search size={20} /></SearchIconBox>

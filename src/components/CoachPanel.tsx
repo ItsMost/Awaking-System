@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert, CheckCircle, XCircle, Globe, Send, Loader, User, Clock, Target, Database } from 'lucide-react';
+import { ShieldAlert, CheckCircle, XCircle, Globe, Send, Loader, User, Clock, Target, Database, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 
 // ==========================================
 // 1. القاموس السري للمكافآت (Rewards Dictionary)
 // ==========================================
-// عشان المدرب لما يوافق، السيرفر يعرف يدي اللاعب كام نقطة بالظبط بناءً على اسم المهمة
 const QUEST_REWARDS: Record<string, { exp: number, gold: number }> = {
   'Practice': { exp: 100, gold: 30 },
   'Practice (Rehab)': { exp: 90, gold: 30 },
@@ -19,11 +18,11 @@ const QUEST_REWARDS: Record<string, { exp: number, gold: number }> = {
   'InBody Assessment': { exp: 75, gold: 200 },
   'Weekly Volume Compliance': { exp: 150, gold: 100 },
   'Perfect Microcycle Streak': { exp: 150, gold: 100 },
-  'Disciplinary Execution': { exp: 0, gold: 0 }, // عقوبة
+  'Disciplinary Execution': { exp: 0, gold: 0 }, 
 };
 
 const getReward = (taskName: string) => {
-  return QUEST_REWARDS[taskName] || { exp: 50, gold: 20 }; // مكافأة افتراضية لو المهمة مش في القاموس
+  return QUEST_REWARDS[taskName] || { exp: 50, gold: 20 }; 
 };
 
 const calculateLevelData = (totalXp: number) => {
@@ -51,6 +50,10 @@ const Input = styled.input` width: 100%; background: #020617; border: 1px solid 
 const TextArea = styled.textarea` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; font-family: 'Oxanium'; font-size: 14px; min-height: 100px; resize: vertical; outline: none; &:focus { border-color: #0ea5e9; box-shadow: 0 0 10px rgba(14, 165, 233, 0.3); } `;
 const SendBtn = styled.button` background: #0ea5e9; color: #000; border: none; padding: 15px 25px; border-radius: 12px; font-family: 'Oxanium'; font-weight: 900; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; width: 100%; &:hover { filter: brightness(1.2); box-shadow: 0 0 20px rgba(14, 165, 233, 0.5); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
 
+// 🚨 تصميمات لستة الأخبار 🚨
+const NewsList = styled.div` margin-top: 20px; display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; padding-right: 5px; `;
+const NewsItem = styled.div` background: #020617; border: 1px solid #1e293b; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 15px; `;
+
 const RequestCard = styled(motion.div)` background: #0b1120; border: 1px solid #1e293b; border-left: 4px solid #facc15; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; `;
 const ReqHeader = styled.div` display: flex; justify-content: space-between; align-items: flex-start; `;
 const ReqPlayer = styled.div` font-size: 16px; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 8px; margin-bottom: 5px; `;
@@ -75,6 +78,9 @@ const CoachPanel = () => {
   const [broadcastTitle, setBroadcastTitle] = useState('');
   const [broadcastMsg, setBroadcastMsg] = useState('');
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  
+  // 🚨 State جديد للأخبار الحالية 🚨
+  const [activeNews, setActiveNews] = useState<any[]>([]);
 
   // جلب الطلبات المعلقة
   const fetchPending = async () => {
@@ -93,8 +99,17 @@ const CoachPanel = () => {
     setLoading(false);
   };
 
+  // 🚨 دالة جلب الأخبار الحالية 🚨
+  const fetchActiveNews = async () => {
+    try {
+      const { data } = await supabase.from('global_news').select('*').order('created_at', { ascending: false }).limit(10);
+      if (data) setActiveNews(data);
+    } catch (e) {}
+  };
+
   useEffect(() => {
     fetchPending();
+    fetchActiveNews(); // جلب الأخبار أول ما الصفحة تفتح
   }, []);
 
   // بث رسالة على الرادار
@@ -105,19 +120,35 @@ const CoachPanel = () => {
     }
     setSendingBroadcast(true);
     try {
-      await supabase.from('global_news').insert([{
+      const { error } = await supabase.from('global_news').insert([{
         title: broadcastTitle,
         content: broadcastMsg,
         type: 'system',
         priority: 1
       }]);
+      
+      if (error) throw error; 
+
       toast.success('تم إرسال البث للجميع!', { style: { background: '#020617', color: '#0ea5e9', border: '1px solid #0ea5e9' }});
       setBroadcastTitle('');
       setBroadcastMsg('');
-    } catch (e) {
-      toast.error('فشل البث');
+      fetchActiveNews(); // تحديث اللستة بعد الإرسال
+    } catch (e: any) {
+      toast.error(`فشل البث: ${e.message}`);
     }
     setSendingBroadcast(false);
+  };
+
+  // 🚨 دالة مسح خبر من الرادار 🚨
+  const handleDeleteNews = async (id: string) => {
+    if (!window.confirm('هل أنت متأكد من مسح هذا البث من الرادار؟')) return;
+    try {
+      await supabase.from('global_news').delete().eq('id', id);
+      toast.success('تم مسح البث بنجاح!', { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }});
+      setActiveNews(prev => prev.filter(n => n.id !== id));
+    } catch (e) {
+      toast.error('حدث خطأ أثناء المسح');
+    }
   };
 
   // الموافقة على الطلب
@@ -138,8 +169,12 @@ const CoachPanel = () => {
       const newLvl = calculateLevelData(newXp).level;
       let bonusGold = 0;
       if (newLvl > oldLvl) {
-        bonusGold = (newLvl - oldLvl) * 100;
-        if (newLvl % 5 === 0) bonusGold += 100; // اكسترا للرانكات الكبيرة
+        const levelsGained = newLvl - oldLvl;
+        for(let i=1; i<=levelsGained; i++) {
+           let reachedLvl = oldLvl + i;
+           if (reachedLvl % 5 === 0) bonusGold += 200;
+           else bonusGold += 100;
+        }
         newGold += bonusGold;
       }
 
@@ -153,6 +188,9 @@ const CoachPanel = () => {
       await supabase.from('elite_economy').insert([{ player_name: req.player_name, amount: reward.exp, currency: 'xp', operation: 'increase', reason: `Coach Approved: ${req.task_name}` }]);
       if (reward.gold > 0) {
         await supabase.from('elite_economy').insert([{ player_name: req.player_name, amount: reward.gold, currency: 'gold', operation: 'increase', reason: `Coach Approved: ${req.task_name}` }]);
+      }
+      if (bonusGold > 0) {
+        await supabase.from('elite_economy').insert([{ player_name: req.player_name, amount: bonusGold, currency: 'gold', operation: 'increase', reason: `Level Up Bonus` }]);
       }
 
       toast.success(`تمت الموافقة وتم منح ${req.player_name} ${reward.exp} XP!`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
@@ -197,6 +235,30 @@ const CoachPanel = () => {
         <SendBtn disabled={sendingBroadcast} onClick={handleBroadcast}>
           {sendingBroadcast ? <Spinner size={18} /> : <><Send size={18} /> TRANSMIT TO ALL HUNTERS</>}
         </SendBtn>
+
+        {/* 🚨 قسم إدارة الأخبار الحالية ومسحها 🚨 */}
+        {activeNews.length > 0 && (
+          <div style={{ marginTop: '30px', borderTop: '1px dashed #0ea5e950', paddingTop: '15px' }}>
+            <div style={{ fontSize: '12px', color: '#0ea5e9', fontWeight: 'bold', marginBottom: '10px' }}>ACTIVE BROADCASTS (إدارة البث الحالي)</div>
+            <NewsList>
+              {activeNews.map(news => (
+                <NewsItem key={news.id}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>{news.title}</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>{news.content}</div>
+                  </div>
+                  <button 
+                    onClick={() => handleDeleteNews(news.id)}
+                    style={{ background: '#2a0808', border: '1px solid #ef4444', padding: '8px', borderRadius: '8px', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    title="مسح من الرادار"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </NewsItem>
+              ))}
+            </NewsList>
+          </div>
+        )}
       </BroadcastBox>
 
       {/* الطلبات المعلقة */}

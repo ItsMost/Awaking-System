@@ -129,7 +129,6 @@ const getRankInfo = (level: number) => {
   return { name: 'BRONZE', color: '#b45309', glow: 'rgba(180, 83, 9, 0.4)' };
 };
 
-// 🚨 تم استرجاع دالة العقوبات لحل المشكلة 🚨
 const getPenaltyStats = (level: number) => {
   if (level >= 30) return { hp: 50, gold: 250 };
   if (level >= 25) return { hp: 40, gold: 200 };
@@ -154,7 +153,6 @@ const calculateLevelData = (totalXp: number) => {
   return { level, xpInCurrentLevel: currentXp, expNeededForNextLevel };
 };
 
-// 🚨 تم استرجاع دالة التاريخ وإعادة تسميتها لتطابق الكود 🚨
 const getSystemDateStr = (date: Date) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
@@ -207,75 +205,34 @@ const TickerText = styled.div`
   display: flex;
   gap: 40px;
   white-space: nowrap;
-  animation: ${marquee} 15s linear infinite;
+  animation: ${marquee} 9s linear infinite;
   font-size: 13px;
   font-weight: bold;
   color: #94a3b8;
   direction: rtl;
-  
   span { color: #fff; }
   strong { color: #eab308; }
 `;
 
 const DateNav = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  border-radius: 12px;
-  padding: 10px 15px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  display: flex; align-items: center; justify-content: space-between; background: #0f172a;
+  border: 1px solid #1e293b; border-radius: 12px; padding: 10px 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 `;
 
 const NavBtn = styled.button`
-  background: none;
-  border: none;
-  color: #00f2ff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px;
-  transition: 0.3s;
-  
+  background: none; border: none; color: #00f2ff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; transition: 0.3s;
   &:disabled { color: #334155; cursor: not-allowed; }
   &:hover:not(:disabled) { filter: brightness(1.2); transform: scale(1.1); }
 `;
 
 const DateDisplay = styled.div`
   text-align: center;
-  
-  .day {
-    font-size: 15px;
-    font-weight: 900;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  
-  .full-date {
-    font-size: 10px;
-    color: #ef4444;
-    margin-top: 2px;
-    font-weight: bold;
-  }
+  .day { font-size: 15px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .full-date { font-size: 10px; color: #ef4444; margin-top: 2px; font-weight: bold; }
 `;
 
 const SeasonCard = styled.div`
-  background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-  border: 1px solid #38bdf8;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 25px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15);
+  background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid #38bdf8; border-radius: 16px; padding: 20px; margin-bottom: 25px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15);
 `;
 
 const SeasonHeader = styled.div`
@@ -298,10 +255,7 @@ const ProgressBarBG = styled.div` background: #1e293b; height: 8px; border-radiu
 const ProgressBarFill = styled.div<{ $progress: number; $color?: string }>` background: ${(props) => props.$color || '#38bdf8'}; height: 100%; width: ${(props) => props.$progress}%; box-shadow: 0 0 10px ${(props) => props.$color || '#38bdf8'}; transition: width 0.5s ease-out; `;
 
 const PenaltyBanner = styled(motion.div)<{ $isPending: boolean }>`
-  background: ${(props) => (props.$isPending ? '#b45309' : '#2a0808')};
-  border: 1px dashed ${(props) => (props.$isPending ? '#fcd34d' : '#ef4444')};
-  color: ${(props) => (props.$isPending ? '#fef3c7' : '#fca5a5')};
-  padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; font-weight: 900; letter-spacing: 1px; margin-bottom: 20px; box-shadow: 0 0 15px ${(props) => (props.$isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)')};
+  background: ${(props) => (props.$isPending ? '#b45309' : '#2a0808')}; border: 1px dashed ${(props) => (props.$isPending ? '#fcd34d' : '#ef4444')}; color: ${(props) => (props.$isPending ? '#fef3c7' : '#fca5a5')}; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; font-weight: 900; letter-spacing: 1px; margin-bottom: 20px; box-shadow: 0 0 15px ${(props) => (props.$isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)')};
 `;
 
 const DynamicHeader = styled.div<{ $color: string; $shadow: string }>`
@@ -319,16 +273,12 @@ const pulseRed = keyframes`
 `;
 
 const UrgentCard = styled(motion.div)<{ $status: string; $isLocked?: boolean }>`
-  background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : 'linear-gradient(90deg, #450a0a 0%, #020617 100%)'};
-  border: 2px solid ${(props) => (props.$status === 'completed' ? '#10b981' : '#ef4444')};
-  border-radius: 16px; padding: 20px; margin-bottom: 15px; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; position: relative; overflow: hidden; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; animation: ${(props) => (props.$status === 'idle' && !props.$isLocked ? pulseRed : 'none')} 2s infinite;
+  background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : 'linear-gradient(90deg, #450a0a 0%, #020617 100%)'}; border: 2px solid ${(props) => (props.$status === 'completed' ? '#10b981' : '#ef4444')}; border-radius: 16px; padding: 20px; margin-bottom: 15px; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; position: relative; overflow: hidden; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; animation: ${(props) => (props.$status === 'idle' && !props.$isLocked ? pulseRed : 'none')} 2s infinite;
   &::before { content: 'CRITICAL DIRECTIVE'; position: absolute; top: 8px; right: 15px; font-size: 9px; font-weight: 900; color: #ef4444; letter-spacing: 2px; }
 `;
 
 const QuestCard = styled(motion.div)<{ $status: string; $isPenalty?: boolean; $isLocked?: boolean }>`
-  background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : props.$status === 'pending' ? 'rgba(234, 179, 8, 0.1)' : props.$isPenalty ? '#2a0808' : '#0b1120'};
-  border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#eab308' : props.$isPenalty ? '#ef4444' : '#1e293b'};
-  border-radius: 16px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; transition: 0.3s; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; box-shadow: ${(props) => props.$isPenalty && props.$status === 'idle' && !props.$isLocked ? '0 0 15px rgba(239,68,68,0.3)' : '0 4px 6px rgba(0,0,0,0.2)'};
+  background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : props.$status === 'pending' ? 'rgba(234, 179, 8, 0.1)' : props.$isPenalty ? '#2a0808' : '#0b1120'}; border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#eab308' : props.$isPenalty ? '#ef4444' : '#1e293b'}; border-radius: 16px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; transition: 0.3s; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; box-shadow: ${(props) => props.$isPenalty && props.$status === 'idle' && !props.$isLocked ? '0 0 15px rgba(239,68,68,0.3)' : '0 4px 6px rgba(0,0,0,0.2)'};
   &:hover { background: ${(props) => props.$status === 'idle' && !props.$isLocked ? props.$isPenalty ? '#450a0a' : '#0f172a' : ''}; transform: ${(props) => (props.$status === 'idle' && !props.$isLocked ? 'translateY(-2px)' : 'none')}; }
 `;
 
@@ -362,14 +312,12 @@ const FoodItem = styled.div` background: #1e293b50; border: 1px solid #334155; p
 const ManualInputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; `;
 const ResetMacrosBtn = styled.button` background: #2a0808; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; &:hover { background: #450a0a; } `;
 
-// 🚨 زرار الألعاب يطفو في الهوا 🚨
 const GameFAB = styled(motion.button)` position: fixed; bottom: 100px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: 2px solid #d8b4fe; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; &:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(168, 85, 247, 0.6); } `;
 const GameArea = styled.div<{ $state: string }>` width: 100%; height: 250px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: ${(props) => props.$state === 'result_final' ? 'default' : 'pointer'}; user-select: none; transition: background 0.1s; background: ${(props) => props.$state === 'waiting' ? '#ef4444' : props.$state === 'ready' ? '#10b981' : props.$state === 'early' ? '#b45309' : (props.$state === 'result' || props.$state === 'result_final') ? '#0ea5e9' : '#1e293b' }; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); border: 4px solid rgba(255,255,255,0.1); `;
 const GameText = styled.div` font-size: 24px; font-weight: 900; text-transform: uppercase; color: #fff; letter-spacing: 2px; text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,0.5); `;
 const GameSubText = styled.div` font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 10px; font-weight: bold; `;
 const GameSelectorBtn = styled.button<{ $active: boolean, $color: string }>` flex: 1; padding: 10px; background: ${(props) => props.$active ? `${props.$color}20` : 'transparent'}; border: 1px solid ${(props) => props.$active ? props.$color : '#334155'}; color: ${(props) => props.$active ? props.$color : '#94a3b8'}; border-radius: 8px; font-family: 'Oxanium'; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; `;
 
-// 🚨 3. Level Up Modal Styled Components (الأنيميشن الفخم) 🚨
 const LevelUpOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(15px); `;
 const LevelUpCard = styled(motion.div)<{ $color: string }>` background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95)); border: 2px solid ${(props) => props.$color}; border-radius: 24px; padding: 40px; width: 100%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 0 50px ${(props) => props.$color}80, inset 0 0 20px ${(props) => props.$color}40; `;
 const LevelUpTitle = styled.h1<{ $color: string }>` font-size: 36px; font-weight: 900; color: #fff; margin: 0 0 10px 0; text-transform: uppercase; text-shadow: 0 0 15px ${(props) => props.$color}; letter-spacing: 4px; `;
@@ -539,7 +487,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [sprintTimeLeft, setSprintTimeLeft] = useState(10);
   const [sprintLeaderboard, setSprintLeaderboard] = useState<any[]>([]);
 
-  // 🚨 Level Up State 🚨
   const [levelUpData, setLevelUpData] = useState<{ show: boolean, newLevel: number, bonusGold: number, color: string } | null>(null);
 
   const levelData = calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0);
@@ -569,7 +516,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const todayStr = getSystemDateStr(realNow);
   const selStr = getSystemDateStr(selectedDate);
   
-  // 🚨 الصرامة التامة: اليوم بيقفل الساعة 12 بليل 🚨
   const isToday = selStr === todayStr;
   const isLocked = () => {
     return !isToday; 
@@ -621,7 +567,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
     return () => clearInterval(timer);
   }, [timeOffset]);
 
-  // 🚨 1. الرادار: البث اللحظي للرسائل 🚨
   useEffect(() => {
     const fetchRadarNews = async () => {
       try {
@@ -645,7 +590,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     return () => { supabase.removeChannel(newsSub); };
   }, []);
 
-  // 🚨 2. المزامنة مع الداتابيز والتصفير التلقائي و نظام الـ HP العادل 🚨
+  // 🚨 2. المزامنة الخالية من ثغرة المناطق الزمنية (Timezone Bug Fix) 🚨
   useEffect(() => {
     const syncData = async () => {
       setIsLoadingSync(true);
@@ -684,11 +629,18 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
           while (checkDate <= yesterdayObj) {
             const checkStr = getSystemDateStr(checkDate);
+            
+            // 🚨 إصلاح مشكلة اختفاء المهام في الـ Coach Panel: بنقارن الـ UTC Timestamp للمهام بدقة تامة 🚨
+            const dayStart = new Date(checkDate);
+            dayStart.setHours(0, 0, 0, 0);
+            const dayEnd = new Date(checkDate);
+            dayEnd.setHours(23, 59, 59, 999);
+
             const { data: dayReqs } = await supabase.from('elite_quests')
               .select('task_name, status')
               .eq('player_name', currentPlayer.name)
-              .gte('created_at', `${checkStr}T00:00:00Z`)
-              .lt('created_at', `${getSystemDateStr(new Date(checkDate.getTime() + 86400000))}T00:00:00Z`);
+              .gte('created_at', dayStart.toISOString())
+              .lte('created_at', dayEnd.toISOString());
 
             const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
             const completedMandatory = dayReqs ? dayReqs.filter(r => mandatoryTasks.includes(r.task_name) && r.status === 'approved').map(r => r.task_name) : [];
@@ -739,12 +691,17 @@ const Dashboard = ({ player, setPlayer }: any) => {
           .gte('created_at', fetchStart.toISOString());
 
         if (reqs) {
+          // 🚨 إصلاح مشكلة اختفاء المهام عند إعادة التحميل: فلترة تعتمد على الحدود الزمنية وليس النص 🚨
+          const startOfDay = new Date(selectedDate);
+          startOfDay.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(selectedDate);
+          endOfDay.setHours(23, 59, 59, 999);
+
           const validReqs = reqs.filter(r => {
-              const taskDate = new Date(r.created_at);
-              const taskDateStr = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, '0')}-${String(taskDate.getDate()).padStart(2, '0')}`;
-              
               if (['Recovery Logistics', 'Supplement Inventory', 'InBody Assessment'].includes(r.task_name)) return true; 
-              return taskDateStr === selStr;
+              
+              const taskTime = new Date(r.created_at).getTime();
+              return taskTime >= startOfDay.getTime() && taskTime <= endOfDay.getTime();
           });
 
           setCompletedQuests(validReqs.filter(r => r.status === 'approved').map(r => r.task_name));
@@ -858,7 +815,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const handleQuestClick = (quest: any) => {
     if (isProcessing || isLoadingSync) return;
     
-    // 🚨 تفعيل المنع الصارم بناءً على اليوم 🚨
     if (isLocked()) { 
       playDashSound('error'); 
       toast.error('🔒 SYSTEM LOCKED - المهام أُغلقت في منتصف الليل. لا يمكن التعديل بأثر رجعي.', { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' } }); 
@@ -1009,7 +965,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
         playDashSound('levelUp');
         const newRankInfo = getRankInfo(newLevelData.level);
         setLevelUpData({ show: true, newLevel: newLevelData.level, bonusGold: levelGoldBonus, color: newRankInfo.color });
-        // 🚨 Confetti أضخم وأفخم
         confetti({ particleCount: 300, spread: 150, startVelocity: 40, origin: { y: 0.6 }, colors: [newRankInfo.color, '#ffffff', '#eab308'] });
         setTimeout(() => setLevelUpData(null), 5000); 
       } else {
