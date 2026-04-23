@@ -70,9 +70,9 @@ const playDashSound = (type: 'complete' | 'levelUp' | 'error' | 'request' | 'ope
       osc.frequency.setValueAtTime(600, now + 0.2);
       osc.frequency.setValueAtTime(800, now + 0.4);
       gainNode.gain.setValueAtTime(0.3, now);
-      gainNode.gain.linearRampToValueAtTime(0.01, now + 0.8);
+      gainNode.gain.linearRampToValueAtTime(0.01, now + 1.5); // طولت وقت الصوت شوية عشان يليق مع الشاشة
       osc.start();
-      osc.stop(now + 0.8);
+      osc.stop(now + 1.5);
     } else if (type === 'gameClick') {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(1000, now);
@@ -127,16 +127,6 @@ const getRankInfo = (level: number) => {
   if (level >= 10) return { name: 'GOLD', color: '#eab308', glow: 'rgba(234, 179, 8, 0.4)' };
   if (level >= 5)  return { name: 'SILVER', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.4)' };
   return { name: 'BRONZE', color: '#b45309', glow: 'rgba(180, 83, 9, 0.4)' };
-};
-
-const getPenaltyStats = (level: number) => {
-  if (level >= 30) return { hp: 50, gold: 250 };
-  if (level >= 25) return { hp: 40, gold: 200 };
-  if (level >= 20) return { hp: 30, gold: 150 };
-  if (level >= 15) return { hp: 25, gold: 125 };
-  if (level >= 10) return { hp: 20, gold: 100 };
-  if (level >= 5)  return { hp: 15, gold: 75 };
-  return { hp: 10, gold: 50 };
 };
 
 const calculateLevelData = (totalXp: number) => {
@@ -803,6 +793,41 @@ const GameSelectorBtn = styled.button<{ $active: boolean, $color: string }>`
   gap: 5px;
 `;
 
+// 🚨 3. Level Up Modal Styled Components (الأنيميشن الفخم) 🚨
+const LevelUpOverlay = styled(motion.div)`
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  backdrop-filter: blur(15px);
+`;
+
+const LevelUpCard = styled(motion.div)<{ $color: string }>`
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95));
+  border: 2px solid ${(props) => props.$color};
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%; max-width: 400px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 0 50px ${(props) => props.$color}80, inset 0 0 20px ${(props) => props.$color}40;
+`;
+
+const LevelUpTitle = styled.h1<{ $color: string }>`
+  font-size: 36px; font-weight: 900; color: #fff; margin: 0 0 10px 0; text-transform: uppercase;
+  text-shadow: 0 0 15px ${(props) => props.$color}; letter-spacing: 4px;
+`;
+
+const LevelUpDesc = styled.p`
+  font-size: 16px; color: #cbd5e1; margin: 0 0 30px 0;
+`;
+
+const LevelUpRewardBox = styled.div<{ $color: string }>`
+  background: rgba(255,255,255,0.05);
+  border: 1px solid ${(props) => props.$color}50;
+  border-radius: 12px; padding: 15px; margin-bottom: 20px;
+  display: flex; justify-content: center; align-items: center; gap: 15px;
+  font-size: 20px; font-weight: 900; color: #eab308;
+`;
+
 // ==========================================
 // 4. الثوابت وقواعد البيانات (Constants & Arrays)
 // ==========================================
@@ -966,6 +991,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [sprintTimeLeft, setSprintTimeLeft] = useState(10);
   const [sprintLeaderboard, setSprintLeaderboard] = useState<any[]>([]);
 
+  // 🚨 Level Up State 🚨
+  const [levelUpData, setLevelUpData] = useState<{ show: boolean, newLevel: number, bonusGold: number, color: string } | null>(null);
+
   const levelData = calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0);
   const currentVisualLvl = levelData.level;
   const rankInfo = getRankInfo(currentVisualLvl);
@@ -1084,7 +1112,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     return () => { supabase.removeChannel(newsSub); };
   }, []);
 
-  // 🚨 2. المزامنة مع الداتابيز والتصفير التلقائي للماكروز 🚨
+  // 🚨 2. المزامنة مع الداتابيز والتصفير التلقائي و نظام الـ HP العادل 🚨
   useEffect(() => {
     const syncData = async () => {
       setIsLoadingSync(true);
@@ -1102,7 +1130,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
           setCustomFoods(fetchedCustomFoods);
 
           let fetchedMacros = userData.daily_macros || { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] };
-          // 🚨 BUG FIX: تصفير الأكل لو اليوم جديد 🚨
           let lastMacroDate = userData.last_macro_date; 
 
           if (lastMacroDate !== todayStr) {
@@ -1120,6 +1147,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
           let applyPenalty = false;
           let daysMissedCount = 0;
+          let hpPenaltyAmount = 0; // 🚨 عداد الخصم الجديد للـ HP
 
           while (checkDate <= yesterdayObj) {
             const checkStr = getSystemDateStr(checkDate);
@@ -1131,10 +1159,17 @@ const Dashboard = ({ player, setPlayer }: any) => {
               .gte('created_at', `${checkStr}T00:00:00Z`)
               .lt('created_at', `${getSystemDateStr(new Date(checkDate.getTime() + 86400000))}T00:00:00Z`);
 
-            const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance'];
-            const completedMandatory = dayReqs ? dayReqs.filter(r => mandatoryTasks.includes(r.task_name) && r.status === 'approved').length : 0;
+            const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
+            const completedMandatory = dayReqs ? dayReqs.filter(r => mandatoryTasks.includes(r.task_name) && r.status === 'approved').map(r => r.task_name) : [];
 
-            if (completedMandatory < 3) {
+            // 🚨 نظام الخصم الجديد العادل: 15 HP عن كل مهمة أساسية ناقصة
+            const missedTasksCount = mandatoryTasks.length - completedMandatory.length;
+            if (missedTasksCount > 0) {
+                hpPenaltyAmount += (missedTasksCount * 15);
+            }
+
+            // 🚨 كسر الستريك لو عمل أقل من 3 مهام
+            if (completedMandatory.length < 3) {
               fetchedStreak = 0;
               applyPenalty = true;
               daysMissedCount++;
@@ -1144,16 +1179,22 @@ const Dashboard = ({ player, setPlayer }: any) => {
             checkDate.setDate(checkDate.getDate() + 1);
           }
 
-          if (applyPenalty) {
+          if (applyPenalty || hpPenaltyAmount > 0) {
             const penaltyStats = getPenaltyStats(calculateLevelData(userData.cumulative_xp || userData.xp || 0).level);
-            const hpLost = daysMissedCount * penaltyStats.hp;
-            const goldLost = daysMissedCount * penaltyStats.gold;
+            // الخصم القديم كان للمقصرين جامد بس، دلوقتي هنخصم بس اللي حسبناه بالمهام
+            const goldLost = applyPenalty ? (daysMissedCount * penaltyStats.gold) : 0;
             
-            fetchedHp = Math.max(0, fetchedHp - hpLost);
+            fetchedHp = Math.max(0, fetchedHp - hpPenaltyAmount);
             fetchedGold = Math.max(0, fetchedGold - goldLost);
 
-            await supabase.from('elite_players').update({ hp: fetchedHp, gold: fetchedGold, streak: 0, last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
-            toast.error(`🩸 ضريبة الرانك: تم كسر الـ Streak وفقدت ${hpLost} HP و ${goldLost} Gold!`, { duration: 6000 });
+            await supabase.from('elite_players').update({ hp: fetchedHp, gold: fetchedGold, streak: fetchedStreak, last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
+            
+            if (hpPenaltyAmount > 0) {
+                toast.error(`🩸 تم خصم ${hpPenaltyAmount} HP لعدم استكمال مهام الأيام السابقة.`, { duration: 6000, style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444'} });
+            }
+            if (applyPenalty) {
+                toast.error(`💔 تم كسر الـ Streak وخصم ${goldLost} Gold بسبب التقصير!`, { duration: 6000, style: { background: '#450a0a', color: '#fca5a5', border: '1px solid #ef4444'} });
+            }
           } else if (lastPenaltyCheck !== userData.last_penalty_check) {
             await supabase.from('elite_players').update({ last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
           }
@@ -1377,9 +1418,21 @@ const Dashboard = ({ player, setPlayer }: any) => {
   };
 
   const completeQuest = async (quest: any) => {
+    if (isProcessing) return;
     setIsProcessing(true);
+    
     try {
-      await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: quest.title, evidence: 'Honor System', type: 'quest', status: 'approved', created_at: getLogDate() }]);
+      // 🚨 تأكيد الحفظ في قاعدة البيانات بقوة
+      const { error: questError } = await supabase.from('elite_quests').insert([{ 
+        player_name: currentPlayer.name, 
+        task_name: quest.title, 
+        evidence: 'Honor System', 
+        type: 'quest', 
+        status: 'approved', 
+        created_at: getLogDate() 
+      }]);
+
+      if (questError) throw new Error("السيرفر مشغول، يرجى المحاولة مرة أخرى!");
       
       let newXp = (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) + quest.exp;
       const currentMonthlyXp = currentPlayer.monthly_xp || 0;
@@ -1403,59 +1456,75 @@ const Dashboard = ({ player, setPlayer }: any) => {
       }
       
       newGold += levelGoldBonus;
-      let newHp = Math.min(100, (currentPlayer.hp || 100) + ((quest.id === SHARED_HYDRATION.id || quest.id === SHARED_NUTRITION.id) ? 5 : 0));
+      // 🚨 زيادة 5 HP للتعافي للمهام المحددة
+      const isRecoveryTask = [SHARED_HYDRATION.title, SHARED_NUTRITION.title, SHARED_MOBILITY.title, 'Recovery Cooldown'].includes(quest.title);
+      let newHp = Math.min(100, (currentPlayer.hp || 100) + (isRecoveryTask ? 5 : 0));
       
       const dbUpdates = { cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp };
-      await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
+      
+      const { error: playerError } = await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
+      if (playerError) throw new Error("تم تسجيل المهمة لكن فشل تحديث النقاط، تواصل مع الدعم.");
 
       await supabase.from('elite_economy').insert([{
-        player_name: currentPlayer.name,
-        amount: quest.exp,
-        currency: 'xp',
-        operation: 'increase',
-        reason: quest.title
+        player_name: currentPlayer.name, amount: quest.exp, currency: 'xp', operation: 'increase', reason: quest.title
       }]);
 
       if (levelGoldBonus > 0) {
         await supabase.from('elite_economy').insert([{
-          player_name: currentPlayer.name,
-          amount: levelGoldBonus,
-          currency: 'gold',
-          operation: 'increase',
-          reason: 'Level Up Bonus'
+          player_name: currentPlayer.name, amount: levelGoldBonus, currency: 'gold', operation: 'increase', reason: 'Level Up Bonus'
         }]);
       }
       
       setCompletedQuests((prev) => [...prev, quest.title]);
       setPlayer({ ...currentPlayer, ...dbUpdates }); 
-      playDashSound('complete'); 
       
       if (leveledUp) {
-        setTimeout(() => {
-          playDashSound('levelUp');
-          toast.success(`RANK UP! You are now Level ${newLevelData.level} (+${levelGoldBonus} GOLD 💰)`, { style: { background: '#020617', border: `2px solid ${rankInfo.color}`, color: rankInfo.color } });
-          confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 }, colors: [rankInfo.color, '#ffffff'] });
-        }, 500);
+        playDashSound('levelUp');
+        const newRankInfo = getRankInfo(newLevelData.level);
+        setLevelUpData({ show: true, newLevel: newLevelData.level, bonusGold: levelGoldBonus, color: newRankInfo.color });
+        confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 }, colors: [newRankInfo.color, '#ffffff', '#eab308'] });
+        setTimeout(() => setLevelUpData(null), 5000); // الشاشة تختفي لوحدها بعد 5 ثواني
       } else {
+        playDashSound('complete'); 
         toast.success(`Completed! +${quest.exp} EXP`);
+        if (isRecoveryTask) toast.success(`+5 HP Restored 🩸`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
       }
-    } catch (err: any) { toast.error(err.message); }
-    setIsProcessing(false);
+    } catch (err: any) { 
+      playDashSound('error');
+      toast.error(err.message, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' } }); 
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const submitRequest = async () => {
     setIsProcessing(true);
     try {
-      await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: selectedQuest.title, evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence', type: selectedQuest.isPenalty ? 'penalty' : 'quest', status: 'pending', created_at: getLogDate() }]);
+      const { error: reqError } = await supabase.from('elite_quests').insert([{ 
+        player_name: currentPlayer.name, 
+        task_name: selectedQuest.title, 
+        evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence', 
+        type: selectedQuest.isPenalty ? 'penalty' : 'quest', 
+        status: 'pending', 
+        created_at: getLogDate() 
+      }]);
+      
+      if (reqError) throw new Error("تعذر إرسال الطلب، السيرفر مشغول.");
       
       let newHp = Math.min(100, (currentPlayer.hp || 100) + (selectedQuest.id === 'wq1' ? 20 : 0));
       await supabase.from('elite_players').update({ hp: newHp }).eq('name', currentPlayer.name);
       
       setPendingQuests((prev) => [...prev, selectedQuest.title]);
       setPlayer({ ...currentPlayer, hp: newHp });
-      playDashSound('request'); toast.success(`Request Sent to Coach Radar!`);
-    } catch (err: any) { toast.error(err.message); }
-    setSelectedQuest(null); setIsProcessing(false);
+      playDashSound('request'); 
+      toast.success(`Request Sent to Coach Radar!`);
+    } catch (err: any) { 
+      playDashSound('error');
+      toast.error(err.message, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' } }); 
+    } finally {
+      setSelectedQuest(null); 
+      setIsProcessing(false);
+    }
   };
 
   const undoQuest = async (quest: any, status: string) => {
@@ -1488,8 +1557,11 @@ const Dashboard = ({ player, setPlayer }: any) => {
         let newXp = Math.max(0, (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) - quest.exp);
         let newMonthlyXp = Math.max(0, (currentPlayer.monthly_xp || 0) - quest.exp);
         let newGold = Math.max(0, (currentPlayer.gold || 0) - quest.gold);
+        
+        const isRecoveryTask = [SHARED_HYDRATION.title, SHARED_NUTRITION.title, SHARED_MOBILITY.title, 'Recovery Cooldown'].includes(quest.title);
+        let newHp = Math.max(0, (currentPlayer.hp || 100) - (isRecoveryTask ? 5 : 0));
 
-        await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold }).eq('name', currentPlayer.name);
+        await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp }).eq('name', currentPlayer.name);
         
         await supabase.from('elite_economy').insert([{
           player_name: currentPlayer.name,
@@ -1500,7 +1572,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         }]);
 
         setCompletedQuests(prev => prev.filter(t => t !== quest.title));
-        setPlayer({ ...currentPlayer, cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold });
+        setPlayer({ ...currentPlayer, cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp });
       } else {
         setPendingQuests(prev => prev.filter(t => t !== quest.title));
       }
@@ -1565,7 +1637,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
             <Activity color={rankInfo.color} /> PERFORMANCE HUB
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5, fontSize: '11px', color: '#94a3b8', fontWeight: 'bold' }}>
-             RANK: <span style={{ color: rankInfo.color, fontWeight: '900' }}>{rankInfo.name}</span>
+              RANK: <span style={{ color: rankInfo.color, fontWeight: '900' }}>{rankInfo.name}</span>
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
@@ -2002,6 +2074,37 @@ const Dashboard = ({ player, setPlayer }: any) => {
               </ActionBtn>
             </ModalContent>
           </ModalOverlay>
+        )}
+      </AnimatePresence>
+
+      {/* 🚨 شاشة Level Up الفخمة (الأنيميشن) 🚨 */}
+      <AnimatePresence>
+        {levelUpData && levelUpData.show && (
+          <LevelUpOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <LevelUpCard $color={levelUpData.color} initial={{ scale: 0.5, rotateY: -90, opacity: 0 }} animate={{ scale: 1, rotateY: 0, opacity: 1 }} exit={{ scale: 1.2, opacity: 0 }} transition={{ type: 'spring', damping: 15, stiffness: 100 }}>
+              <motion.div initial={{ y: -20 }} animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
+                <Crown size={80} color={levelUpData.color} style={{ margin: '0 auto 20px auto', filter: `drop-shadow(0 0 20px ${levelUpData.color})` }} />
+              </motion.div>
+              
+              <LevelUpTitle $color={levelUpData.color}>LEVEL UP</LevelUpTitle>
+              <LevelUpDesc>لقد ارتقيت في التصنيف! قوتك تتزايد.</LevelUpDesc>
+              
+              <div style={{ fontSize: '60px', fontWeight: '900', color: levelUpData.color, textShadow: `0 0 30px ${levelUpData.color}`, marginBottom: '20px' }}>
+                {levelUpData.newLevel}
+              </div>
+
+              {levelUpData.bonusGold > 0 && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+                  <LevelUpRewardBox $color={levelUpData.color}>
+                    <img src="https://cdn-icons-png.flaticon.com/512/138/138246.png" width="30" alt="gold" style={{ filter: 'drop-shadow(0 0 5px rgba(234, 179, 8, 0.8))' }} />
+                    +{levelUpData.bonusGold} GOLD
+                  </LevelUpRewardBox>
+                </motion.div>
+              )}
+
+              <ActionBtn type="button" $color={levelUpData.color} onClick={() => setLevelUpData(null)}>متابعة</ActionBtn>
+            </LevelUpCard>
+          </LevelUpOverlay>
         )}
       </AnimatePresence>
 

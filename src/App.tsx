@@ -281,6 +281,8 @@ const StatusBar = styled.div`
   top: 0;
   z-index: 50;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
 `;
 
 const pulseGlow = keyframes`
@@ -289,7 +291,7 @@ const pulseGlow = keyframes`
   100% { box-shadow: 0 0 5px currentColor; }
 `;
 
-const HPBarContainer = styled.div` display: flex; align-items: center; gap: 12px; margin-bottom: 20px; `;
+const HPBarContainer = styled.div` display: flex; align-items: center; gap: 12px; margin-bottom: 20px; width: 100%; `;
 const HPBarWrapper = styled.div` flex: 1; height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.1); `;
 const HPBarFill = styled(motion.div)<{ $hp: number; }>` 
   height: 100%; 
@@ -413,13 +415,13 @@ const NavButton = styled(motion.button)<{ $active: boolean; $color: string; }>`
   }
 `;
 
+// 🚨 تحديث ترتيب أزرار الكنترول عشان ميبقاش فوق ה-HP 🚨
 const TopRightControls = styled.div`
-  position: absolute;
-  top: 20px;
-  right: 20px;
   display: flex;
+  justify-content: flex-end;
   gap: 15px;
-  z-index: 60;
+  margin-bottom: 15px;
+  width: 100%;
 `;
 
 const IconButton = styled.button<{ $hasUnread?: boolean }>`
@@ -492,7 +494,6 @@ const App = () => {
     "WELCOME TO THE ELITE SYSTEM."
   ];
 
-  // 🚨 التعامل مع الميوت (Mute) لكل مزيكا Howler 🚨
   useEffect(() => {
     Howler.mute(isMusicMuted);
   }, [isMusicMuted]);
@@ -546,7 +547,6 @@ const App = () => {
             setPlayer(updatedPlayer);
             localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
 
-            // 🚨 SNAPSHOT SYSTEM (تخزين سجل النقط باليوم) 🚨
             let lastMacroDate = data.last_macro_date;
             const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
             if (lastMacroDate && lastMacroDate !== todayStr) {
@@ -785,6 +785,7 @@ const App = () => {
       </AnimatePresence>
 
       <StatusBar>
+        {/* 🚨 أزرار التحكم بقت في سطر لوحدها فوق عشان متداريش على ה-HP 🚨 */}
         <TopRightControls>
           <IconButton onClick={toggleMute} title={isMusicMuted ? "Unmute Music" : "Mute Music"}>
             {isMusicMuted ? <VolumeX size={18} color="#ef4444" /> : <Volume2 size={18} color="#10b981" />}

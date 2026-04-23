@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast, Toaster } from 'sonner';
+import Particles from "react-tsparticles";
+import { loadFull } from "tsparticles";
 import {
   Zap, X, Activity, Award, Target, Shield, Flame, Camera, Hexagon, Moon, Ghost, Wind, Footprints,
   Lock as LockIcon, Dumbbell, Sword, Skull, Crown, Heart, Droplet, Axe, Anchor, Fingerprint, Cpu,
@@ -155,23 +157,59 @@ const getSystemDateStr = (date: Date) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
+// 🚨 نظام ألوان الهالة (Streak Aura System) 🚨
+const getStreakAura = (streak: number) => {
+  if (streak >= 30) return { name: 'MONARCH AURA', color: '#a855f7', icon: Crown };
+  if (streak >= 15) return { name: 'LIGHTNING AURA', color: '#0ea5e9', icon: Zap };
+  if (streak >= 7) return { name: 'TOXIC AURA', color: '#10b981', icon: Activity };
+  if (streak >= 1) return { name: 'FLAME AURA', color: '#f97316', icon: Flame };
+  return { name: 'NO AURA', color: '#475569', icon: Ghost };
+};
+
 // ==========================================
 // 3. التصميمات النيون الفخمة (Styled Components)
 // ==========================================
-const Container = styled.div` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; `;
-const Card = styled.div` background: #0b1120; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); `;
-const GlowingCard = styled.div<{ $glowColor: string }>`
-  background: #0b1120; border: 1px solid ${(props) => props.$glowColor}40; border-radius: 16px; padding: 25px; margin-bottom: 25px; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  &::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, ${(props) => props.$glowColor}, transparent); }
+const Container = styled.div` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; `;
+const Card = styled.div` background: #0b1120; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10; `;
+
+const auraPulse = keyframes`
+  0% { box-shadow: 0 0 10px currentColor; }
+  50% { box-shadow: 0 0 25px currentColor; }
+  100% { box-shadow: 0 0 10px currentColor; }
 `;
-const RankProgressCard = styled.div<{ $color: string; $shadow: string }>` background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid ${(props) => props.$color}; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 0 20px ${(props) => props.$shadow}; display: flex; flex-direction: column; `;
+
+const GlowingCard = styled.div<{ $glowColor: string; $isAura?: boolean }>`
+  background: rgba(11, 17, 32, 0.85); 
+  backdrop-filter: blur(10px);
+  border: 1px solid ${(props) => props.$glowColor}40; 
+  border-radius: 16px; 
+  padding: 25px; 
+  margin-bottom: 25px; 
+  display: flex; 
+  flex-direction: column; 
+  position: relative; 
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  color: ${(props) => props.$glowColor};
+  animation: ${(props) => props.$isAura ? auraPulse : 'none'} 3s infinite;
+  z-index: 10;
+
+  &::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; left: 0; 
+    width: 100%; height: 2px; 
+    background: linear-gradient(90deg, transparent, ${(props) => props.$glowColor}, transparent); 
+  }
+`;
+
+const RankProgressCard = styled.div<{ $color: string; $shadow: string }>` background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(2, 6, 23, 0.9) 100%); border: 1px solid ${(props) => props.$color}; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 0 20px ${(props) => props.$shadow}; display: flex; flex-direction: column; z-index: 10; position: relative; backdrop-filter: blur(10px); `;
 const CardTitle = styled.div<{ $color: string }>` font-size: 13px; font-weight: 900; letter-spacing: 2px; color: ${(props) => props.$color}; text-transform: uppercase; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; width: 100%; justify-content: center; text-shadow: 0 0 10px ${(props) => props.$color}80; `;
 const EvolutionGrid = styled.div` display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 25px; width: 100%; `;
-const EvoBox = styled.div<{ $active: boolean; $color: string }>` width: 90px; height: 90px; border-radius: 20px; display: flex; align-items: center; justify-content: center; position: relative; background: ${(props) => props.$active ? `linear-gradient(135deg, #0f172a 0%, ${props.$color}30 100%)` : '#0f172a'}; border: 1px solid ${(props) => (props.$active ? props.$color : '#1e293b')}; color: ${(props) => (props.$active ? props.$color : '#334155')}; box-shadow: ${(props) => props.$active ? `0 0 25px ${props.$color}40, inset 0 0 15px ${props.$color}20` : 'none'}; transition: 0.3s; `;
-const ProgressBarContainer = styled.div` width: 100%; height: 8px; background: #0f172a; border-radius: 10px; overflow: hidden; border: 1px solid #1e293b; `;
+const EvoBox = styled.div<{ $active: boolean; $color: string }>` width: 90px; height: 90px; border-radius: 20px; display: flex; align-items: center; justify-content: center; position: relative; background: ${(props) => props.$active ? `linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, ${props.$color}30 100%)` : 'rgba(15, 23, 42, 0.8)'}; border: 1px solid ${(props) => (props.$active ? props.$color : '#1e293b')}; color: ${(props) => (props.$active ? props.$color : '#334155')}; box-shadow: ${(props) => props.$active ? `0 0 25px ${props.$color}40, inset 0 0 15px ${props.$color}20` : 'none'}; transition: 0.3s; backdrop-filter: blur(5px); `;
+const ProgressBarContainer = styled.div` width: 100%; height: 8px; background: rgba(15, 23, 42, 0.8); border-radius: 10px; overflow: hidden; border: 1px solid #1e293b; `;
 const ProgressBarFill = styled(motion.div)<{ $progress: number; $color: string }>` height: 100%; background: ${(props) => props.$color}; width: ${(props) => props.$progress}%; box-shadow: 0 0 15px ${(props) => props.$color}; `;
 const HeatmapHeader = styled.div` display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; `;
-const HeatmapGrid = styled.div` display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-columns: 1fr; grid-auto-flow: column; gap: 4px; width: 100%; margin-bottom: 25px; background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid #1e293b; overflow-x: auto; `;
+const HeatmapGrid = styled.div` display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-columns: 1fr; grid-auto-flow: column; gap: 4px; width: 100%; margin-bottom: 25px; background: rgba(15, 23, 42, 0.5); padding: 15px; border-radius: 12px; border: 1px solid #1e293b; overflow-x: auto; `;
 const HeatmapCell = styled.div<{ $intensity: number; $baseColor: string }>` width: 100%; min-width: 15px; aspect-ratio: 1; border-radius: 3px; background: ${(props) => props.$intensity === 0 ? '#1e293b' : props.$intensity === 1 ? `${props.$baseColor}40` : props.$intensity === 2 ? `${props.$baseColor}80` : props.$baseColor}; box-shadow: ${(props) => props.$intensity > 1 ? `0 0 ${props.$intensity * 3}px ${props.$baseColor}` : 'none'}; transition: 0.2s; cursor: pointer; &:hover { transform: scale(1.3); z-index: 10; box-shadow: 0 0 10px ${(props) => props.$baseColor}; } `;
 const LegendGrid = styled.div` display: flex; justify-content: space-between; width: 100%; padding: 0 10px; `;
 const LegendItem = styled.div` display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; `;
@@ -179,10 +217,10 @@ const InputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap
 const InputLabel = styled.label` font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; `;
 const StyledInput = styled.input` width: 100%; background: #020617; border: 1px solid #1e293b; color: #fff; padding: 15px; border-radius: 12px; font-family: 'Oxanium'; font-size: 18px; font-weight: bold; text-align: center; outline: none; transition: 0.3s; &:focus { border-color: #f97316; box-shadow: 0 0 15px rgba(249, 115, 22, 0.2); } `;
 const UpdateBtn = styled.button` width: 100%; background: rgba(249, 115, 22, 0.1); border: 1px solid #f97316; color: #f97316; padding: 15px; border-radius: 12px; font-family: 'Oxanium'; font-size: 12px; font-weight: 900; letter-spacing: 1px; cursor: pointer; transition: 0.3s; margin-bottom: 10px; box-shadow: 0 0 15px rgba(249, 115, 22, 0.1); &:hover { background: #f97316; color: #000; box-shadow: 0 0 20px rgba(249, 115, 22, 0.4); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
-const SectionLabel = styled.div` font-size: 12px; color: #00f2ff; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px; width: 100%; text-shadow: 0 0 10px rgba(0, 242, 255, 0.4); `;
-const TitlesContainer = styled.div` display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-bottom: 30px; `;
-const TitleBadge = styled.div` background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff; padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); `;
-const SignOutBtn = styled.button` width: 100%; background: #020617; border: 1px solid #ef4444; color: #ef4444; padding: 18px; border-radius: 16px; font-family: 'Oxanium'; font-size: 14px; font-weight: 900; letter-spacing: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; box-shadow: 0 0 15px rgba(239, 68, 68, 0.1); &:hover { background: #ef4444; color: #000; box-shadow: 0 0 25px rgba(239, 68, 68, 0.5); } `;
+const SectionLabel = styled.div` font-size: 12px; color: #00f2ff; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px; width: 100%; text-shadow: 0 0 10px rgba(0, 242, 255, 0.4); position: relative; z-index: 10; `;
+const TitlesContainer = styled.div` display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-bottom: 30px; position: relative; z-index: 10; `;
+const TitleBadge = styled.div` background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff; padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); backdrop-filter: blur(5px); `;
+const SignOutBtn = styled.button` width: 100%; background: rgba(2, 6, 23, 0.8); border: 1px solid #ef4444; color: #ef4444; padding: 18px; border-radius: 16px; font-family: 'Oxanium'; font-size: 14px; font-weight: 900; letter-spacing: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; box-shadow: 0 0 15px rgba(239, 68, 68, 0.1); position: relative; z-index: 10; backdrop-filter: blur(5px); &:hover { background: #ef4444; color: #000; box-shadow: 0 0 25px rgba(239, 68, 68, 0.5); } `;
 const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); `;
 const ModalContent = styled(motion.div)` background: #0b1120; border: 2px solid #00f2ff; border-radius: 20px; padding: 30px; width: 100%; max-width: 450px; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 40px rgba(0, 242, 255, 0.3); &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: #00f2ff; border-radius: 5px; } `;
 
@@ -271,18 +309,50 @@ const Profile = ({ player, setPlayer }: any) => {
 
   const titles = player?.titles || ['Awakened', 'Gate Closer'];
   const currentStreak = player?.streak || 0;
+  
+  const auraInfo = getStreakAura(currentStreak);
+  const AuraIcon = auraInfo.icon;
+
+  // 🚨 إعدادات الجزيئات (Particles) الخاصة بالهالة 🚨
+  const particlesInit = useCallback(async (engine: any) => {
+    await loadFull(engine);
+  }, []);
+
+  const getParticleConfig = (streak: number): any => {
+    let color = "#475569";
+    let speed = 1;
+    let direction = "none";
+    let links = false;
+    let particleCount = 0;
+
+    if (streak >= 30) { color = "#a855f7"; speed = 0.5; direction = "top"; particleCount = 40; } // Monarch
+    else if (streak >= 15) { color = "#0ea5e9"; speed = 3; direction = "none"; links = true; particleCount = 50; } // Lightning
+    else if (streak >= 7) { color = "#10b981"; speed = 1.5; direction = "top"; particleCount = 30; } // Toxic
+    else if (streak >= 1) { color = "#f97316"; speed = 2.5; direction = "top"; particleCount = 25; } // Flame
+
+    return {
+      fullScreen: { enable: false, zIndex: 0 },
+      particles: {
+        number: { value: particleCount },
+        color: { value: color },
+        links: { enable: links, color: color, distance: 150, opacity: 0.5, width: 1 },
+        move: { enable: true, speed: speed, direction: direction, outModes: { default: "out" } },
+        size: { value: { min: 1, max: 3 } },
+        opacity: { value: { min: 0.3, max: 0.7 } }
+      },
+      interactivity: { events: { onHover: { enable: true, mode: "repulse" }, onClick: { enable: true, mode: "push" } }, modes: { repulse: { distance: 100, duration: 0.4 } } }
+    };
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       const { data: dbPlayer } = await supabase.from('elite_players').select('*').eq('name', player.name).single();
       
-      // 🚨 نظام التصفير التلقائي لعداد التغذية (Auto-Reset Macros) 🚨
       if (dbPlayer) {
         let fetchedMacros = dbPlayer.daily_macros || { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] };
         let lastMacroDate = dbPlayer.last_macro_date;
         const todayStr = getSystemDateStr(new Date());
 
-        // لو التاريخ المسجل مختلف عن النهاردة، يبقى ده يوم جديد ولازم نرستر
         if (lastMacroDate !== todayStr) {
           fetchedMacros = { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] };
           await supabase.from('elite_players').update({ 
@@ -290,7 +360,6 @@ const Profile = ({ player, setPlayer }: any) => {
             last_macro_date: todayStr 
           }).eq('name', player.name);
           
-          // تحديث بيانات اللاعب الحالية
           setPlayer((prev: any) => ({ ...prev, daily_macros: fetchedMacros, last_macro_date: todayStr }));
         }
 
@@ -300,7 +369,6 @@ const Profile = ({ player, setPlayer }: any) => {
         setEditIcon(dbPlayer.selected_icon || 'athlete');
       }
 
-      // حساب أيام الحضور والـ Heatmap
       const { data: requests } = await supabase.from('elite_quests').select('created_at, status').eq('player_name', player.name);
 
       const uniqueActiveDays = new Set();
@@ -339,7 +407,6 @@ const Profile = ({ player, setPlayer }: any) => {
       }
       setHeatmapData(mapArray);
 
-      // إنشاء داتا للرسم البياني (تطور الوزن)
       const currentWeight = dbPlayer?.weight || 75;
       const simulatedHistory = [
         { label: 'Jan', value: currentWeight + 2.5 },
@@ -404,7 +471,6 @@ const Profile = ({ player, setPlayer }: any) => {
       setPlayer(updatedPlayer);
       localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
 
-      // تحديث الرسم البياني للوزن الجديد (محاكاة سريعة)
       setChartData(prev => {
         const newChart = [...prev];
         newChart[newChart.length - 1] = { label: 'Now', value: w };
@@ -460,12 +526,19 @@ const Profile = ({ player, setPlayer }: any) => {
     <Container initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <Toaster position="top-center" theme="dark" />
 
+      {/* 🚨 تشغيل جزيئات الهالة (Aura Particles) 🚨 */}
+      {currentStreak > 0 && (
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'auto' }}>
+          <Particles id="tsparticles-profile" init={particlesInit} options={getParticleConfig(currentStreak)} style={{ width: '100%', height: '100%', position: 'absolute' }} />
+        </div>
+      )}
+
       {/* Profile Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }} onClick={() => fileInputRef.current?.click()} title="Change Avatar">
           <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleAvatarUpload} />
 
-          <div style={{ position: 'relative', width: 65, height: 65, borderRadius: '16px', border: `2px solid ${rankInfo.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${rankInfo.color}15`, overflow: 'hidden', cursor: 'pointer', boxShadow: `0 0 15px ${rankInfo.glow}` }}>
+          <div style={{ position: 'relative', width: 65, height: 65, borderRadius: '16px', border: `2px solid ${auraInfo.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${auraInfo.color}15`, overflow: 'hidden', cursor: 'pointer', boxShadow: `0 0 20px ${auraInfo.color}60` }}>
             {player?.avatar_url ? (
               <img src={player.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
@@ -477,11 +550,11 @@ const Profile = ({ player, setPlayer }: any) => {
           </div>
 
           <div>
-            <div style={{ fontSize: '20px', fontWeight: '900', textTransform: 'uppercase', color: '#fff', textShadow: `0 0 10px ${rankInfo.glow}` }}>
+            <div style={{ fontSize: '20px', fontWeight: '900', textTransform: 'uppercase', color: '#fff', textShadow: `0 0 10px ${auraInfo.color}80` }}>
               {player?.name}
             </div>
-            <div style={{ fontSize: '12px', color: rankInfo.color, fontWeight: '900', letterSpacing: '1px' }}>
-              LVL {lvl} • {rankInfo.name}
+            <div style={{ fontSize: '11px', color: auraInfo.color, fontWeight: '900', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <AuraIcon size={12} /> {auraInfo.name}
             </div>
           </div>
         </div>
@@ -491,7 +564,6 @@ const Profile = ({ player, setPlayer }: any) => {
         </button>
       </div>
 
-      {/* 1. Rank & Prestige Card */}
       <RankProgressCard $color={rankInfo.color} $shadow={rankInfo.glow}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
@@ -514,7 +586,6 @@ const Profile = ({ player, setPlayer }: any) => {
         </div>
       </RankProgressCard>
 
-      {/* 2. Avatar Evolution */}
       <GlowingCard $glowColor={userClass.color}>
         <CardTitle $color={userClass.color}>
           <Hexagon size={18} /> AVATAR EVOLUTION (LEVEL 20)
@@ -533,31 +604,29 @@ const Profile = ({ player, setPlayer }: any) => {
         </ProgressBarContainer>
       </GlowingCard>
 
-      {/* 3. Commitment Heatmap */}
-      <GlowingCard $glowColor="#38bdf8">
+      <GlowingCard $glowColor={auraInfo.color} $isAura={currentStreak > 0}>
         <HeatmapHeader>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '900', letterSpacing: '1px', color: '#fff' }}>
-            <Activity size={16} color="#38bdf8" /> COMMITMENT HEATMAP
+            <AuraIcon size={16} color={auraInfo.color} /> {auraInfo.name} HEATMAP
           </div>
-          <div style={{ fontSize: '12px', fontWeight: '900', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div style={{ fontSize: '12px', fontWeight: '900', color: auraInfo.color, display: 'flex', alignItems: 'center', gap: '4px' }}>
             STREAK: {currentStreak} <Flame size={14} color="#ef4444" fill="#ef4444" />
           </div>
         </HeatmapHeader>
 
         <HeatmapGrid>
           {heatmapData.map((d, i) => (
-            <HeatmapCell key={i} $intensity={d.intensity} $baseColor="#38bdf8" title={`${d.date}: ${d.count} tasks completed`} />
+            <HeatmapCell key={i} $intensity={d.intensity} $baseColor={auraInfo.color} title={`${d.date}: ${d.count} tasks completed`} />
           ))}
         </HeatmapGrid>
 
         <LegendGrid>
-          <LegendItem>10 STREAK<Flame size={18} color="#fff" fill="#fff" style={{ filter: 'drop-shadow(0 0 5px #fff)' }} /> Aura</LegendItem>
-          <LegendItem>20 STREAK<Zap size={18} color="#fff" fill="#fff" style={{ filter: 'drop-shadow(0 0 5px #fff)' }} /> Aura</LegendItem>
-          <LegendItem>30 STREAK<Crown size={18} color="#fff" fill="#fff" style={{ filter: 'drop-shadow(0 0 5px #fff)' }} /> Monarch</LegendItem>
+          <LegendItem>7 STREAK<Activity size={18} color="#10b981" fill="#10b981" style={{ filter: 'drop-shadow(0 0 5px #10b981)' }} /> Toxic</LegendItem>
+          <LegendItem>15 STREAK<Zap size={18} color="#0ea5e9" fill="#0ea5e9" style={{ filter: 'drop-shadow(0 0 5px #0ea5e9)' }} /> Spark</LegendItem>
+          <LegendItem>30 STREAK<Crown size={18} color="#a855f7" fill="#a855f7" style={{ filter: 'drop-shadow(0 0 5px #a855f7)' }} /> Monarch</LegendItem>
         </LegendGrid>
       </GlowingCard>
 
-      {/* 🚨 4. Performance Analytics Chart (الجديد) 🚨 */}
       <GlowingCard $glowColor="#10b981">
         <CardTitle $color="#10b981" style={{ justifyContent: 'flex-start', marginBottom: '15px' }}>
           <TrendingUp size={18} /> PERFORMANCE ANALYTICS (WEIGHT)
@@ -565,7 +634,6 @@ const Profile = ({ player, setPlayer }: any) => {
         <LineChart data={chartData} color="#10b981" />
       </GlowingCard>
 
-      {/* 5. Player Class */}
       <GlowingCard $glowColor="#a855f7" style={{ alignItems: 'center', textAlign: 'center' }}>
         <Hexagon size={35} color="#a855f7" style={{ marginBottom: '15px', filter: 'drop-shadow(0 0 10px #a855f7)' }} />
         <div style={{ fontSize: '11px', color: '#c084fc', fontWeight: '900', letterSpacing: '2px', marginBottom: '8px' }}>PLAYER CLASS</div>
@@ -577,7 +645,6 @@ const Profile = ({ player, setPlayer }: any) => {
         </div>
       </GlowingCard>
 
-      {/* 6. Body Composition */}
       <GlowingCard $glowColor="#f97316">
         <CardTitle $color="#f97316" style={{ justifyContent: 'flex-start', marginBottom: '20px' }}>
           <Flame size={18} /> BODY COMPOSITION
@@ -600,7 +667,6 @@ const Profile = ({ player, setPlayer }: any) => {
         </div>
       </GlowingCard>
 
-      {/* 7. Unlocked Titles */}
       <SectionLabel>UNLOCKED TITLES</SectionLabel>
       <TitlesContainer>
         {titles.map((t: string, i: number) => (
@@ -608,20 +674,17 @@ const Profile = ({ player, setPlayer }: any) => {
         ))}
       </TitlesContainer>
 
-      {/* 8. Total Practices */}
-      <Card style={{ marginTop: '30px', background: '#020617' }}>
+      <Card style={{ marginTop: '30px', background: '#020617', zIndex: 10 }}>
         <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '900', letterSpacing: '1px', marginBottom: '15px' }}>TOTAL PRACTICES ATTENDED</div>
         <div style={{ fontSize: '40px', fontWeight: '900', color: '#fff', textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>
           {attendanceStats.attended} <span style={{ fontSize: '16px', color: '#64748b' }}>/ {attendanceStats.total}</span>
         </div>
       </Card>
 
-      {/* 9. Sign Out */}
       <SignOutBtn onClick={handleLogout}>
         <LogOut size={18} /> SIGN OUT / EXIT GAME
       </SignOutBtn>
 
-      {/* 🚨 Settings Modal (Name & 22 Classes Icons) 🚨 */}
       <AnimatePresence>
         {showSettings && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
