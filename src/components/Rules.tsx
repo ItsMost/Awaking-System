@@ -2,75 +2,84 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  BookOpen, Shield, Heart, Zap, Flame, ShoppingCart, 
+  BookOpen, Shield, Heart, Zap, Flame,
   Gamepad2, AlertTriangle, ChevronDown, ChevronUp, Star,
-  Target, Crosshair, Droplet, Medal, Crown, Lock, Activity, Clock
+  Target, Droplet, Medal, Crown, Lock, Activity, Clock,
+  Gem, Ghost, Stethoscope, Trophy, Fingerprint, Crosshair
 } from 'lucide-react';
 
 // ==========================================
 // التصميمات المفرودة (Styled Components)
 // ==========================================
 const Container = styled(motion.div)`
-  padding: 20px;
+  padding: 15px;
   font-family: 'Oxanium', sans-serif;
   color: #fff;
   padding-bottom: 100px;
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
   direction: rtl; 
 `;
 
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  background: linear-gradient(90deg, #1e1b4b 0%, #020617 100%);
+  flex-direction: column;
+  background: radial-gradient(circle at top, rgba(99, 102, 241, 0.15) 0%, rgba(2, 6, 23, 1) 100%);
   border: 1px solid #6366f1;
-  padding: 20px;
-  border-radius: 16px;
-  margin-bottom: 25px;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+  padding: 30px 20px;
+  border-radius: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 40px rgba(99, 102, 241, 0.1);
+  text-align: center;
 `;
 
 const Title = styled.h1`
-  font-size: 20px;
-  margin: 0;
-  color: #818cf8;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  font-size: 24px;
+  margin: 15px 0 5px 0;
+  color: #fff;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 3px;
   font-weight: 900;
+  text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+`;
+
+const Subtitle = styled.div`
+  font-size: 12px;
+  color: #818cf8;
+  font-weight: bold;
+  letter-spacing: 1px;
 `;
 
 const RuleCard = styled(motion.div)<{ $color: string, $isOpen: boolean }>`
-  background: #0f172a;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(10px);
   border: 1px solid ${(props) => props.$isOpen ? props.$color : '#1e293b'};
   border-radius: 16px;
   margin-bottom: 15px;
   overflow: hidden;
-  transition: border-color 0.3s;
+  transition: 0.3s;
   box-shadow: ${(props) => props.$isOpen ? `0 0 20px ${props.$color}20` : 'none'};
+
+  &:hover {
+    border-color: ${(props) => props.$color}80;
+  }
 `;
 
 const RuleHeader = styled.div<{ $color: string }>`
-  padding: 15px 20px;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  background: ${(props) => props.$color}10;
-  
-  &:hover {
-    background: ${(props) => props.$color}20;
-  }
+  background: linear-gradient(90deg, ${(props) => props.$color}10 0%, transparent 100%);
 `;
 
 const RuleTitle = styled.div<{ $color: string }>`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
   font-size: 15px;
   font-weight: 900;
   color: ${(props) => props.$color};
@@ -82,185 +91,255 @@ const RuleContent = styled(motion.div)`
   padding: 0 20px 20px 20px;
   font-size: 13px;
   color: #cbd5e1;
-  line-height: 1.6;
+  line-height: 1.8;
   text-align: right;
-
-  ul {
-    padding-inline-start: 20px;
-    margin-top: 10px;
-  }
-
-  li {
-    margin-bottom: 8px;
-  }
-
-  strong {
-    color: #fff;
-  }
 `;
 
 const Highlight = styled.span<{ $color: string }>`
   color: ${(props) => props.$color};
-  font-weight: bold;
+  font-weight: 900;
 `;
 
-const RankItem = styled.li<{ $color: string }>`
+const GridBox = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+`;
+
+const RankItem = styled.div<{ $color: string }>`
   background: #020617;
   border: 1px solid ${(props) => props.$color}40;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 8px !important;
+  padding: 12px;
+  border-radius: 12px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  font-weight: bold;
+  gap: 5px;
+  text-align: center;
+  box-shadow: inset 0 0 10px ${(props) => props.$color}10;
   
-  span.rank-name {
+  .rank-name {
     color: ${(props) => props.$color};
-    min-width: 90px;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 1px;
   }
   
-  span.rank-desc {
+  .rank-desc {
     color: #94a3b8;
-    font-size: 11px;
+    font-size: 10px;
   }
   
-  span.rank-tax {
+  .rank-tax {
     color: #ef4444;
     font-size: 11px;
-    margin-right: auto;
+    font-weight: bold;
+    margin-top: 5px;
+    background: #2a0808;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid #ef4444;
   }
+`;
+
+const InfoPill = styled.div<{ $color: string }>`
+  background: ${(props) => props.$color}15;
+  border-left: 3px solid ${(props) => props.$color};
+  padding: 10px 15px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #fff;
 `;
 
 // ==========================================
-// بيانات الدستور (Manifesto Data)
+// بيانات الدستور (Manifesto Data) الشاملة والصحيحة
 // ==========================================
 const RULES_DATA = [
   {
     id: 1,
-    title: 'تصنيفات النخبة (The Rank System)',
-    icon: Crown,
-    color: '#eab308',
+    title: 'ساعة الصفر والانضباط (Zero Hour)',
+    icon: Clock,
+    color: '#34d399',
     content: (
       <>
-        يتم ترقيتك لرانك جديد كل 5 مستويات. القمة لا ترحم الضعفاء، وكلما ارتفع رانكك زادت هيبتك، وزادت معها <Highlight $color="#ef4444">"ضريبة التكاسل (High ELO Tax)"</Highlight> التي تدفعها من الـ HP والـ Gold عند تفويت المهام:
-        <ul style={{ listStyleType: 'none', padding: 0, marginTop: '15px' }}>
-          <RankItem $color="#b45309"><Medal size={16} color="#b45309" /> <span className="rank-name">BRONZE</span> <span className="rank-desc">المستوى 1 إلى 4</span> <span className="rank-tax">ضريبة: -10 HP | -50 G</span></RankItem>
-          <RankItem $color="#94a3b8"><Medal size={16} color="#94a3b8" /> <span className="rank-name">SILVER</span> <span className="rank-desc">المستوى 5 إلى 9</span> <span className="rank-tax">ضريبة: -15 HP | -75 G</span></RankItem>
-          <RankItem $color="#eab308"><Medal size={16} color="#eab308" /> <span className="rank-name">GOLD</span> <span className="rank-desc">المستوى 10 إلى 14</span> <span className="rank-tax">ضريبة: -20 HP | -100 G</span></RankItem>
-          <RankItem $color="#06b6d4"><Target size={16} color="#06b6d4" /> <span className="rank-name">PLATINUM</span> <span className="rank-desc">المستوى 15 إلى 19</span> <span className="rank-tax">ضريبة: -25 HP | -125 G</span></RankItem>
-          <RankItem $color="#3b82f6"><Shield size={16} color="#3b82f6" /> <span className="rank-name">DIAMOND</span> <span className="rank-desc">المستوى 20 إلى 24</span> <span className="rank-tax">ضريبة: -30 HP | -150 G</span></RankItem>
-          <RankItem $color="#ef4444"><Flame size={16} color="#ef4444" /> <span className="rank-name">MASTER</span> <span className="rank-desc">المستوى 25 إلى 29</span> <span className="rank-tax">ضريبة: -40 HP | -200 G</span></RankItem>
-          <RankItem $color="#a855f7"><Crown size={16} color="#a855f7" /> <span className="rank-name">ELITE 👑</span> <span className="rank-desc">المستوى 30+</span> <span className="rank-tax">ضريبة: -50 HP | -250 G</span></RankItem>
-        </ul>
-        <div style={{ marginTop: '10px' }}>
-          * بداية من رانك <Highlight $color="#ef4444">MASTER</Highlight>، سيشع التطبيق بهالة متوهجة تعكس قوتك.<br/>
-          * للوصول إلى رانك ELITE، ستحتاج إلى جمع حوالي <strong>100,000 EXP</strong>، وهو ما يعادل تقريباً عاماً كاملاً من التدريب المثالي!
-        </div>
+        النخبة لا تبحث عن الأعذار. الوقت هنا مقدس والمماطلة لها ثمن.
+        <br/><br/>
+        <InfoPill $color="#ef4444">
+          <strong>ساعة الصفر:</strong> اليوم ينتهي تماماً في <strong>12:00 منتصف الليل</strong>. لا توجد أي فترات سماح لليوم التالي. إذا لم يتم توثيق مهامك قبل هذه اللحظة، سيتم إغلاق النظام (System Locked) بأثر رجعي ولن يمكنك تعديل أي شيء.
+        </InfoPill>
+        <InfoPill $color="#facc15">
+          <strong>قاعدة الستريك (Streak):</strong> الـ Streak يعكس أيام التزامك المتتالية. لا يرتفع العداد إلا بإتمام <strong>3 مهام أساسية</strong> يومياً (التمرين، تغطية البروتين، والمرونة).
+        </InfoPill>
+        <InfoPill $color="#38bdf8">
+          <strong>كسر السلسلة:</strong> تفويت مهمة أساسية واحدة يؤدي إلى تصفير الـ Streak فوراً، وتُطبق عليك "ضريبة الرانك" الموضحة في القسم التالي.
+        </InfoPill>
       </>
     )
   },
   {
     id: 2,
-    title: 'اقتصاد الـ EXP والمستويات',
-    icon: Activity,
-    color: '#0ea5e9',
+    title: 'الرانكات والضريبة (Rank & Tax)',
+    icon: Crown,
+    color: '#eab308',
     content: (
       <>
-        أنت لست مجرد متدرب، أنت <Highlight $color="#0ea5e9">رياضي نخبة (Elite Athlete)</Highlight>.
-        <ul>
-          <li><strong>حسبة الـ EXP للوحوش:</strong><br/>
-            - اليوم المثالي الكامل يمنحك <strong>215 EXP</strong>.<br/>
-            - الأسبوع المثالي (متضمناً مهام الجمعة) يمنحك <strong>1,805 EXP</strong>.<br/>
-            - الشهر المثالي (متضمناً مهام الشهر واللوجستيات) يمنحك حوالي <strong>7,595 EXP</strong>.
-          </li>
-          <li><strong>صعوبة المستويات (Leveling):</strong><br/>
-            تحتاج مجهوداً مضاعفاً كلما ارتقيت. للانتقال من المستوى 1 إلى 2 ستحتاج 650 EXP فقط، بينما المستويات المتقدمة (فوق المستوى 25) تتطلب <strong>4,000 EXP</strong> كاملة للارتقاء لمستوى واحد!
-          </li>
-          <li><strong>مكافآت الترقية:</strong> عند الارتقاء لمستوى جديد، تحصل على مكافأة مالية قدرها <Highlight $color="#eab308">100 جولد</Highlight>. وتتضاعف هذه المكافأة لتصبح <Highlight $color="#eab308">200 جولد</Highlight> إذا كان المستوى ينقلك لرانك جديد (مضاعفات الـ 5).</li>
-        </ul>
+        كل 5 مستويات ترتقي إلى رانك جديد. القمة لا ترحم، وكلما زادت هيبتك، زادت <Highlight $color="#ef4444">"ضريبة التكاسل (Rank Tax)"</Highlight> التي يتم خصمها من نقاط حياتك (HP) وذهبك إذا كُسر الستريك.
+        <GridBox>
+          <RankItem $color="#b45309"><Medal size={20} color="#b45309" /> <span className="rank-name">BRONZE</span> <span className="rank-desc">المستويات 1 - 4</span> <span className="rank-tax">-10 HP | -50 G</span></RankItem>
+          <RankItem $color="#94a3b8"><Medal size={20} color="#94a3b8" /> <span className="rank-name">SILVER</span> <span className="rank-desc">المستويات 5 - 9</span> <span className="rank-tax">-15 HP | -75 G</span></RankItem>
+          <RankItem $color="#eab308"><Medal size={20} color="#eab308" /> <span className="rank-name">GOLD</span> <span className="rank-desc">المستويات 10 - 14</span> <span className="rank-tax">-20 HP | -100 G</span></RankItem>
+          <RankItem $color="#06b6d4"><Target size={20} color="#06b6d4" /> <span className="rank-name">PLATINUM</span> <span className="rank-desc">المستويات 15 - 19</span> <span className="rank-tax">-25 HP | -125 G</span></RankItem>
+          <RankItem $color="#3b82f6"><Shield size={20} color="#3b82f6" /> <span className="rank-name">DIAMOND</span> <span className="rank-desc">المستويات 20 - 24</span> <span className="rank-tax">-30 HP | -150 G</span></RankItem>
+          <RankItem $color="#ef4444"><Flame size={20} color="#ef4444" /> <span className="rank-name">MASTER</span> <span className="rank-desc">المستويات 25 - 29</span> <span className="rank-tax">-40 HP | -200 G</span></RankItem>
+          <RankItem $color="#a855f7"><Crown size={20} color="#a855f7" /> <span className="rank-name">ELITE</span> <span className="rank-desc">المستوى 30+</span> <span className="rank-tax">-50 HP | -250 G</span></RankItem>
+        </GridBox>
+        <br/>
+        <InfoPill $color="#00f2ff">
+          <strong>الوصول لمستوى 20 (Diamond):</strong> يفتح لك ميزة <strong>Evolution</strong> (تطور الكلاس) في البروفايل، حيث يتغير شكل الأيقونة الخاصة بك لنسخة أكثر فخامة!
+        </InfoPill>
       </>
     )
   },
   {
     id: 3,
-    title: 'ساعة الصفر واليوم المثالي (Perfect Day)',
-    icon: Clock,
-    color: '#34d399',
+    title: 'اقتصاد اللعبة (EXP & Gold)',
+    icon: Activity,
+    color: '#0ea5e9',
     content: (
       <>
-        الالتزام الصارم هو الفارق الوحيد بين العادي والنخبة.
-        <ul>
-          <li><strong>فترة السماح:</strong> يبدأ اليوم الجديد في 12:00 منتصف الليل، ولكن النظام يمنحك فترة سماح لتسجيل مهام "أمس" المنسية حتى الساعة <Highlight $color="#34d399">11:59 ظهراً</Highlight> من اليوم التالي.</li>
-          <li><strong>ساعة الصفر (12:00 ظهراً):</strong> بمجرد حلول الظهيرة، يتم <Highlight $color="#ef4444">إغلاق النظام (System Locked)</Highlight> ليوم الأمس ولن يمكنك تعديله نهائياً.</li>
-          <li><strong>اليوم المثالي:</strong> الـ Streak لا يرتفع إلا إذا أتممت <strong>المهام الأساسية الثلاث</strong> (التمرين، التغذية، المياه). إذا فوتّ مهمة واحدة، <Highlight $color="#ef4444">ينكسر الـ Streak للصفر</Highlight> وتُطبق عليك ضريبة الرانك وتخسر نقاط حياتك (HP)!</li>
-        </ul>
+        صعود السلم يتطلب مجهوداً مضاعفاً كلما اقتربت من القمة.
+        <br/><br/>
+        <InfoPill $color="#0ea5e9">
+          <strong>نظام الـ EXP:</strong> اليوم المثالي يمنحك <strong>215 EXP</strong>. في البداية (من ليفل 1 لـ 2) ستحتاج 650 EXP فقط، لكن الصعوبة تتصاعد تدريجياً حتى تصل إلى <strong>4,000 EXP</strong> للارتقاء لمستوى واحد في المراحل المتقدمة.
+        </InfoPill>
+        <InfoPill $color="#eab308">
+          <strong>مكافآت الترقية:</strong> عند الصعود لمستوى جديد تحصل على <Highlight $color="#eab308">100 Gold</Highlight>. إذا كان المستوى الجديد يمنحك رانكاً جديداً (مثل مستوى 5، 10، 15..)، تتضاعف الجائزة إلى <Highlight $color="#eab308">200 Gold</Highlight>.
+        </InfoPill>
       </>
     )
   },
   {
     id: 4,
-    title: 'متتبع التغذية (Nutrition Tracker)',
-    icon: Flame,
-    color: '#f97316',
+    title: 'عجلة الحظ والعتاد (The Void)',
+    icon: Gem,
+    color: '#a855f7',
     content: (
       <>
-        لن يمكنك ادعاء إتمام هدف التغذية دون دليل والتزام حقيقي.
-        <ul>
-          <li><strong>الهدف الذكي:</strong> النظام يحسب هدف البروتين الخاص بك تلقائياً بناءً على وزنك (1.7g إلى 2.2g لكل كيلو).</li>
-          <li><strong>قفل المهمة:</strong> مهمة التغذية ستظل <Highlight $color="#f97316">مقفولة (Locked)</Highlight> ولن تعطيك EXP حتى يمتلئ عداد البروتين للون الأخضر.</li>
-          <li><strong>قاعدة البيانات الشخصية:</strong> أضف وجباتك يدوياً وسيحفظها النظام للأبد لتجدها في البحث في الأيام القادمة تحت وسم `[وجبتي]`.</li>
+        مكانك لإنفاق الذهب المكتسب! ادفع <Highlight $color="#eab308">1000 Gold</Highlight> لفتح صندوق الـ Void واحصل على غنائم عشوائية بناءً على نظام الاحتمالات (RNG).
+        <br/><br/>
+        <ul style={{ listStyleType: 'circle' }}>
+          <li><Highlight $color="#94a3b8">Common (48%):</Highlight> عتاد أساسي أو أكياس ذهب فورية (+200G).</li>
+          <li><Highlight $color="#38bdf8">Rare (30%):</Highlight> عتاد يوفر بونص جيد للذهب ونقاط الحياة.</li>
+          <li><Highlight $color="#facc15">Epic (18%):</Highlight> عتاد متقدم وأختام تفتح ألقاباً حصرية بجوار اسمك (مثل Emperor).</li>
+          <li><Highlight $color="#ec4899">Mythic (4%):</Highlight> نوادر السيرفر! عباءة الفانتوم (تسترجع 100% من دمك عند الترقية) وبيضة التنين التي تفتح روحاً سحرية فريدة.</li>
         </ul>
+        <InfoPill $color="#ef4444">
+          <strong>تنبيه الصلاحية (Durability):</strong> الأسلحة والدروع في الـ Armory <strong>مؤقتة</strong> (تستمر لـ 3 أيام، 5 أيام، أسبوع، أو 14 يوم). بعد انتهاء الوقت، تتدمر القطعة وتختفي من مخزنك تلقائياً لضمان عدم وجود لاعب Overpowered بشكل دائم!
+        </InfoPill>
       </>
     )
   },
   {
     id: 5,
-    title: 'خزنة النخبة والغموض (Elite Vault)',
-    icon: Lock,
-    color: '#10b981',
+    title: 'متتبع التغذية (Nutrition Tracker)',
+    icon: Flame,
+    color: '#f97316',
     content: (
       <>
-        الـ Gold هو ثروتك، ولكن بعض الغنائم تحتاج لما هو أكثر من المال.
-        <ul>
-          <li><strong>المنتجات الحصرية (Exclusive):</strong> قطع فريدة متوفرة بنسخ محدودة جداً في السيرفر. أول من يدفع، يغلقها على الباقيين!</li>
-          <li><strong>نظام الغموض (Mystery Locks):</strong> بعض المنتجات أو الاستشارات <Highlight $color="#10b981">تتطلب رانك معين</Highlight> لشرائها (مثل Diamond أو Platinum).</li>
-          <li>إذا كان رانكك أقل من المطلوب، سيظهر لك المنتج بشكل <Highlight $color="#64748b">ضبابي غامض (Blurred)</Highlight> وزر الشراء مغلق بقفل، لتشجيعك على القتال للوصول لهذا الرانك وفتح الغنيمة.</li>
-          <li><strong>ألقاب الأبطال (Titles):</strong> اشترِ ألقاباً رياضية مهيبة لتظهر بجانب اسمك في الـ Leaderboard.</li>
-        </ul>
+        العضلات تُبنى في المطبخ قبل الجيم.
+        <br/><br/>
+        <InfoPill $color="#f97316">
+          <strong>هدف البروتين:</strong> النظام يقرأ وزنك من البروفايل ويضع لك تارجت ذكي للبروتين (بين 1.7 جم إلى 2.2 جم لكل كيلو).
+        </InfoPill>
+        <InfoPill $color="#10b981">
+          <strong>قفل المهمة:</strong> مهمة <code>Nutritional Compliance</code> في الشاشة الرئيسية ستظل مغلقة ولن تمنحك أي نقاط حتى تملأ عداد البروتين في متتبع التغذية ويتحول للون الأخضر.
+        </InfoPill>
+        يمكنك إضافة الأطعمة من قاعدة البيانات المُدمجة، أو إضافة وجباتك الخاصة يدوياً، وسيقوم النظام بحفظها باسم <code>[وجبتي]</code> لتجدها جاهزة في الأيام القادمة.
       </>
     )
   },
   {
     id: 6,
-    title: 'صالة الألعاب (Elite Arcade)',
-    icon: Gamepad2,
-    color: '#a855f7',
+    title: 'العيادة وإدارة الإصابات (Rehab Clinic)',
+    icon: Stethoscope,
+    color: '#ef4444',
     content: (
       <>
-        نحن نقيس التناسق والتركيز، وليس الحظ.
-        <ul>
-          <li>اضغط على <strong>أيقونة الـ Gamepad 🎮</strong> العائمة لفتح صالة الألعاب.</li>
-          <li><strong>Reflex Arena (معدل الاستجابة):</strong> لا تقاس سرعة رد فعلك من محاولة واحدة. يجب عليك اجتياز <Highlight $color="#a855f7">4 محاولات متتالية</Highlight>. النظام سيحسب (المتوسط - Average) لتلك المحاولات لضمان التناسق قبل إرسال نتيجتك.</li>
-          <li><strong>Finger Sprint:</strong> اختبر سرعة الانقباض العصبي عبر النقر بأقصى سرعة لمدة 10 ثواني.</li>
-          <li>أرقامك تُسجل في Leaderboard عالمي خاص بالألعاب لتحديد أسرع الأعصاب في السيرفر.</li>
+        الإصابة ليست عذراً للتوقف، بل فرصة للتعافي بذكاء.
+        <br/><br/>
+        <ul style={{ listStyleType: 'circle' }}>
+          <li>استخدم مجسم الـ 3D في العيادة لتحديد مكان الألم وشدته. سيعطيك النظام بروتوكول علاج فوري (إطالات، ثلج، راحة).</li>
+          <li>إذا أبلغت المدرب (Coach) بالإصابة وتم الموافقة عليها، ستتحول حالتك إلى <Highlight $color="#ef4444">Injured</Highlight>.</li>
+          <li>تلقائياً، ستتغير مهام الـ Dashboard الخاصة بك من تمارين شاقة إلى <strong>مهام علاج طبيعي (Rehab)</strong>، لتتمكن من الحفاظ على الـ Streak وجمع الـ EXP أثناء فترة التعافي!</li>
         </ul>
       </>
     )
   },
   {
     id: 7,
+    title: 'المواسم التنافسية (Seasons & Leaderboard)',
+    icon: Trophy,
+    color: '#0ea5e9',
+    content: (
+      <>
+        المجد الحقيقي يكتب في نهاية الشهر.
+        <br/><br/>
+        <InfoPill $color="#0ea5e9">
+          <strong>بطولة الشهر:</strong> يوجد تصنيف عام يعتمد على خبرتك الكلية (Cumulative XP)، وتصنيف شهري يعتمد على الـ (Monthly XP).
+        </InfoPill>
+        <InfoPill $color="#eab308">
+          <strong>نهاية الموسم (Season Wipe):</strong> في نهاية الشهر، يُتوج الكوتش أبطال الموسم (الأول على الرجال والأولى على الفتيات). سيظهر تاج 👑 دائم بجوار أسمائهم. ثم يتم <strong>تصفير نقاط الشهر</strong> للجميع ليبدأ السباق من جديد، بينما يظل التراكمي ثابتاً لحفظ مستواك الكلي!
+        </InfoPill>
+      </>
+    )
+  },
+  {
+    id: 8,
+    title: 'الأرواح السحرية (Mystical Pets)',
+    icon: Ghost,
+    color: '#10b981',
+    content: (
+      <>
+        في البروفايل الخاص بك، ستجد "الملاذ السحري" حيث يمكنك استدعاء الأرواح المرافقة التي تطفو بجوار اسمك في لوحة الشرف (Leaderboard).
+        <br/><br/>
+        <ul style={{ listStyleType: 'circle' }}>
+          <li><strong>الطاقة (Energy):</strong> الأرواح حية وتستهلك الطاقة (Hunger). إذا وصلت طاقتها لـ 0%، ستتحول للون الرمادي (تموت مؤقتاً).</li>
+          <li><strong>الإنعاش:</strong> يجب إطعام روحك باستخدام <Highlight $color="#eab308">500 Gold</Highlight> لاسترجاع طاقتها.</li>
+          <li><strong>التحرير (Release):</strong> يمكنك تجهيز الأرواح أو إزالتها نهائياً لتوفير مساحة لروح أقوى أو نادرة حصلت عليها من صندوق الـ Void.</li>
+        </ul>
+      </>
+    )
+  },
+  {
+    id: 9,
+    title: 'صالة الألعاب العصبية (Elite Arcade)',
+    icon: Gamepad2,
+    color: '#a855f7',
+    content: (
+      <>
+        اضغط على أيقونة الـ Gamepad 🎮 العائمة لفتح صالة الألعاب المصغرة لاختبار جهازك العصبي:
+        <br/><br/>
+        <ul style={{ listStyleType: 'circle' }}>
+          <li><strong>Reflex Arena (معدل الاستجابة):</strong> لا نعتمد على ضربة حظ! يجب اجتياز <Highlight $color="#a855f7">4 محاولات متتالية</Highlight>، وسيقوم النظام بحساب متوسط الزمن (Average Time) لضمان ثبات تركيزك قبل تسجيله.</li>
+          <li><strong>Finger Sprint:</strong> اختبر سرعة الانقباض العصبي بالنقر بأقصى سرعة ممكنة خلال 10 ثوانٍ.</li>
+        </ul>
+      </>
+    )
+  },
+  {
+    id: 10,
     title: 'ميثاق الشرف (Honor Code)',
     icon: Shield,
     color: '#ef4444',
     content: (
       <>
         <strong>"مَنْ غَشَّنَا فَلَيْسَ مِنَّا"</strong>
-        <ul>
-          <li>الضغط على مهام الشرف يظهر لك <Highlight $color="#ef4444">النافذة الحمراء</Highlight>. الغش في تسجيل المهام يُفقدك احترامك لنفسك قبل أن يُفقدك ثقة السيرفر.</li>
-          <li>إذا قمت بمخالفة خطيرة أو تكاسلت بشكل مستمر، سيقوم الكوتش بتفعيل <strong>"عقوبة إدارية"</strong> لك، والتي تجمد تقدمك بالكامل.</li>
-          <li>لا يتم فك التجميد إلا بتنفيذ عقوبة الكوتش ورفع إثبات موثق.</li>
-        </ul>
+        <br/><br/>
+        الضغط على المهام التي لا تتطلب صورة (مثل شرب المياه أو النوم) يُظهر <Highlight $color="#ef4444">النافذة الحمراء للقسم</Highlight>. الغش في تسجيل المهام يُفقدك احترامك لنفسك قبل أن يكشفك النظام.
+        <br/><br/>
+        يمتلك الكوتش <strong>Master Override</strong> يسمح له بإلغاء مهامك المكتملة وسحب نقاطك وذهبك إذا ثبت تلاعبك. وإذا تكرر الأمر، سيتم تفعيل `Disciplinary Quest` (عقوبة تأديبية) توقف تقدمك كلياً حتى تنفذها حرفياً.
       </>
     )
   }
@@ -272,27 +351,38 @@ const RULES_DATA = [
 const Rules = () => {
   const [openId, setOpenId] = useState<number | null>(1);
 
+  const playClickSound = () => {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext(); 
+    const osc = ctx.createOscillator(); 
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    
+    osc.type = 'sine'; 
+    osc.frequency.setValueAtTime(600, ctx.currentTime); 
+    osc.frequency.exponentialRampToValueAtTime(1000, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.1, ctx.currentTime); 
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+    osc.start(); osc.stop(ctx.currentTime + 0.1);
+  };
+
   const toggleAccordion = (id: number) => {
+    playClickSound();
     setOpenId(openId === id ? null : id);
   };
 
   return (
     <Container
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
     >
       <Header>
-        <Title>
-          <BookOpen size={24} color="#818cf8" />
-          THE AWAKING MANIFESTO
-        </Title>
+        <BookOpen size={40} color="#818cf8" style={{ filter: 'drop-shadow(0 0 10px rgba(129, 140, 248, 0.5))' }} />
+        <Title>THE AWAKING MANIFESTO</Title>
+        <Subtitle>دستور النخبة وقوانين السيرفر</Subtitle>
       </Header>
-
-      <div style={{ marginBottom: '20px', fontSize: '13px', color: '#94a3b8', lineHeight: '1.5', textAlign: 'center' }}>
-        هذا هو دستور النخبة. هنا تجد كل القوانين والأنظمة التي تحكم سيرفر The Awaking. 
-        قراءتك وفهمك لهذه القواعد هو أول خطوة في طريقك للتفوق على البقية.
-      </div>
 
       {RULES_DATA.map((rule) => {
         const isOpen = openId === rule.id;
