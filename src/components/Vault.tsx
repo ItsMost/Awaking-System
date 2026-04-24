@@ -9,12 +9,12 @@ import { toast, Toaster } from 'sonner';
 import { 
   Trophy, Shield, Sword, Gem, Lock, Package, 
   Zap, Flame, Droplet, Crown, Hexagon, Crosshair, Ghost, Wind,
-  Axe, Heart 
+  Axe, Heart, Clock 
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 // ==========================================
-// 1. المحرك الصوتي الفخم
+// 1. المحرك الصوتي הפخم
 // ==========================================
 const playSound = (type: 'open' | 'epic' | 'click' | 'equip' | 'claim') => {
   const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
@@ -81,7 +81,7 @@ const LootBox3D = ({ isOpening }: { isOpening: boolean }) => {
 };
 
 // ==========================================
-// 3. قاعدة البيانات الجديدة (Drop Rates System)
+// 3. قاعدة البيانات الشاملة (Drop Rates & Durations)
 // ==========================================
 const ACHIEVEMENTS = [
   { id: 'ach1', name: 'Awakened', desc: 'أول تسجيل دخول للنظام.', type: 'diamond', color: '#00f2ff', unlocked: true },
@@ -91,19 +91,35 @@ const ACHIEVEMENTS = [
 ];
 
 const GEAR_DATABASE = [
-  { id: 'w1', name: 'Iron Sword', type: 'Weapon', rarity: 'Common', color: '#94a3b8', icon: Sword, stat: '+5 Gold / Quest', chance: 16 },
-  { id: 'w2', name: 'Golden Katana', type: 'Weapon', rarity: 'Rare', color: '#38bdf8', icon: Sword, stat: '+15 Gold / Quest', chance: 10 },
-  { id: 'w3', name: 'Bloodthirster', type: 'Weapon', rarity: 'Epic', color: '#ef4444', icon: Droplet, stat: '+2 HP / Quest', chance: 6 },
-  { id: 'w4', name: 'Abyssal Cleaver', type: 'Weapon', rarity: 'Mythic', color: '#a855f7', icon: Axe, stat: '+30 Gold / Quest', chance: 1.33 },
-  { id: 'a1', name: 'Leather Vest', type: 'Armor', rarity: 'Common', color: '#94a3b8', icon: Shield, stat: '+10 Max HP', chance: 16 },
-  { id: 'a2', name: 'Vanguard Plate', type: 'Armor', rarity: 'Rare', color: '#38bdf8', icon: Shield, stat: '+25 Max HP', chance: 10 },
-  { id: 'a3', name: 'Aegis Core', type: 'Armor', rarity: 'Epic', color: '#facc15', icon: Hexagon, stat: '+50 Max HP', chance: 6 },
-  { id: 'a4', name: 'Phantom Cloak', type: 'Armor', rarity: 'Mythic', color: '#ec4899', icon: Wind, stat: 'Heal 100% on Level Up', chance: 1.33 },
-  { id: 'ar1', name: 'Pouch of Wealth', type: 'Consumable', rarity: 'Common', color: '#94a3b8', icon: Package, stat: '+200 Instant Gold', chance: 16 },
-  { id: 'ar2', name: 'Vitality Amulet', type: 'Artifact', rarity: 'Rare', color: '#38bdf8', icon: Heart, stat: '+10 HP & +5G / Quest', chance: 10 },
-  { id: 'ar3', name: 'Emperor Signet', type: 'Consumable', rarity: 'Epic', color: '#facc15', icon: Crown, stat: 'Unlocks [Emperor] Title', chance: 6 },
-  { id: 'ar4', name: 'Obsidian Egg', type: 'Consumable', rarity: 'Mythic', color: '#10b981', icon: Ghost, stat: 'Unlocks Secret Pet', chance: 1.34 },
+  // --- WEAPONS ---
+  { id: 'w1', name: 'Iron Sword', type: 'Weapon', rarity: 'Common', color: '#94a3b8', icon: Sword, stat: '+5 Gold / Quest', chance: 15, durationDays: 3 },
+  { id: 'w2', name: 'Golden Katana', type: 'Weapon', rarity: 'Rare', color: '#38bdf8', icon: Sword, stat: '+15 Gold / Quest', chance: 10, durationDays: 5 },
+  { id: 'w3', name: 'Bloodthirster', type: 'Weapon', rarity: 'Epic', color: '#ef4444', icon: Droplet, stat: '+2 HP / Quest', chance: 6, durationDays: 7 },
+  { id: 'w4', name: 'Abyssal Cleaver', type: 'Weapon', rarity: 'Mythic', color: '#a855f7', icon: Axe, stat: '+30 Gold / Quest', chance: 1, durationDays: 14 },
+  { id: 'w5', name: 'Venom Dagger', type: 'Weapon', rarity: 'Rare', color: '#10b981', icon: Sword, stat: '+10 Gold / Quest', chance: 8, durationDays: 3 },
+  // --- ARMORS ---
+  { id: 'a1', name: 'Leather Vest', type: 'Armor', rarity: 'Common', color: '#94a3b8', icon: Shield, stat: '+10 Max HP', chance: 15, durationDays: 3 },
+  { id: 'a2', name: 'Vanguard Plate', type: 'Armor', rarity: 'Rare', color: '#38bdf8', icon: Shield, stat: '+25 Max HP', chance: 10, durationDays: 5 },
+  { id: 'a3', name: 'Aegis Core', type: 'Armor', rarity: 'Epic', color: '#facc15', icon: Hexagon, stat: '+50 Max HP', chance: 6, durationDays: 7 },
+  { id: 'a4', name: 'Phantom Cloak', type: 'Armor', rarity: 'Mythic', color: '#ec4899', icon: Wind, stat: 'Heal 100% on Level Up', chance: 1, durationDays: 14 },
+  { id: 'a5', name: 'Titan Chestplate', type: 'Armor', rarity: 'Epic', color: '#f97316', icon: Shield, stat: '+40 Max HP', chance: 5, durationDays: 7 },
+  // --- ARTIFACTS & CONSUMABLES ---
+  { id: 'ar1', name: 'Pouch of Wealth', type: 'Consumable', rarity: 'Common', color: '#94a3b8', icon: Package, stat: '+200 Instant Gold', chance: 10, durationDays: 0 },
+  { id: 'ar2', name: 'Vitality Amulet', type: 'Artifact', rarity: 'Rare', color: '#38bdf8', icon: Heart, stat: '+10 HP & +5G / Quest', chance: 8, durationDays: 5 },
+  { id: 'ar3', name: 'Emperor Signet', type: 'Consumable', rarity: 'Epic', color: '#facc15', icon: Crown, stat: 'Unlocks [Emperor] Title', chance: 3, durationDays: 0 },
+  { id: 'ar4', name: 'Obsidian Egg', type: 'Consumable', rarity: 'Mythic', color: '#10b981', icon: Ghost, stat: 'Unlocks Secret Pet', chance: 1, durationDays: 0 },
+  { id: 'ar5', name: 'Time Ring', type: 'Artifact', rarity: 'Epic', color: '#0ea5e9', icon: Zap, stat: '+20 Gold / Quest', chance: 1, durationDays: 2 },
 ];
+
+const formatTimeLeft = (expiresAt: number | null) => {
+  if (!expiresAt) return '';
+  const diff = expiresAt - Date.now();
+  if (diff <= 0) return 'Expired';
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  if (days > 0) return `${days}d ${hours}h`;
+  return `${hours}h`;
+};
 
 // ==========================================
 // 4. التصميمات (Styled Components)
@@ -119,7 +135,8 @@ const ViewerTitle = styled.h2<{ $color: string }>` margin: 0; font-size: 24px; f
 const ViewerDesc = styled.p` margin: 5px 0 0 0; font-size: 12px; color: #cbd5e1; `;
 
 const GridList = styled.div` display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; @media (max-width: 480px){ grid-template-columns: repeat(2, 1fr); gap: 10px; }`;
-const ItemCard = styled(motion.div)<{ $unlocked: boolean, $color: string }>` background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95)); border: 1px solid ${(props) => props.$unlocked ? props.$color : '#334155'}; border-radius: 16px; padding: 15px; text-align: center; cursor: grab; filter: ${(props) => props.$unlocked ? 'none' : 'grayscale(100%) opacity(0.5)'}; transition: 0.3s; box-shadow: ${(props) => props.$unlocked ? `0 4px 15px ${props.$color}30` : 'none'}; &:hover { transform: ${(props) => props.$unlocked ? 'translateY(-5px)' : 'none'}; border-color: ${(props) => props.$unlocked ? '#fff' : '#334155'}; } &:active { cursor: grabbing; }`;
+const ItemCard = styled(motion.div)<{ $unlocked: boolean, $color: string }>` background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95)); border: 1px solid ${(props) => props.$unlocked ? props.$color : '#334155'}; border-radius: 16px; padding: 15px; text-align: center; cursor: grab; filter: ${(props) => props.$unlocked ? 'none' : 'grayscale(100%) opacity(0.5)'}; transition: 0.3s; box-shadow: ${(props) => props.$unlocked ? `0 4px 15px ${props.$color}30` : 'none'}; position: relative; &:hover { transform: ${(props) => props.$unlocked ? 'translateY(-5px)' : 'none'}; border-color: ${(props) => props.$unlocked ? '#fff' : '#334155'}; } &:active { cursor: grabbing; }`;
+const TimeBadge = styled.div<{ $color: string }>` position: absolute; top: -8px; right: -8px; background: #020617; border: 1px solid ${(props) => props.$color}; color: ${(props) => props.$color}; padding: 2px 6px; font-size: 9px; font-weight: 900; border-radius: 8px; display: flex; align-items: center; gap: 3px; z-index: 10; `;
 
 const GearSlot = styled.div<{ $color: string, $empty: boolean }>` background: ${(props) => props.$empty ? 'rgba(2, 6, 23, 0.8)' : `linear-gradient(180deg, ${props.$color}20, rgba(2, 6, 23, 0.9))`}; border: 2px dashed ${(props) => props.$empty ? '#334155' : props.$color}; border-radius: 20px; height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: ${(props) => props.$empty ? 'none' : `inset 0 0 20px ${props.$color}30, 0 0 20px ${props.$color}40`}; transition: 0.3s; @media (max-width: 480px){ height: 150px; }`;
 const GearLabel = styled.div` position: absolute; top: -10px; background: #0b1120; padding: 2px 10px; font-size: 10px; font-weight: 900; color: #94a3b8; border: 1px solid #334155; border-radius: 10px; `;
@@ -141,24 +158,53 @@ const Vault = ({ player, setPlayer }: any) => {
   const [isOpening, setIsOpening] = useState(false);
   const [pulledItem, setPulledItem] = useState<any>(null);
 
+  // 🚨 فحص العتاد المنتهي الصلاحية + الحفظ الآمن 🚨
   useEffect(() => {
     if (player) {
        setGold(player.gold || 0);
        
-       if (player.inventory) {
-         const restoredInv = player.inventory.map((invItem: any) => {
-           return GEAR_DATABASE.find(g => g.id === invItem.id) || invItem;
-         }).filter(Boolean);
-         setInventory(restoredInv);
+       const now = Date.now();
+       let invChanged = false;
+       let eqChanged = false;
+
+       // ترميم وفلترة المخزن
+       let currentInv = player.inventory || [];
+       const validInv = currentInv.map((invItem: any) => {
+           // قراءة الأيقونات والبيانات الأصلية
+           return { ...(GEAR_DATABASE.find(g => g.id === invItem.id) || invItem), instanceId: invItem.instanceId, expiresAt: invItem.expiresAt };
+       }).filter((item: any) => {
+           if (!item.expiresAt) return true;
+           return item.expiresAt > now; // لو ميعاد الانتهاء لسه مجاش
+       });
+
+       if (validInv.length !== currentInv.length) invChanged = true;
+
+       // ترميم وفلترة العتاد المجهز
+       let eq = player.equipped_gear || { weapon: null, armor: null, artifact: null };
+       let validEq = { ...eq };
+
+       if (eq.weapon) {
+         validEq.weapon = { ...(GEAR_DATABASE.find(g => g.id === eq.weapon.id) || eq.weapon), instanceId: eq.weapon.instanceId, expiresAt: eq.weapon.expiresAt };
+         if (validEq.weapon.expiresAt && validEq.weapon.expiresAt < now) { validEq.weapon = null; eqChanged = true; }
+       }
+       if (eq.armor) {
+         validEq.armor = { ...(GEAR_DATABASE.find(g => g.id === eq.armor.id) || eq.armor), instanceId: eq.armor.instanceId, expiresAt: eq.armor.expiresAt };
+         if (validEq.armor.expiresAt && validEq.armor.expiresAt < now) { validEq.armor = null; eqChanged = true; }
+       }
+       if (eq.artifact) {
+         validEq.artifact = { ...(GEAR_DATABASE.find(g => g.id === eq.artifact.id) || eq.artifact), instanceId: eq.artifact.instanceId, expiresAt: eq.artifact.expiresAt };
+         if (validEq.artifact.expiresAt && validEq.artifact.expiresAt < now) { validEq.artifact = null; eqChanged = true; }
        }
 
-       if (player.equipped_gear) {
-         const eq = player.equipped_gear;
-         setEquipped({
-           weapon: eq.weapon ? GEAR_DATABASE.find(g => g.id === eq.weapon.id) : null,
-           armor: eq.armor ? GEAR_DATABASE.find(g => g.id === eq.armor.id) : null,
-           artifact: eq.artifact ? GEAR_DATABASE.find(g => g.id === eq.artifact.id) : null,
-         });
+       setInventory(validInv);
+       setEquipped(validEq);
+
+       // لو فيه حاجات باظت واتمسحت، حدث الداتا بيز عشان اللاعب ميغشش
+       if (invChanged || eqChanged) {
+          const updatedPlayer = { ...player, inventory: validInv, equipped_gear: validEq };
+          setPlayer(updatedPlayer);
+          localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
+          supabase.from('elite_players').update({ inventory: validInv, equipped_gear: validEq }).eq('name', player.name);
        }
     }
   }, [player]);
@@ -183,12 +229,21 @@ const Vault = ({ player, setPlayer }: any) => {
       await supabase.from('elite_players').update({ gold: newGold }).eq('name', player.name);
       await supabase.from('elite_economy').insert([{ player_name: player.name, amount: 1000, currency: 'gold', operation: 'decrease', reason: 'Void Gacha Pull' }]);
       setPlayer({ ...player, gold: newGold });
+      localStorage.setItem('elite_system_active_session', JSON.stringify({ ...player, gold: newGold }));
     } catch(e) {}
 
     setTimeout(() => {
       setIsOpening(false);
       playSound('epic');
-      setPulledItem(selectedGear);
+      
+      // 🚨 إنشاء نسخة فريدة (Instance) للعتاد مع تاريخ الانتهاء 🚨
+      const instanceItem = {
+        ...selectedGear,
+        instanceId: Date.now().toString() + Math.random().toString(36).substring(2, 8),
+        expiresAt: selectedGear.durationDays > 0 ? Date.now() + (selectedGear.durationDays * 24 * 60 * 60 * 1000) : null
+      };
+
+      setPulledItem(instanceItem);
       confetti({ particleCount: 300, spread: 150, startVelocity: 40, colors: [selectedGear.color, '#ffffff'] });
     }, 2000);
   };
@@ -200,7 +255,9 @@ const Vault = ({ player, setPlayer }: any) => {
         if (pulledItem.id === 'ar1') { 
            const newGold = gold + 200; setGold(newGold);
            await supabase.from('elite_players').update({ gold: newGold }).eq('name', player.name);
-           setPlayer({ ...player, gold: newGold });
+           const updatedPlayer = { ...player, gold: newGold };
+           setPlayer(updatedPlayer);
+           localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
            toast.success('تمت إضافة 200 ذهب لمحفظتك!', { style: { color: '#eab308' }});
         } 
         else if (pulledItem.id === 'ar3') { 
@@ -208,13 +265,17 @@ const Vault = ({ player, setPlayer }: any) => {
            if(!currentTitles.includes('Emperor')) {
               const newTitles = [...currentTitles, 'Emperor'];
               await supabase.from('elite_players').update({ titles: newTitles }).eq('name', player.name);
-              setPlayer({ ...player, titles: newTitles });
+              const updatedPlayer = { ...player, titles: newTitles };
+              setPlayer(updatedPlayer);
+              localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
               toast.success('تم فتح لقب [Emperor]!', { style: { color: '#facc15' }});
            } else {
               toast.info('اللقب مملوك مسبقاً. تم تعويضك بـ 500 ذهب.');
               const newGold = gold + 500; setGold(newGold);
               await supabase.from('elite_players').update({ gold: newGold }).eq('name', player.name);
-              setPlayer({ ...player, gold: newGold });
+              const updatedPlayer = { ...player, gold: newGold };
+              setPlayer(updatedPlayer);
+              localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
            }
         } 
         else if (pulledItem.id === 'ar4') { 
@@ -222,21 +283,28 @@ const Vault = ({ player, setPlayer }: any) => {
            if(!currentPets.includes('Obsidian Dragon')) {
               const newPets = [...currentPets, 'Obsidian Dragon'];
               await supabase.from('elite_players').update({ pets: newPets }).eq('name', player.name);
-              setPlayer({ ...player, pets: newPets });
+              const updatedPlayer = { ...player, pets: newPets };
+              setPlayer(updatedPlayer);
+              localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
               toast.success('تم فتح الروح السرية [Obsidian Dragon]!', { style: { color: '#10b981' }});
            } else {
               toast.info('الروح مملوكة مسبقاً. تم تعويضك بـ 1000 ذهب.');
               const newGold = gold + 1000; setGold(newGold);
               await supabase.from('elite_players').update({ gold: newGold }).eq('name', player.name);
-              setPlayer({ ...player, gold: newGold });
+              const updatedPlayer = { ...player, gold: newGold };
+              setPlayer(updatedPlayer);
+              localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
            }
         }
       } else {
+        // 🚨 حفظ العتاد بقوة في الـ Storage والـ DB 🚨
         const newInv = [...inventory, pulledItem];
         setInventory(newInv);
         await supabase.from('elite_players').update({ inventory: newInv }).eq('name', player.name);
-        setPlayer({ ...player, inventory: newInv });
-        toast.success(`تمت إضافة ${pulledItem.name} للمخزن!`);
+        const updatedPlayer = { ...player, inventory: newInv };
+        setPlayer(updatedPlayer);
+        localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
+        toast.success(`تمت إضافة ${pulledItem.name} للمخزن! (${pulledItem.durationDays} أيام)`);
       }
     } catch(e) { toast.error('حدث خطأ أثناء الاستلام.'); }
     setPulledItem(null);
@@ -246,13 +314,15 @@ const Vault = ({ player, setPlayer }: any) => {
     playSound('equip');
     const newEq = { ...equipped };
     if (item.type === 'Weapon') newEq.weapon = item;
-    if (item.type === 'Armor') newEq.armor = item;
+    if (item.type === 'Armor' || item.type === 'Shield') newEq.armor = item;
     if (item.type === 'Artifact') newEq.artifact = item;
     
     setEquipped(newEq);
     try {
        await supabase.from('elite_players').update({ equipped_gear: newEq }).eq('name', player.name);
-       setPlayer({ ...player, equipped_gear: newEq });
+       const updatedPlayer = { ...player, equipped_gear: newEq };
+       setPlayer(updatedPlayer);
+       localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
        toast.success(`تم تجهيز ${item.name}!`, { style: { color: item.color, border: `1px solid ${item.color}`, background: '#020617' }});
     } catch(e) { toast.error('فشل التجهيز.'); }
   };
@@ -260,10 +330,10 @@ const Vault = ({ player, setPlayer }: any) => {
   const handleDrop = (e: any, targetSlot: string) => {
     e.preventDefault();
     try {
-      const itemId = e.dataTransfer.getData('text/plain');
-      if (!itemId) return;
+      const instanceId = e.dataTransfer.getData('text/plain');
+      if (!instanceId) return;
       
-      const item = inventory.find(i => i.id === itemId) || GEAR_DATABASE.find(i => i.id === itemId);
+      const item = inventory.find(i => i.instanceId === instanceId);
       if (!item) return;
 
       let isValid = false;
@@ -279,6 +349,13 @@ const Vault = ({ player, setPlayer }: any) => {
       }
     } catch (err) {}
   };
+
+  // 🚨 تحديث واجهة المخزن كل ثانية عشان العداد ينزل 🚨
+  const [ticker, setTicker] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setTicker(prev => prev + 1), 60000); // تحديث كل دقيقة
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <Container initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
@@ -386,13 +463,13 @@ const Vault = ({ player, setPlayer }: any) => {
                   const Icon = item.icon || Sword;
                   return (
                     <ItemCard 
-                      key={idx} 
+                      key={item.instanceId || idx} 
                       $unlocked={true} 
                       $color={item.color} 
                       onClick={() => handleEquip(item)}
                       draggable
                       onDragStart={(e: any) => {
-                        e.dataTransfer.setData('text/plain', item.id);
+                        e.dataTransfer.setData('text/plain', item.instanceId);
                         e.currentTarget.style.opacity = '0.4';
                         playSound('click');
                       }}
@@ -400,6 +477,12 @@ const Vault = ({ player, setPlayer }: any) => {
                         e.currentTarget.style.opacity = '1';
                       }}
                     >
+                      {/* 🚨 إظهار عداد الوقت 🚨 */}
+                      {item.expiresAt && (
+                        <TimeBadge $color={item.color}>
+                           <Clock size={8} /> {formatTimeLeft(item.expiresAt)}
+                        </TimeBadge>
+                      )}
                       <Icon size={24} color={item.color} style={{ margin: '0 auto 10px auto', filter: `drop-shadow(0 0 5px ${item.color})` }} />
                       <div style={{ fontSize: 11, fontWeight: '900', color: '#fff' }}>{item.name}</div>
                       <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 4 }}>{item.rarity}</div>

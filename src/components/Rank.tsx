@@ -68,8 +68,18 @@ const playUnlock = () => {
 };
 
 // ==========================================
-// 2. الثوابت والدوال المساعدة
+// 2. الثوابت وقواعد البيانات
 // ==========================================
+// 🚨 تم إضافة الـ PETS_DATABASE هنا لمنع الإيرور 🚨
+const PETS_DATABASE = [
+  { name: 'Golden Wyvern Core', type: 'wyvern', color: '#eab308' },
+  { name: 'Healing Phoenix Ember', type: 'phoenix', color: '#ef4444' },
+  { name: 'Shadow Owl Eye', type: 'owl', color: '#a855f7' },
+  { name: 'Iron Golem Matrix', type: 'golem', color: '#0ea5e9' },
+  { name: 'Frost Wolf Soul', type: 'wolf', color: '#38bdf8' },
+  { name: 'Emerald Dragon Scale', type: 'emerald', color: '#10b981' }
+];
+
 const getLocalYYYYMMDD = (date: Date | string) => {
     const d = new Date(date);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -171,29 +181,18 @@ const FloatingCrystal = ({ color }: { color: string }) => {
   );
 };
 
-const MiniOrb = ({ petName }: { petName: string }) => {
-  if (!petName) return null;
-  const petMap: Record<string, { type: string, color: string }> = {
-    'Golden Wyvern Core': { type: 'wyvern', color: '#eab308' },
-    'Healing Phoenix Ember': { type: 'phoenix', color: '#ef4444' },
-    'Shadow Owl Eye': { type: 'owl', color: '#a855f7' },
-    'Iron Golem Matrix': { type: 'golem', color: '#0ea5e9' },
-    'Frost Wolf Soul': { type: 'wolf', color: '#38bdf8' },
-    'Emerald Dragon Scale': { type: 'emerald', color: '#10b981' }
-  };
-  const data = petMap[petName];
-  if (!data) return null;
-
+const MiniOrb = ({ type, color }: { type: string, color: string }) => {
+  if (!type) return null;
   return (
     <motion.div style={{ width: 20, height: 20, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }} animate={{ y: [-2, 2, -2] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-      <motion.div style={{ position: 'absolute', width: '100%', height: '100%', background: data.color, filter: 'blur(5px)', borderRadius: '50%', zIndex: 0 }} animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.8, 0.4] }} transition={{ duration: 2, repeat: Infinity }} />
+      <motion.div style={{ position: 'absolute', width: '100%', height: '100%', background: color, filter: 'blur(5px)', borderRadius: '50%', zIndex: 0 }} animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.8, 0.4] }} transition={{ duration: 2, repeat: Infinity }} />
       <div style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%' }}>
-        {data.type === 'wyvern' && <svg viewBox="0 0 100 100"><polygon points="50,5 90,50 50,95 10,50" fill="none" stroke={data.color} strokeWidth="6" /><circle cx="50" cy="50" r="15" fill="#fff" /></svg>}
-        {data.type === 'phoenix' && <svg viewBox="0 0 100 100"><path d="M50 10 Q70 40 50 90 Q30 40 50 10" fill={data.color} /><circle cx="50" cy="65" r="12" fill="#fff" /></svg>}
-        {data.type === 'owl' && <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke={data.color} strokeWidth="6" strokeDasharray="10 10" /><ellipse cx="50" cy="50" rx="10" ry="25" fill="#fff" /></svg>}
-        {data.type === 'golem' && <svg viewBox="0 0 100 100"><polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="#334155" stroke={data.color} strokeWidth="6" /><rect x="35" y="35" width="30" height="30" fill={data.color} /></svg>}
-        {data.type === 'wolf' && <svg viewBox="0 0 100 100"><polygon points="50,10 80,40 50,90 20,40" fill="none" stroke={data.color} strokeWidth="6" /><polygon points="50,30 60,45 50,70 40,45" fill="#fff" /></svg>}
-        {data.type === 'emerald' && <svg viewBox="0 0 100 100"><path d="M50 10 C 80 10, 90 50, 50 90 C 10 50, 20 10, 50 10 Z" fill="none" stroke={data.color} strokeWidth="6" /><circle cx="50" cy="50" r="15" fill="#fff" /></svg>}
+        {type === 'wyvern' && <svg viewBox="0 0 100 100"><polygon points="50,5 90,50 50,95 10,50" fill="none" stroke={color} strokeWidth="6" /><circle cx="50" cy="50" r="15" fill="#fff" /></svg>}
+        {type === 'phoenix' && <svg viewBox="0 0 100 100"><path d="M50 10 Q70 40 50 90 Q30 40 50 10" fill={color} /><circle cx="50" cy="65" r="12" fill="#fff" /></svg>}
+        {type === 'owl' && <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke={color} strokeWidth="6" strokeDasharray="10 10" /><ellipse cx="50" cy="50" rx="10" ry="25" fill="#fff" /></svg>}
+        {type === 'golem' && <svg viewBox="0 0 100 100"><polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="#334155" stroke={color} strokeWidth="6" /><rect x="35" y="35" width="30" height="30" fill={color} /></svg>}
+        {type === 'wolf' && <svg viewBox="0 0 100 100"><polygon points="50,10 80,40 50,90 20,40" fill="none" stroke={color} strokeWidth="6" /><polygon points="50,30 60,45 50,70 40,45" fill="#fff" /></svg>}
+        {type === 'emerald' && <svg viewBox="0 0 100 100"><path d="M50 10 C 80 10, 90 50, 50 90 C 10 50, 20 10, 50 10 Z" fill="none" stroke={color} strokeWidth="6" /><circle cx="50" cy="50" r="15" fill="#fff" /></svg>}
       </div>
     </motion.div>
   );
