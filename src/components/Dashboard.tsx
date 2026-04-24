@@ -38,7 +38,7 @@ const canPlay = () => {
   return true;
 };
 
-const playDashSound = (type: 'complete' | 'levelUp' | 'error' | 'request' | 'openMobility' | 'gameClick') => {
+const playDashSound = (type: 'complete' | 'levelUp' | 'error' | 'request' | 'openMobility' | 'gameClick' | 'streak') => {
   try {
     if (!canPlay()) return;
     const ctx = getAudioContext(); if (!ctx) return;
@@ -57,6 +57,10 @@ const playDashSound = (type: 'complete' | 'levelUp' | 'error' | 'request' | 'ope
       osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.2); osc.frequency.setValueAtTime(800, now + 0.4);
       gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 1.5);
       osc.start(); osc.stop(now + 1.5);
+    } else if (type === 'streak') {
+      osc.type = 'square'; osc.frequency.setValueAtTime(600, now); osc.frequency.setValueAtTime(1200, now + 0.1); osc.frequency.setValueAtTime(1800, now + 0.2);
+      gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 1.0);
+      osc.start(); osc.stop(now + 1.0);
     } else if (type === 'gameClick') {
       osc.type = 'sine'; osc.frequency.setValueAtTime(1000, now); osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
       gainNode.gain.setValueAtTime(0.1, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
@@ -79,15 +83,6 @@ const playHoverSound = () => {
     gainNode.gain.setValueAtTime(0.1, ctx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
     osc.start(); osc.stop(ctx.currentTime + 0.1);
   } catch (error) {}
-};
-
-const playScan = () => {
-  const ctx = getAudioContext(); if (!ctx) return;
-  const osc = ctx.createOscillator(); const gain = ctx.createGain();
-  osc.connect(gain); gain.connect(ctx.destination);
-  osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, ctx.currentTime); osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 1.5);
-  gain.gain.setValueAtTime(0.05, ctx.currentTime); gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5);
-  osc.start(); osc.stop(ctx.currentTime + 1.5);
 };
 
 // ==========================================
@@ -121,12 +116,34 @@ const calculateLevelData = (totalXp: number) => {
 
 const getSystemDateStr = (date: Date) => { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; };
 
+// 🚨 دالة استخراج قدرات العتاد (موجودة مرة واحدة فقط) 🚨
+const getGearBonuses = (equipped: any) => {
+  let bonusGold = 0; let bonusHp = 0; let bonusMaxHp = 0; let healOnLevelUp = false;
+  if (!equipped) return { bonusGold, bonusHp, bonusMaxHp, healOnLevelUp };
+  const parseStat = (statStr: string) => {
+    if (!statStr) return;
+    if (statStr.includes('+5 Gold')) bonusGold += 5;
+    if (statStr.includes('+15 Gold')) bonusGold += 15;
+    if (statStr.includes('+30 Gold')) bonusGold += 30;
+    if (statStr.includes('+2 HP')) bonusHp += 2;
+    if (statStr.includes('+10 Max HP')) bonusMaxHp += 10;
+    if (statStr.includes('+25 Max HP')) bonusMaxHp += 25;
+    if (statStr.includes('+50 Max HP')) bonusMaxHp += 50;
+    if (statStr.includes('Heal 100% on Level Up')) healOnLevelUp = true;
+    if (statStr.includes('+10 HP & +5G')) { bonusMaxHp += 10; bonusGold += 5; }
+  };
+  if (equipped.weapon) parseStat(equipped.weapon.stat);
+  if (equipped.armor) parseStat(equipped.armor.stat);
+  if (equipped.artifact) parseStat(equipped.artifact.stat);
+  return { bonusGold, bonusHp, bonusMaxHp, healOnLevelUp };
+};
+
 // ==========================================
 // 3. Components (2D VFX & 3D Scanner)
 // ==========================================
 const AnimatedCoin = React.memo(() => (
   <motion.div style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 4 }} animate={{ rotateY: 360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}>
-    <svg viewBox="0 0 100 100" width="16" height="16" style={{ filter: 'drop-shadow(0 0 5px #eab308)' }}>
+    <svg viewBox="0 0 100 100" width="14" height="14" style={{ filter: 'drop-shadow(0 0 5px #eab308)' }}>
       <circle cx="50" cy="50" r="45" fill="#facc15" stroke="#ca8a04" strokeWidth="5" />
       <circle cx="50" cy="50" r="30" fill="none" stroke="#ca8a04" strokeWidth="2" strokeDasharray="5 5" />
       <polygon points="40,30 60,30 60,70 40,70" fill="#ca8a04" opacity="0.5" />
@@ -136,62 +153,43 @@ const AnimatedCoin = React.memo(() => (
 
 const AnimatedExpStar = React.memo(() => (
   <motion.div style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 4 }} animate={{ scale: [1, 1.2, 1], rotate: [0, 15, -15, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
-    <svg viewBox="0 0 100 100" width="16" height="16" style={{ filter: 'drop-shadow(0 0 5px #00f2ff)' }}>
+    <svg viewBox="0 0 100 100" width="14" height="14" style={{ filter: 'drop-shadow(0 0 5px #00f2ff)' }}>
       <polygon points="50,10 61,39 92,39 67,58 76,88 50,70 24,88 33,58 8,39 39,39" fill="#00f2ff" stroke="#0284c7" strokeWidth="4" />
       <circle cx="50" cy="50" r="10" fill="#fff" opacity="0.8" />
     </svg>
   </motion.div>
 ));
 
-const BodyScanner3D = React.memo(({ painLevel, isScanning }: { painLevel: number, isScanning: boolean }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += isScanning ? 0.1 : 0.01; 
-      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.1;
-    }
-  });
-
-  const getBodyColor = () => {
-    if (painLevel === 0) return '#0ea5e9';
-    if (painLevel < 5) return '#eab308';
-    return '#ef4444';
-  };
-
-  return (
-    <mesh ref={meshRef}>
-      <capsuleGeometry args={[1, 2.5, 4, 16]} />
-      <meshStandardMaterial color={getBodyColor()} wireframe={true} emissive={getBodyColor()} emissiveIntensity={isScanning ? 1.5 : 0.5} transparent={true} opacity={0.8} />
-    </mesh>
-  );
-});
-
 // ==========================================
 // 4. Styled Components (Responsive)
 // ==========================================
 const Container = styled(motion.div)` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; overflow-x: hidden; @media (max-width: 480px) { padding: 10px; }`;
-const NewsTickerWrapper = styled.div` background: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 10px; margin-bottom: 20px; display: flex; align-items: center; overflow: hidden; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.5); @media (max-width: 480px) { margin-bottom: 15px; }`;
-const TickerIcon = styled.div` background: #0ea5e920; color: #0ea5e9; padding: 6px; border-radius: 8px; margin-right: 10px; z-index: 2; display: flex; align-items: center; justify-content: center; `;
+
+const NewsTickerWrapper = styled.div` background: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 10px; margin-bottom: 20px; display: flex; align-items: center; overflow: hidden; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.5); @media (max-width: 480px) { padding: 8px; margin-bottom: 12px; }`;
+const TickerIcon = styled.div` background: #0ea5e920; color: #0ea5e9; padding: 6px; border-radius: 8px; margin-right: 10px; z-index: 2; display: flex; align-items: center; justify-content: center; @media (max-width: 480px) { padding: 4px; svg { width: 14px; height: 14px; } }`;
 const marquee = keyframes` 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } `;
-const TickerText = styled.div` display: flex; gap: 40px; white-space: nowrap; animation: ${marquee} 9s linear infinite; font-size: 13px; font-weight: bold; color: #94a3b8; direction: rtl; span { color: #fff; } strong { color: #eab308; } `;
+const TickerText = styled.div` display: flex; gap: 40px; white-space: nowrap; animation: ${marquee} 9s linear infinite; font-size: 13px; font-weight: bold; color: #94a3b8; direction: rtl; span { color: #fff; } strong { color: #eab308; } @media (max-width: 480px) { font-size: 11px; }`;
+
+const DynamicHeader = styled.div<{ $color: string; $shadow: string }>` display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #0f172a 0%, #020617 100%); border: 1px solid ${(props) => props.$color}; padding: 20px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 0 20px ${(props) => props.$shadow}; transition: all 0.5s ease; @media (max-width: 480px) { padding: 15px; border-radius: 14px; margin-bottom: 15px; }`;
+const HeaderTitle = styled.h1<{ $color: string }>` margin: 0; font-size: 20px; color: ${(props) => props.$color}; display: flex; align-items: center; gap: 10px; @media (max-width: 480px) { font-size: 16px; gap: 6px; svg { width: 18px; height: 18px; } }`;
+const HeaderSub = styled.div<{ $color: string }>` display: flex; align-items: center; gap: 5px; margin-top: 5px; font-size: 11px; color: #94a3b8; font-weight: bold; @media (max-width: 480px) { font-size: 9px; } span { color: ${(props) => props.$color}; font-weight: 900; }`;
+const HeaderStats = styled.div` text-align: right; div { font-size: 10px; color: #94a3b8; font-weight: bold; margin-bottom: 2px; @media (max-width: 480px) { font-size: 9px; } } span { color: #fff; }`;
 
 const DateNav = styled.div` display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 10px 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); @media (max-width: 480px) { padding: 8px 12px; margin-bottom: 15px; }`;
-const NavBtn = styled.button` background: none; border: none; color: #00f2ff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; transition: 0.3s; &:disabled { color: #334155; cursor: not-allowed; } &:hover:not(:disabled) { filter: brightness(1.2); transform: scale(1.1); } `;
+const NavBtn = styled.button` background: none; border: none; color: #00f2ff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; transition: 0.3s; &:disabled { color: #334155; cursor: not-allowed; } &:hover:not(:disabled) { filter: brightness(1.2); transform: scale(1.1); } @media (max-width: 480px) { svg { width: 18px; height: 18px; } }`;
 const DateDisplay = styled.div` text-align: center; .day { font-size: 15px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; @media (max-width: 480px) { font-size: 13px; } } .full-date { font-size: 10px; color: #ef4444; margin-top: 2px; font-weight: bold; @media (max-width: 480px) { font-size: 9px; } } `;
 
-const SeasonCard = styled.div` background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid #38bdf8; border-radius: 16px; padding: 20px; margin-bottom: 25px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); @media (max-width: 480px) { padding: 15px; margin-bottom: 20px; border-radius: 14px; }`;
-const SeasonHeader = styled.div` display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; `;
-const SeasonTitleText = styled.h2` margin: 0; font-size: 15px; color: #38bdf8; display: flex; align-items: center; gap: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; @media (max-width: 480px) { font-size: 13px; }`;
-const CountdownBadge = styled.div` background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 900; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); @media (max-width: 480px) { font-size: 9px; padding: 4px 8px; }`;
-const SeasonLevelInfo = styled.div` display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; @media (max-width: 480px) { font-size: 10px; }`;
-const ProgressBarBG = styled.div` background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; `;
+const SeasonCard = styled.div` background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid #38bdf8; border-radius: 16px; padding: 20px; margin-bottom: 25px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); @media (max-width: 480px) { padding: 15px; border-radius: 14px; margin-bottom: 15px; }`;
+const SeasonHeader = styled.div` display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; @media (max-width: 480px) { margin-bottom: 10px; }`;
+const SeasonTitleText = styled.h2` margin: 0; font-size: 15px; color: #38bdf8; display: flex; align-items: center; gap: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; @media (max-width: 480px) { font-size: 13px; gap: 5px; svg { width: 16px; height: 16px; } }`;
+const CountdownBadge = styled.div` background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 900; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); @media (max-width: 480px) { font-size: 9px; padding: 4px 8px; svg { width: 12px; height: 12px; } }`;
+const SeasonLevelInfo = styled.div` display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; @media (max-width: 480px) { font-size: 10px; margin-bottom: 6px; }`;
+const ProgressBarBG = styled.div` background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; @media (max-width: 480px) { height: 6px; }`;
 const ProgressBarFill = styled.div<{ $progress: number; $color?: string }>` background: ${(props) => props.$color || '#38bdf8'}; height: 100%; width: ${(props) => props.$progress}%; box-shadow: 0 0 10px ${(props) => props.$color || '#38bdf8'}; transition: width 0.5s ease-out; `;
 
-const PenaltyBanner = styled(motion.div)<{ $isPending: boolean }>` background: ${(props) => (props.$isPending ? '#b45309' : '#2a0808')}; border: 1px dashed ${(props) => (props.$isPending ? '#fcd34d' : '#ef4444')}; color: ${(props) => (props.$isPending ? '#fef3c7' : '#fca5a5')}; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; font-weight: 900; letter-spacing: 1px; margin-bottom: 20px; box-shadow: 0 0 15px ${(props) => (props.$isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)')}; @media (max-width: 480px) { font-size: 10px; padding: 10px; text-align: center; }`;
+const PenaltyBanner = styled(motion.div)<{ $isPending: boolean }>` background: ${(props) => (props.$isPending ? '#b45309' : '#2a0808')}; border: 1px dashed ${(props) => (props.$isPending ? '#fcd34d' : '#ef4444')}; color: ${(props) => (props.$isPending ? '#fef3c7' : '#fca5a5')}; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; font-weight: 900; letter-spacing: 1px; margin-bottom: 20px; box-shadow: 0 0 15px ${(props) => (props.$isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)')}; @media (max-width: 480px) { font-size: 10px; padding: 10px; margin-bottom: 15px; text-align: center; }`;
 
-const DynamicHeader = styled.div<{ $color: string; $shadow: string }>` display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #0f172a 0%, #020617 100%); border: 1px solid ${(props) => props.$color}; padding: 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 0 20px ${(props) => props.$shadow}; transition: all 0.5s ease; @media (max-width: 480px) { padding: 15px; margin-bottom: 20px; border-radius: 14px; }`;
-const SectionTitle = styled.h2<{ $color: string }>` font-size: 14px; color: ${(props) => props.$color}; letter-spacing: 2px; margin: 30px 0 15px 0; display: flex; align-items: center; gap: 8px; text-transform: uppercase; border-bottom: 1px solid ${(props) => props.$color}40; padding-bottom: 8px; @media (max-width: 480px) { font-size: 12px; margin: 20px 0 10px 0; }`;
+const SectionTitle = styled.h2<{ $color: string }>` font-size: 14px; color: ${(props) => props.$color}; letter-spacing: 2px; margin: 30px 0 15px 0; display: flex; align-items: center; gap: 8px; text-transform: uppercase; border-bottom: 1px solid ${(props) => props.$color}40; padding-bottom: 8px; @media (max-width: 480px) { font-size: 12px; margin: 20px 0 10px 0; padding-bottom: 6px; svg { width: 14px; height: 14px; } }`;
 
 const pulseHologram = keyframes` 0% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.1), inset 0 0 20px rgba(0, 242, 255, 0.05); } 50% { box-shadow: 0 0 30px rgba(0, 242, 255, 0.3), inset 0 0 40px rgba(0, 242, 255, 0.1); } 100% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.1), inset 0 0 20px rgba(0, 242, 255, 0.05); } `;
 
@@ -204,37 +202,37 @@ const QuestCard = styled(motion.div)<{ $status: string; $isPenalty?: boolean; $i
   @media (max-width: 480px) { padding: 12px; margin-bottom: 12px; border-radius: 12px; }
 `;
 
-const UrgentCard = styled(QuestCard)` border-width: 2px; background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.15)' : 'linear-gradient(90deg, #450a0a 0%, #020617 100%)'}; &::before { content: 'CRITICAL DIRECTIVE'; position: absolute; top: 8px; right: 15px; font-size: 9px; font-weight: 900; color: #ef4444; letter-spacing: 2px; @media (max-width: 480px) { font-size: 8px; top: 6px; right: 10px; } } `;
+const UrgentCard = styled(QuestCard)` border-width: 2px; background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.15)' : 'linear-gradient(90deg, #450a0a 0%, #020617 100%)'}; &::before { content: 'CRITICAL DIRECTIVE'; position: absolute; top: 8px; right: 15px; font-size: 9px; font-weight: 900; color: #ef4444; letter-spacing: 2px; @media (max-width: 480px) { font-size: 8px; top: 6px; right: 12px; } } `;
 
 const LeftContent = styled.div` display: flex; align-items: center; gap: 15px; flex: 1; @media (max-width: 480px) { gap: 10px; }`;
 const IconWrapper = styled.div<{ $color: string }>` background: ${(props) => props.$color}15; border: 1px solid ${(props) => props.$color}40; width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: inset 0 0 15px ${(props) => props.$color}20; @media (max-width: 480px) { width: 40px; height: 40px; border-radius: 10px; svg { width: 20px; height: 20px; } } `;
 const TextContent = styled.div` display: flex; flex-direction: column; gap: 4px; flex: 1; `;
 const QuestTitle = styled.div<{ $status: string; $isPenalty?: boolean }>` font-size: 15px; font-weight: 900; color: ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : props.$isPenalty ? '#fca5a5' : '#fff'}; text-decoration: ${(props) => (props.$status === 'completed' ? 'line-through' : 'none')}; line-height: 1.3; text-shadow: ${(props) => props.$status === 'idle' && !props.$isPenalty ? '0 0 10px rgba(255,255,255,0.3)' : 'none'}; @media (max-width: 480px) { font-size: 13px; } `;
-const QuestDesc = styled.div` font-size: 11px; color: #94a3b8; line-height: 1.5; @media (max-width: 480px) { font-size: 10px; line-height: 1.3; }`;
-const Rewards = styled.div` display: flex; align-items: center; gap: 15px; font-size: 11px; font-weight: 900; margin-top: 4px; @media (max-width: 480px) { font-size: 10px; gap: 10px; }`;
+const QuestDesc = styled.div` font-size: 11px; color: #94a3b8; line-height: 1.4; @media (max-width: 480px) { font-size: 10px; line-height: 1.3; }`;
+const Rewards = styled.div` display: flex; align-items: center; gap: 15px; font-size: 11px; font-weight: 900; margin-top: 4px; @media (max-width: 480px) { font-size: 10px; gap: 10px; margin-top: 2px; }`;
 const RightAction = styled.div<{ $type: string; $status: string }>` width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: ${(props) => props.$status === 'completed' ? '#10b98120' : props.$status === 'pending' ? '#facc1520' : props.$type === 'request' ? '#1e293b' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#334155'}; flex-shrink: 0; transition: 0.3s; box-shadow: ${(props) => props.$status === 'idle' ? '0 0 10px rgba(255,255,255,0.05)' : 'none'}; @media (max-width: 480px) { width: 35px; height: 35px; border-radius: 10px; svg { width: 18px; height: 18px; } } `;
 
 const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; `;
 const ModalContent = styled(motion.div)<{ $color: string; $width?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$color}; border-radius: 20px; padding: 30px; width: 100%; max-width: ${(props) => props.$width || '450px'}; position: relative; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 50px ${(props) => props.$color}40; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: ${(props) => props.$color}; border-radius: 5px; } @media (max-width: 480px) { padding: 20px; border-radius: 16px; }`;
 const HonorModalContent = styled(ModalContent)` box-shadow: 0 0 50px rgba(239, 68, 68, 0.4); text-align: center; border: 2px solid #ef4444; `;
 const UploadBtn = styled.label<{ $hasFile: boolean; $color: string }>` display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 20px; background: ${(props) => (props.$hasFile ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.05)')}; border: 2px dashed ${(props) => (props.$hasFile ? '#10b981' : '#334155')}; border-radius: 12px; color: ${(props) => (props.$hasFile ? '#10b981' : '#94a3b8')}; cursor: pointer; margin: 15px 0; transition: 0.3s; &:hover { background: rgba(255,255,255,0.1); border-color: ${(props) => props.$color}; color: ${(props) => props.$color}; } @media (max-width: 480px) { padding: 15px; margin: 10px 0; }`;
-const ActionBtn = styled.button<{ $color: string; disabled?: boolean }>` width: 100%; padding: 15px; background: ${(props) => (props.disabled ? '#334155' : props.$color)}; color: ${(props) => (props.disabled ? '#94a3b8' : '#000')}; border: none; border-radius: 10px; font-family: 'Oxanium', sans-serif; font-size: 14px; font-weight: 900; cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')}; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 0 15px ${(props) => props.$color}60; &:hover { filter: brightness(1.2); transform: translateY(-2px); } @media (max-width: 480px) { padding: 12px; font-size: 13px; }`;
+const ActionBtn = styled.button<{ $color: string; disabled?: boolean }>` width: 100%; padding: 15px; background: ${(props) => (props.disabled ? '#334155' : props.$color)}; color: ${(props) => (props.disabled ? '#94a3b8' : '#000')}; border: none; border-radius: 10px; font-family: 'Oxanium', sans-serif; font-size: 14px; font-weight: 900; cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')}; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 0 15px ${(props) => props.$color}60; &:hover { filter: brightness(1.2); transform: translateY(-2px); } @media (max-width: 480px) { padding: 12px; font-size: 13px; margin-top: 8px; }`;
 
 const spin = keyframes` 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } `;
 const LoadingSpinner = styled(Loader)` animation: ${spin} 1s linear infinite; `;
 const SyncOverlay = styled.div` position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); `;
 
 const MacroGrid = styled.div` display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; @media (max-width: 480px) { gap: 6px; }`;
-const MacroBox = styled.div` background: #020617; border: 1px solid #1e293b; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; @media (max-width: 480px) { padding: 8px 4px; }`;
+const MacroBox = styled.div` background: #020617; border: 1px solid #1e293b; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; @media (max-width: 480px) { padding: 8px 4px; border-radius: 10px; }`;
 const MacroLabel = styled.div<{ $color: string }>` font-size: 10px; font-weight: 900; color: ${(props) => props.$color}; text-transform: uppercase; @media (max-width: 480px) { font-size: 8px; }`;
 const MacroValue = styled.div` font-size: 14px; font-weight: bold; color: #fff; @media (max-width: 480px) { font-size: 12px; }`;
 const NutriTabs = styled.div` display: flex; gap: 10px; margin-bottom: 15px; `;
 const NutriTab = styled.button<{ $active: boolean }>` flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-family: 'Oxanium'; cursor: pointer; transition: 0.3s; background: ${(props) => props.$active ? '#f97316' : '#1e293b'}; color: ${(props) => props.$active ? '#000' : '#94a3b8'}; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; @media (max-width: 480px) { font-size: 10px; padding: 8px; }`;
-const FoodSearchInput = styled.input` width: 100%; background: #020617; border: 1px solid #334155; padding: 12px 15px; border-radius: 8px; color: #fff; font-family: 'Oxanium'; margin-bottom: 15px; outline: none; &:focus { border-color: #f97316; } @media (max-width: 480px) { padding: 10px 12px; font-size: 13px; }`;
+const FoodSearchInput = styled.input` width: 100%; background: #020617; border: 1px solid #334155; padding: 12px 15px; border-radius: 8px; color: #fff; font-family: 'Oxanium'; margin-bottom: 15px; outline: none; &:focus { border-color: #f97316; } @media (max-width: 480px) { padding: 10px 12px; font-size: 12px; margin-bottom: 10px; }`;
 const FoodList = styled.div` max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; direction: rtl; `;
 const FoodItem = styled.div` background: #1e293b50; border: 1px solid #334155; padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; @media (max-width: 480px) { padding: 8px 10px; }`;
 const ManualInputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; `;
-const ResetMacrosBtn = styled.button` background: #2a0808; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; &:hover { background: #450a0a; } @media (max-width: 480px) { font-size: 11px; }`;
+const ResetMacrosBtn = styled.button` background: #2a0808; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; &:hover { background: #450a0a; } @media (max-width: 480px) { font-size: 11px; padding: 6px 10px; }`;
 
 const GameFAB = styled(motion.button)` position: fixed; bottom: 80px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: 2px solid #d8b4fe; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; &:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(168, 85, 247, 0.6); } @media (max-width: 480px) { width: 45px; height: 45px; svg { width: 20px; height: 20px; } } `;
 const GameArea = styled.div<{ $state: string }>` width: 100%; height: 250px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: ${(props) => props.$state === 'result_final' ? 'default' : 'pointer'}; user-select: none; transition: background 0.1s; background: ${(props) => props.$state === 'waiting' ? '#ef4444' : props.$state === 'ready' ? '#10b981' : props.$state === 'early' ? '#b45309' : (props.$state === 'result' || props.$state === 'result_final') ? '#0ea5e9' : '#1e293b' }; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); border: 4px solid rgba(255,255,255,0.1); @media (max-width: 480px) { height: 200px; }`;
@@ -249,7 +247,7 @@ const LevelUpDesc = styled.p` font-size: 16px; color: #cbd5e1; margin: 0 0 30px 
 const LevelUpRewardBox = styled.div<{ $color: string }>` background: rgba(255,255,255,0.05); border: 1px solid ${(props) => props.$color}50; border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 15px; font-size: 20px; font-weight: 900; color: #eab308; @media (max-width: 480px) { font-size: 16px; padding: 12px; gap: 10px; }`;
 
 // ==========================================
-// 4. الثوابت وقواعد البيانات (Constants & Arrays)
+// 4. الثوابت وقواعد البيانات
 // ==========================================
 const LOCAL_FOOD_DB = [
   { name: 'صدور دجاج مطهية (100ج)', protein: 31, carbs: 0, fats: 3, calories: 165 },
@@ -360,8 +358,9 @@ const INJURED_DAILY_QUESTS = [
 
 const PENALTY_QUEST = { id: 'penalty_q', title: 'Disciplinary Execution', desc: 'تنفيذ العقوبة الإدارية المطلوبة ورفع الإثبات لرفع تجميد النظام.', exp: 0, gold: 0, type: 'request', icon: ShieldAlert, color: '#ef4444', isPenalty: true };
 
+
 // ==========================================
-// 5. MAIN DASHBOARD COMPONENT (Optimized)
+// 5. MAIN DASHBOARD COMPONENT
 // ==========================================
 const Dashboard = ({ player, setPlayer }: any) => {
   const currentPlayer = player || { id: 'me', name: 'Athlete', cumulative_xp: 0, monthly_xp: 0, gold: 0, hp: 100, is_injured: false, active_penalty: false, weight: 75, streak: 0, last_active: null, last_penalty_check: null };
@@ -412,6 +411,10 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const levelData = useMemo(() => calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0), [currentPlayer.cumulative_xp, currentPlayer.xp]);
   const currentVisualLvl = levelData.level;
   const rankInfo = useMemo(() => getRankInfo(currentVisualLvl), [currentVisualLvl]);
+
+  // 🚨 تفعيل تأثيرات العتاد في الـ Dashboard 🚨
+  const gearBonuses = useMemo(() => getGearBonuses(currentPlayer.equipped_gear), [currentPlayer.equipped_gear]);
+  const MAX_HP = 100 + gearBonuses.bonusMaxHp;
 
   useEffect(() => {
     const fetchServerTime = async () => {
@@ -514,7 +517,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
           }
           prevLevelRef.current = fetchedLvl;
 
-          let fetchedHp = userData.hp ?? 100;
+          let fetchedHp = Math.min(MAX_HP, userData.hp ?? 100);
           let fetchedGold = userData.gold || 0;
           let fetchedStreak = userData.streak || 0;
           let lastPenaltyCheck = userData.last_penalty_check || todayStr;
@@ -580,7 +583,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       setIsLoadingSync(false);
     };
     syncData();
-  }, [selStr, timeOffset]);
+  }, [selStr, timeOffset, MAX_HP]);
 
   const fetchGameLeaderboards = async () => {
     try {
@@ -657,7 +660,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
     else if (quest.type === 'request') { playHoverSound(); setSelectedQuest(quest); setHasFile(false); }
   }, [isProcessing, isLoadingSync, isLocked, getStatus]);
 
-  // 🚨 Optimistic Macro Add (تحديث سريع للشاشة وإرسال للسيرفر في الخلفية) 🚨
   const handleAddMacros = useCallback((food: any) => {
     playDashSound('request');
     const eatenItem = { ...food, logId: Date.now() };
@@ -668,10 +670,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         protein: prev.protein + Number(food.protein || 0), carbs: prev.carbs + Number(food.carbs || 0),
         fats: prev.fats + Number(food.fats || 0), calories: prev.calories + Number(food.calories || 0), log: updatedLog
       };
-      
-      // إرسال للسيرفر في الخلفية
       supabase.from('elite_players').update({ daily_macros: newMacros }).eq('name', currentPlayer.name).catch(e => console.error(e));
-      
       return newMacros;
     });
 
@@ -680,18 +679,15 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
   const handleRemoveConsumedFood = useCallback((itemToRemove: any) => {
     playDashSound('error');
-    
     setDailyMacros(prev => {
       const updatedLog = prev.log.filter((item: any) => item.logId !== itemToRemove.logId);
       const newMacros = {
         protein: Math.max(0, prev.protein - Number(itemToRemove.protein || 0)), carbs: Math.max(0, prev.carbs - Number(itemToRemove.carbs || 0)),
         fats: Math.max(0, prev.fats - Number(itemToRemove.fats || 0)), calories: Math.max(0, prev.calories - Number(itemToRemove.calories || 0)), log: updatedLog
       };
-      
       supabase.from('elite_players').update({ daily_macros: newMacros }).eq('name', currentPlayer.name).catch(e => console.error(e));
       return newMacros;
     });
-
     toast.error(`تم مسح ${itemToRemove.name}`, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }});
   }, [currentPlayer.name]);
 
@@ -718,12 +714,11 @@ const Dashboard = ({ player, setPlayer }: any) => {
     toast.error('تم تصفير عداد الوجبات بنجاح!', { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }});
   };
 
-  // 🚨 Optimistic Quest Complete 🚨
+  // 🚨 تفعيل تأثير العتاد في المهمة 🚨
   const completeQuest = async (quest: any) => {
     if (isProcessing) return;
     setIsProcessing(true);
     
-    // تحديث الشاشة فوراً (Optimistic UI)
     setCompletedQuests(prev => [...prev, quest.title]);
     
     try {
@@ -731,9 +726,11 @@ const Dashboard = ({ player, setPlayer }: any) => {
       if (questError) throw new Error("السيرفر مشغول، يرجى المحاولة مرة أخرى!");
       
       let newXp = (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) + quest.exp;
-      const currentMonthlyXp = currentPlayer.monthly_xp || 0;
-      let newMonthlyXp = currentMonthlyXp + quest.exp;
-      let newGold = (currentPlayer.gold || 0) + quest.gold;
+      
+      // 🚨 إضافة ذهب العتاد 🚨
+      const baseGold = quest.gold || 0;
+      const earnedGold = baseGold + (baseGold > 0 ? gearBonuses.bonusGold : 0);
+      let newGold = (currentPlayer.gold || 0) + earnedGold;
       
       const oldLevelData = calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0);
       const newLevelData = calculateLevelData(newXp);
@@ -747,9 +744,30 @@ const Dashboard = ({ player, setPlayer }: any) => {
       
       newGold += levelGoldBonus;
       const isRecoveryTask = [SHARED_HYDRATION.title, SHARED_NUTRITION.title, SHARED_MOBILITY.title, 'Recovery Cooldown'].includes(quest.title);
-      let newHp = Math.min(100, (currentPlayer.hp || 100) + (isRecoveryTask ? 5 : 0));
       
-      const dbUpdates = { cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp };
+      // 🚨 إضافة دماء العتاد 🚨
+      const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0);
+      let newHp = Math.min(MAX_HP, (currentPlayer.hp || 100) + earnedHp);
+
+      const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
+      let newStreak = currentPlayer.streak || 0;
+      let streakJustIncreased = false;
+
+      if (mandatoryTasks.includes(quest.title)) {
+        const completedMandatoryToday = completedQuests.filter(q => mandatoryTasks.includes(q)).length;
+        if (completedMandatoryToday === 2) { 
+          newStreak += 1;
+          streakJustIncreased = true;
+        }
+      }
+      
+      // 🚨 قدرة عباءة الفانتوم 🚨
+      if (leveledUp && gearBonuses.healOnLevelUp) {
+         newHp = MAX_HP;
+         toast.success('Phantom Cloak activated: 100% HP Restored! 🛡️', { style: { background: '#020617', color: '#ec4899', border: '1px solid #ec4899' }});
+      }
+
+      const dbUpdates = { cumulative_xp: newXp, monthly_xp: (currentPlayer.monthly_xp || 0) + quest.exp, gold: newGold, hp: newHp, streak: newStreak };
       await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
       await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: quest.exp, currency: 'xp', operation: 'increase', reason: quest.title }]);
       if (levelGoldBonus > 0) await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: levelGoldBonus, currency: 'gold', operation: 'increase', reason: 'Level Up Bonus' }]);
@@ -763,15 +781,19 @@ const Dashboard = ({ player, setPlayer }: any) => {
         confetti({ particleCount: 300, spread: 150, startVelocity: 40, origin: { y: 0.6 }, colors: [newRankInfo.color, '#ffffff', '#eab308'] });
         setTimeout(() => setLevelUpData(null), 5000); 
       } else {
-        playDashSound('complete'); 
-        // 🚨 Confetti خفيف لكل مهمة عادية 🚨
-        confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }, colors: [quest.color, '#ffffff'] });
-        toast.success(`Completed! +${quest.exp} EXP`);
-        if (isRecoveryTask) toast.success(`+5 HP Restored 🩸`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
+        if (streakJustIncreased) {
+           playDashSound('streak');
+           confetti({ particleCount: 100, spread: 90, origin: { y: 0.5 }, colors: ['#ef4444', '#f97316', '#eab308'] });
+           toast.success(`🔥 STREAK INCREASED: ${newStreak} DAYS!`, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444', fontWeight: 'bold' } });
+        } else {
+           playDashSound('complete'); 
+           confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }, colors: [quest.color, '#ffffff'] });
+           toast.success(`Completed! +${quest.exp} EXP`);
+           if (earnedHp > 0) toast.success(`+${earnedHp} HP Restored 🩸`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
+        }
       }
     } catch (err: any) { 
       playDashSound('error');
-      // التراجع عن التحديث لو السيرفر فشل
       setCompletedQuests(prev => prev.filter(t => t !== quest.title));
       toast.error(err.message, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' } }); 
     } finally {
@@ -781,20 +803,20 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
   const submitRequest = async () => {
     setIsProcessing(true);
-    setPendingQuests(prev => [...prev, selectedQuest.title]); // Optimistic Update
+    setPendingQuests(prev => [...prev, selectedQuest.title]); 
 
     try {
       const { error: reqError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: selectedQuest.title, evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence', type: selectedQuest.isPenalty ? 'penalty' : 'quest', status: 'pending', created_at: getLogDate() }]);
       if (reqError) throw new Error("تعذر إرسال الطلب، السيرفر مشغول.");
       
-      let newHp = Math.min(100, (currentPlayer.hp || 100) + (selectedQuest.id === 'wq1' ? 20 : 0));
+      let newHp = Math.min(MAX_HP, (currentPlayer.hp || 100) + (selectedQuest.id === 'wq1' ? 20 : 0));
       await supabase.from('elite_players').update({ hp: newHp }).eq('name', currentPlayer.name);
       
       setPlayer((prev: any) => ({ ...prev, hp: newHp }));
       playDashSound('request'); toast.success(`Request Sent to Coach Radar!`);
     } catch (err: any) { 
       playDashSound('error');
-      setPendingQuests(prev => prev.filter(t => t !== selectedQuest.title)); // Rollback
+      setPendingQuests(prev => prev.filter(t => t !== selectedQuest.title));
       toast.error(err.message, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' } }); 
     } finally {
       setSelectedQuest(null); setIsProcessing(false);
@@ -804,7 +826,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const undoQuest = async (quest: any, status: string) => {
     setIsProcessing(true);
     
-    // Optimistic UI Removal
     if (status === 'completed') setCompletedQuests(prev => prev.filter(t => t !== quest.title));
     else setPendingQuests(prev => prev.filter(t => t !== quest.title));
 
@@ -823,14 +844,29 @@ const Dashboard = ({ player, setPlayer }: any) => {
       if (status === 'completed') {
         let newXp = Math.max(0, (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) - quest.exp);
         let newMonthlyXp = Math.max(0, (currentPlayer.monthly_xp || 0) - quest.exp);
-        let newGold = Math.max(0, (currentPlayer.gold || 0) - quest.gold);
+        
+        // 🚨 خصم ذهب العتاد 🚨
+        const baseGold = quest.gold || 0;
+        const earnedGold = baseGold + (baseGold > 0 ? gearBonuses.bonusGold : 0);
+        let newGold = Math.max(0, (currentPlayer.gold || 0) - earnedGold);
+        
         const isRecoveryTask = [SHARED_HYDRATION.title, SHARED_NUTRITION.title, SHARED_MOBILITY.title, 'Recovery Cooldown'].includes(quest.title);
-        let newHp = Math.max(0, (currentPlayer.hp || 100) - (isRecoveryTask ? 5 : 0));
+        const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0);
+        let newHp = Math.max(0, (currentPlayer.hp || 100) - earnedHp);
 
-        await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp }).eq('name', currentPlayer.name);
+        const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
+        let newStreak = currentPlayer.streak || 0;
+        if (mandatoryTasks.includes(quest.title)) {
+           const completedMandatoryToday = completedQuests.filter(q => mandatoryTasks.includes(q)).length;
+           if (completedMandatoryToday === 3) { 
+              newStreak = Math.max(0, newStreak - 1);
+           }
+        }
+
+        await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp, streak: newStreak }).eq('name', currentPlayer.name);
         await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: quest.exp, currency: 'xp', operation: 'decrease', reason: `Player Reverted: ${quest.title}` }]);
 
-        setPlayer((prev: any) => ({ ...prev, cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp }));
+        setPlayer((prev: any) => ({ ...prev, cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp, streak: newStreak }));
       }
       playDashSound('error'); toast.error('Reverted.');
     } catch (err: any) { toast.error(err.message); }
@@ -884,7 +920,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
         </div>
         <div style={{ textAlign: 'right' }}>
            <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 'bold' }}>🔥 STREAK: <span style={{ color: '#fff' }}>{currentPlayer.streak}</span></div>
-           <div style={{ fontSize: '10px', color: '#ef4444', fontWeight: 'bold' }}>❤️ HP: <span style={{ color: '#fff' }}>{currentPlayer.hp}</span></div>
+           {/* 🚨 تحديث عرض الحد الأقصى للـ HP 🚨 */}
+           <div style={{ fontSize: '10px', color: '#ef4444', fontWeight: 'bold' }}>❤️ HP: <span style={{ color: '#fff' }}>{currentPlayer.hp}/{MAX_HP}</span></div>
         </div>
       </DynamicHeader>
 
@@ -949,7 +986,11 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 <QuestDesc>{getDynamicDesc(quest)}</QuestDesc>
                 <Rewards>
                    <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp} XP</span> 
-                   <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}><AnimatedCoin /> +{quest.gold} GOLD</span>
+                   <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
+                     <AnimatedCoin /> +{quest.gold} 
+                     {/* 🚨 إظهار بونص السلاح 🚨 */}
+                     {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
+                   </span>
                 </Rewards>
               </TextContent>
             </LeftContent>
@@ -976,7 +1017,10 @@ const Dashboard = ({ player, setPlayer }: any) => {
                     <QuestDesc style={{ color: status === 'completed' ? '#10b981' : '#fca5a5' }}>{quest.desc}</QuestDesc>
                     <Rewards>
                       <span style={{ color: status === 'completed' ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp} XP</span>
-                      <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}><AnimatedCoin /> +{quest.gold} GOLD</span>
+                      <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
+                         <AnimatedCoin /> +{quest.gold} 
+                         {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
+                      </span>
                     </Rewards>
                   </TextContent>
                   <RightAction $type={quest.type} $status={status}>{renderRightAction(status, quest.type)}</RightAction>
@@ -999,7 +1043,10 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 <QuestDesc>{quest.desc}</QuestDesc>
                 <Rewards>
                    <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp} XP</span> 
-                   <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}><AnimatedCoin /> +{quest.gold} GOLD</span>
+                   <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
+                     <AnimatedCoin /> +{quest.gold} 
+                     {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
+                   </span>
                 </Rewards>
               </TextContent>
             </LeftContent>
@@ -1022,7 +1069,10 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 <QuestDesc>{quest.desc}</QuestDesc>
                 <Rewards>
                    <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp} XP</span> 
-                   <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}><AnimatedCoin /> +{quest.gold} GOLD</span>
+                   <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
+                     <AnimatedCoin /> +{quest.gold} 
+                     {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
+                   </span>
                 </Rewards>
               </TextContent>
             </LeftContent>
@@ -1372,4 +1422,4 @@ const Dashboard = ({ player, setPlayer }: any) => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

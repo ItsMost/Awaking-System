@@ -15,8 +15,7 @@ import {
   CheckCircle,
   HeartPulse,
   Scan,
-  Crosshair,
-  UserCircle2
+  Crosshair
 } from 'lucide-react';
 
 // ==========================================
@@ -53,15 +52,15 @@ const playScan = () => {
 };
 
 // ==========================================
-// 2. المجسم الطبي (3D Human Scanner)
+// 2. المجسم الطبي البشري (Hologram Human)
 // ==========================================
 const BodyScanner3D = ({ painLevel, isScanning }: { painLevel: number, isScanning: boolean }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
   
   useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += isScanning ? 0.1 : 0.01; 
-      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.1;
+    if (groupRef.current) {
+      groupRef.current.rotation.y += isScanning ? 0.1 : 0.01; 
+      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.1;
     }
   });
 
@@ -69,22 +68,46 @@ const BodyScanner3D = ({ painLevel, isScanning }: { painLevel: number, isScannin
   const getBodyColor = () => {
     if (painLevel === 0) return '#0ea5e9'; // أزرق طبيعي
     if (painLevel < 5) return '#eab308'; // أصفر تحذيري
+    if (painLevel < 8) return '#f97316'; // برتقالي
     return '#ef4444'; // أحمر حرج
   };
 
+  const color = getBodyColor();
+  const intensity = isScanning ? 1.5 : 0.5;
+
   return (
-    <mesh ref={meshRef}>
-      {/* مجسم مجرد يمثل الإنسان (Capsule) */}
-      <capsuleGeometry args={[1, 2.5, 4, 16]} />
-      <meshStandardMaterial 
-        color={getBodyColor()} 
-        wireframe={true} 
-        emissive={getBodyColor()} 
-        emissiveIntensity={isScanning ? 1.5 : 0.5} 
-        transparent={true}
-        opacity={0.8}
-      />
-    </mesh>
+    <group ref={groupRef} scale={[0.8, 0.8, 0.8]} position={[0, -0.5, 0]}>
+      {/* الرأس */}
+      <mesh position={[0, 2.5, 0]}>
+        <sphereGeometry args={[0.4, 16, 16]} />
+        <meshStandardMaterial color={color} wireframe emissive={color} emissiveIntensity={intensity} transparent opacity={0.8} />
+      </mesh>
+      {/* الجذع */}
+      <mesh position={[0, 1.2, 0]}>
+        <boxGeometry args={[1.2, 1.5, 0.6]} />
+        <meshStandardMaterial color={color} wireframe emissive={color} emissiveIntensity={intensity} transparent opacity={0.8} />
+      </mesh>
+      {/* الذراع الأيسر */}
+      <mesh position={[-0.9, 1.2, 0]}>
+        <capsuleGeometry args={[0.2, 1, 4, 8]} />
+        <meshStandardMaterial color={color} wireframe emissive={color} emissiveIntensity={intensity} transparent opacity={0.8} />
+      </mesh>
+      {/* الذراع الأيمن */}
+      <mesh position={[0.9, 1.2, 0]}>
+        <capsuleGeometry args={[0.2, 1, 4, 8]} />
+        <meshStandardMaterial color={color} wireframe emissive={color} emissiveIntensity={intensity} transparent opacity={0.8} />
+      </mesh>
+      {/* الرجل اليسرى */}
+      <mesh position={[-0.35, -0.3, 0]}>
+        <capsuleGeometry args={[0.25, 1.5, 4, 8]} />
+        <meshStandardMaterial color={color} wireframe emissive={color} emissiveIntensity={intensity} transparent opacity={0.8} />
+      </mesh>
+      {/* الرجل اليمنى */}
+      <mesh position={[0.35, -0.3, 0]}>
+        <capsuleGeometry args={[0.25, 1.5, 4, 8]} />
+        <meshStandardMaterial color={color} wireframe emissive={color} emissiveIntensity={intensity} transparent opacity={0.8} />
+      </mesh>
+    </group>
   );
 };
 
@@ -107,8 +130,8 @@ const Title = styled.h1`
 `;
 
 const ScannerWrapper = styled.div`
-  background: #020617; border: 1px solid #10b981; border-radius: 20px; margin-bottom: 20px; height: 220px; display: flex; justify-content: center; align-items: center; position: relative; box-shadow: inset 0 0 40px rgba(16, 185, 129, 0.1); overflow: hidden;
-  @media (max-width: 480px) { height: 180px; border-radius: 16px; }
+  background: #020617; border: 1px solid #10b981; border-radius: 20px; margin-bottom: 20px; height: 260px; display: flex; justify-content: center; align-items: center; position: relative; box-shadow: inset 0 0 40px rgba(16, 185, 129, 0.1); overflow: hidden;
+  @media (max-width: 480px) { height: 220px; border-radius: 16px; }
 `;
 
 const ScannerOverlayText = styled.div<{ $color: string }>`
@@ -162,7 +185,6 @@ const ProtocolIcon = styled.div<{ $type: 'ice' | 'heat' | 'rest' | 'active' }>`
   @media (max-width: 480px) { padding: 10px; border-radius: 10px; svg { width: 20px; height: 20px; } }
 `;
 
-// 🚨 Severity Slider (Custom Mobile Design) 🚨
 const SeverityContainer = styled.div`
   display: flex; align-items: center; justify-content: space-between; background: #020617; border: 1px solid #1e293b; border-radius: 14px; padding: 10px 15px; margin-top: 15px;
 `;
@@ -212,7 +234,6 @@ const Rehab = () => {
   const handleNext = () => {
     playClick();
     if (step === 2) {
-      // شاشة الـ Scan 
       setIsScanning(true);
       playScan();
       setTimeout(() => {
@@ -229,8 +250,9 @@ const Rehab = () => {
     playClick(); setStep(1); setLocation(''); setSensation(''); setSeverity(0);
   };
 
+  // 🚨 تم حل المشكلة: تغيير playHover إلى playClick عشان الزراير تشتغل صح 🚨
   const adjustSeverity = (amount: number) => {
-    playHover();
+    playClick();
     setSeverity(prev => Math.min(10, Math.max(0, prev + amount)));
   };
 
@@ -266,7 +288,6 @@ const Rehab = () => {
         <Activity size={20} color="#10b981" />
       </Header>
 
-      {/* 🚨 رادار الجسم الـ 3D 🚨 */}
       <ScannerWrapper>
         <Canvas camera={{ position: [0, 0, 5] }}>
           <ambientLight intensity={0.5} />
