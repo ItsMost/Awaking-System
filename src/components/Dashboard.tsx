@@ -1372,4 +1372,4 @@ const Dashboard = ({ player, setPlayer }: any) => {
   );
 };
 
-export default Dashboard;
+export default Dashboard; 
