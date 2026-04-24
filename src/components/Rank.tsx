@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled, { keyframes } from 'styled-components';
 import { Toaster, toast } from 'sonner';
@@ -10,7 +11,7 @@ import {
   TrendingUp, CalendarDays, Globe, Moon, Eye, Wind, Footprints, Lock as LockIcon, Gem,
   Coffee, Flame, XCircle, Inbox, Check, FileImage, Sword, Skull, Crosshair, Heart,
   Droplet, Search, Key, Plus, Copy, Trash2, Infinity as InfinityIcon, Axe, Anchor,
-  Fingerprint, Hexagon, Cpu, RotateCcw, Ghost, Award, Star, RefreshCcw, Filter, CheckSquare
+  Fingerprint, Hexagon, Cpu, RotateCcw, Ghost, Award, Star, Filter, CheckSquare
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -25,9 +26,7 @@ const getAudioContext = () => {
     const Ctx = window.AudioContext || (window as any).webkitAudioContext;
     if (Ctx) sharedAudioCtx = new Ctx();
   }
-  if (sharedAudioCtx.state === 'suspended') {
-    sharedAudioCtx.resume();
-  }
+  if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
   return sharedAudioCtx;
 };
 
@@ -40,10 +39,8 @@ const canPlay = () => {
 
 const playClick = () => {
   if (!canPlay()) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
+  const ctx = getAudioContext(); if (!ctx) return;
+  const osc = ctx.createOscillator(); const gain = ctx.createGain();
   osc.connect(gain); gain.connect(ctx.destination);
   osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
   gain.gain.setValueAtTime(0.1, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
@@ -52,10 +49,8 @@ const playClick = () => {
 
 const playHover = () => {
   if (!canPlay()) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
+  const ctx = getAudioContext(); if (!ctx) return;
+  const osc = ctx.createOscillator(); const gain = ctx.createGain();
   osc.connect(gain); gain.connect(ctx.destination);
   osc.type = 'sine'; osc.frequency.setValueAtTime(1200, ctx.currentTime);
   gain.gain.setValueAtTime(0.02, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
@@ -64,10 +59,8 @@ const playHover = () => {
 
 const playUnlock = () => {
   if (!canPlay()) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
+  const ctx = getAudioContext(); if (!ctx) return;
+  const osc = ctx.createOscillator(); const gain = ctx.createGain();
   osc.connect(gain); gain.connect(ctx.destination);
   osc.type = 'square'; osc.frequency.setValueAtTime(400, ctx.currentTime); osc.frequency.setValueAtTime(800, ctx.currentTime + 0.1); osc.frequency.setValueAtTime(1200, ctx.currentTime + 0.2);
   gain.gain.setValueAtTime(0.2, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.4);
@@ -75,7 +68,7 @@ const playUnlock = () => {
 };
 
 // ==========================================
-// 2. توحيد التوقيت وحسابات المستوى السحرية
+// 2. الثوابت والدوال المساعدة
 // ==========================================
 const getLocalYYYYMMDD = (date: Date | string) => {
     const d = new Date(date);
@@ -83,57 +76,9 @@ const getLocalYYYYMMDD = (date: Date | string) => {
 };
 
 const calculateLevelData = (totalXp: number) => {
-  let level = 1;
-  let currentXp = totalXp;
-  let expNeededForNextLevel = 650;
-
-  while (currentXp >= expNeededForNextLevel) {
-    currentXp -= expNeededForNextLevel;
-    level++;
-    expNeededForNextLevel = Math.min(level * 150 + 500, 4000);
-  }
-
+  let level = 1; let currentXp = totalXp; let expNeededForNextLevel = 650;
+  while (currentXp >= expNeededForNextLevel) { currentXp -= expNeededForNextLevel; level++; expNeededForNextLevel = Math.min(level * 150 + 500, 4000); }
   return { level, xpInCurrentLevel: currentXp, expNeededForNextLevel };
-};
-
-// ==========================================
-// 3. مكونات الـ 3D (المجسم الدوار)
-// ==========================================
-const FloatingCrystal = ({ color }: { color: string }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.01;
-      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime) * 0.2;
-      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.2;
-    }
-  });
-  return (
-    <mesh ref={meshRef}>
-      <octahedronGeometry args={[1.8, 0]} />
-      <meshStandardMaterial color={color} wireframe emissive={color} emissiveIntensity={0.8} />
-    </mesh>
-  );
-};
-
-// ==========================================
-// 4. Rank System, Class Mapping & 🚨 QUEST REWARDS (القاموس المفقود) 🚨
-// ==========================================
-const QUEST_REWARDS: Record<string, { exp: number; gold: number }> = {
-  'Practice': { exp: 100, gold: 30 },
-  'Practice (Rehab)': { exp: 90, gold: 30 },
-  'Hydration Target (3L)': { exp: 30, gold: 10 },
-  'Nutritional Compliance': { exp: 30, gold: 10 },
-  'Functional Mobility': { exp: 35, gold: 15 },
-  'Recovery Cooldown': { exp: 20, gold: 10 },
-  'Rehab Mobility Protocol': { exp: 35, gold: 15 },
-  'Thermal / Cryotherapy': { exp: 20, gold: 10 },
-  'Weekly Volume Compliance': { exp: 150, gold: 100 },
-  'Perfect Microcycle Streak': { exp: 150, gold: 100 },
-  'Recovery Logistics': { exp: 100, gold: 50 },
-  'Supplement Inventory': { exp: 100, gold: 50 },
-  'InBody Assessment': { exp: 75, gold: 200 },
-  'Disciplinary Execution': { exp: 0, gold: 0 },
 };
 
 const NORMAL_DAILY_QUESTS = ['Practice', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility', 'Recovery Cooldown'];
@@ -142,11 +87,21 @@ const FRIDAY_DIRECTIVES = ['Weekly Volume Compliance', 'Perfect Microcycle Strea
 const BIWEEKLY_QUESTS = ['Recovery Logistics'];
 const MONTHLY_QUESTS = ['Supplement Inventory', 'InBody Assessment'];
 
+const QUEST_REWARDS: Record<string, { exp: number; gold: number }> = {
+  'Practice': { exp: 100, gold: 30 }, 'Practice (Rehab)': { exp: 90, gold: 30 },
+  'Hydration Target (3L)': { exp: 30, gold: 10 }, 'Nutritional Compliance': { exp: 30, gold: 10 },
+  'Functional Mobility': { exp: 35, gold: 15 }, 'Recovery Cooldown': { exp: 20, gold: 10 },
+  'Rehab Mobility Protocol': { exp: 35, gold: 15 }, 'Thermal / Cryotherapy': { exp: 20, gold: 10 },
+  'Weekly Volume Compliance': { exp: 150, gold: 100 }, 'Perfect Microcycle Streak': { exp: 150, gold: 100 },
+  'Recovery Logistics': { exp: 100, gold: 50 }, 'Supplement Inventory': { exp: 100, gold: 50 },
+  'InBody Assessment': { exp: 75, gold: 200 }, 'Disciplinary Execution': { exp: 0, gold: 0 },
+};
+
 const getRankInfo = (level: number) => {
-  if (level >= 30) return { name: 'ELITE', color: '#a855f7', glow: 'rgba(168, 85, 247, 0.3)' };
-  if (level >= 25) return { name: 'MASTER', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.3)' };
-  if (level >= 20) return { name: 'DIAMOND', color: '#3b82f6', glow: 'none' };
-  if (level >= 15) return { name: 'PLATINUM', color: '#06b6d4', glow: 'none' };
+  if (level >= 30) return { name: 'ELITE', color: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)' };
+  if (level >= 25) return { name: 'MASTER', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.4)' };
+  if (level >= 20) return { name: 'DIAMOND', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.3)' };
+  if (level >= 15) return { name: 'PLATINUM', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.2)' };
   if (level >= 10) return { name: 'GOLD', color: '#eab308', glow: 'none' };
   if (level >= 5)  return { name: 'SILVER', color: '#94a3b8', glow: 'none' };
   return { name: 'BRONZE', color: '#b45309', glow: 'none' };
@@ -183,150 +138,126 @@ const getUserClassInfo = (iconStr: string) => {
   if (!iconStr) return CLASS_MAPPING[0];
   const normalized = String(iconStr).toLowerCase().replace('_evolved', '').trim();
   for (const cls of CLASS_MAPPING) {
-    if (cls.id === normalized || cls.keys.some((k) => normalized.includes(k))) {
-      return cls;
-    }
+    if (cls.id === normalized || cls.keys.some((k) => normalized.includes(k))) return cls;
   }
   return CLASS_MAPPING[0];
 };
 
-const getHunterIconOnly = (hunter: any, isRank1: boolean, size: number = 22) => {
-  const iconStr = String(
-    hunter?.selectedIcon || hunter?.selected_icon || hunter?.icon || hunter?.class || (hunter?.titles && hunter.titles[0]) || ''
-  ).toLowerCase().trim();
-
+const getHunterIconOnly = (hunter: any, color: string, size: number = 22) => {
+  const iconStr = String(hunter?.selectedIcon || hunter?.selected_icon || hunter?.icon || hunter?.class || (hunter?.titles && hunter.titles[0]) || '').toLowerCase().trim();
   const isEvolved = iconStr.includes('evolved');
   const cls = getUserClassInfo(iconStr);
   const IconComponent = isEvolved ? cls.evolvedIcon : cls.baseIcon;
-  const finalColor = isRank1 ? '#eab308' : cls.color;
-
-  return <IconComponent size={size} color={finalColor} />;
-};
-
-const getIconBorderColor = (hunter: any, isRank1: boolean) => {
-  if (isRank1) return '#eab308';
-  return getRankInfo(calculateLevelData(hunter?.cumulative_xp || 0).level).color;
+  return <IconComponent size={size} color={color} />;
 };
 
 // ==========================================
-// 5. التصميمات
+// 3. مكونات الـ 3D والـ VFX
 // ==========================================
-const Container = styled(motion.div)`
-  padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative;
-`;
+const FloatingCrystal = ({ color }: { color: string }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.01;
+      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime) * 0.2;
+      meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 2) * 0.2;
+    }
+  });
+  return (
+    <mesh ref={meshRef}>
+      <octahedronGeometry args={[1.8, 0]} />
+      <meshStandardMaterial color={color} wireframe emissive={color} emissiveIntensity={0.8} />
+    </mesh>
+  );
+};
 
-const TopActions = styled.div`
-  display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;
-`;
+const MiniOrb = ({ petName }: { petName: string }) => {
+  if (!petName) return null;
+  const petMap: Record<string, { type: string, color: string }> = {
+    'Golden Wyvern Core': { type: 'wyvern', color: '#eab308' },
+    'Healing Phoenix Ember': { type: 'phoenix', color: '#ef4444' },
+    'Shadow Owl Eye': { type: 'owl', color: '#a855f7' },
+    'Iron Golem Matrix': { type: 'golem', color: '#0ea5e9' },
+    'Frost Wolf Soul': { type: 'wolf', color: '#38bdf8' },
+    'Emerald Dragon Scale': { type: 'emerald', color: '#10b981' }
+  };
+  const data = petMap[petName];
+  if (!data) return null;
 
-const TopBtn = styled.button<{ $active?: boolean; $color?: string }>`
-  background: ${(props) => (props.$active ? `${props.$color}20` : '#0f172a')};
-  border: 1px solid ${(props) => (props.$active ? props.$color : '#1e293b')};
-  color: ${(props) => (props.$active ? props.$color : '#94a3b8')};
-  padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 8px; font-family: 'Oxanium'; font-weight: 900; font-size: 12px; cursor: pointer; transition: 0.3s;
-  box-shadow: ${(props) => props.$active ? `0 0 15px ${props.$color}40` : '0 4px 10px rgba(0,0,0,0.3)'};
-  &:hover { background: ${(props) => (props.$active ? `${props.$color}40` : '#1e293b')}; color: ${(props) => props.$color || '#fff'}; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-`;
+  return (
+    <motion.div style={{ width: 20, height: 20, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }} animate={{ y: [-2, 2, -2] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+      <motion.div style={{ position: 'absolute', width: '100%', height: '100%', background: data.color, filter: 'blur(5px)', borderRadius: '50%', zIndex: 0 }} animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.8, 0.4] }} transition={{ duration: 2, repeat: Infinity }} />
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%' }}>
+        {data.type === 'wyvern' && <svg viewBox="0 0 100 100"><polygon points="50,5 90,50 50,95 10,50" fill="none" stroke={data.color} strokeWidth="6" /><circle cx="50" cy="50" r="15" fill="#fff" /></svg>}
+        {data.type === 'phoenix' && <svg viewBox="0 0 100 100"><path d="M50 10 Q70 40 50 90 Q30 40 50 10" fill={data.color} /><circle cx="50" cy="65" r="12" fill="#fff" /></svg>}
+        {data.type === 'owl' && <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke={data.color} strokeWidth="6" strokeDasharray="10 10" /><ellipse cx="50" cy="50" rx="10" ry="25" fill="#fff" /></svg>}
+        {data.type === 'golem' && <svg viewBox="0 0 100 100"><polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="#334155" stroke={data.color} strokeWidth="6" /><rect x="35" y="35" width="30" height="30" fill={data.color} /></svg>}
+        {data.type === 'wolf' && <svg viewBox="0 0 100 100"><polygon points="50,10 80,40 50,90 20,40" fill="none" stroke={data.color} strokeWidth="6" /><polygon points="50,30 60,45 50,70 40,45" fill="#fff" /></svg>}
+        {data.type === 'emerald' && <svg viewBox="0 0 100 100"><path d="M50 10 C 80 10, 90 50, 50 90 C 10 50, 20 10, 50 10 Z" fill="none" stroke={data.color} strokeWidth="6" /><circle cx="50" cy="50" r="15" fill="#fff" /></svg>}
+      </div>
+    </motion.div>
+  );
+};
 
-const InboxBadge = styled.span`
-  background: #ef4444; color: #fff; padding: 2px 6px; border-radius: 20px; font-size: 10px; font-weight: 900; margin-left: 5px;
-`;
+// ==========================================
+// 4. التصميمات المفرودة (Styled Components)
+// ==========================================
+const Container = styled(motion.div)` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; `;
+const TopActions = styled.div` display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; `;
+const TopBtn = styled.button<{ $active?: boolean; $color?: string }>` background: ${(props) => (props.$active ? `${props.$color}20` : '#0f172a')}; border: 1px solid ${(props) => (props.$active ? props.$color : '#1e293b')}; color: ${(props) => (props.$active ? props.$color : '#94a3b8')}; padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 8px; font-family: 'Oxanium'; font-weight: 900; font-size: 12px; cursor: pointer; transition: 0.3s; box-shadow: ${(props) => props.$active ? `0 0 15px ${props.$color}40` : '0 4px 10px rgba(0,0,0,0.3)'}; &:hover { background: ${(props) => (props.$active ? `${props.$color}40` : '#1e293b')}; color: ${(props) => props.$color || '#fff'}; } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
+const InboxBadge = styled.span` background: #ef4444; color: #fff; padding: 2px 6px; border-radius: 20px; font-size: 10px; font-weight: 900; margin-left: 5px; `;
+const TabsGrid = styled.div` display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; `;
+const Tab = styled.button<{ $active: boolean; $glowColor?: string }>` padding: 12px; border-radius: 12px; border: none; font-family: 'Oxanium', sans-serif; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; background: ${(props) => (props.$active ? props.$glowColor || '#0ea5e9' : '#0f172a')}; color: ${(props) => (props.$active ? '#000' : '#94a3b8')}; box-shadow: ${(props) => props.$active ? `0 0 20px ${props.$glowColor}60` : 'none'}; `;
 
-const TabsGrid = styled.div`
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;
+// 🚨 تصميم قاعة الأبطال (Top 3) بعد هندسة المسافات 🚨
+const HallOfFameContainer = styled.div` display: flex; justify-content: center; align-items: flex-end; min-height: 300px; padding-bottom: 10px; margin-bottom: 30px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.1); `;
+const PedestalWrapper = styled(motion.div)<{ $isFirst?: boolean }>` display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 32%; position: relative; z-index: ${(props) => props.$isFirst ? 10 : 5}; margin: 0 2px; `;
+const PedestalBase = styled.div<{ $color: string; $height: number }>` 
+  width: 100%; height: ${(props) => props.$height}px; background: linear-gradient(to top, rgba(2,6,23,0.9), ${(props) => props.$color}40); 
+  border: 1px solid ${(props) => props.$color}; border-bottom: none; border-top-left-radius: 10px; border-top-right-radius: 10px; position: relative; 
+  box-shadow: inset 0 10px 20px rgba(0,0,0,0.5), 0 -10px 30px ${(props) => props.$color}20; display: flex; justify-content: center; align-items: center; 
+  &::after { content: ''; position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, ${(props) => props.$color}20, transparent); filter: blur(15px); pointer-events: none; } 
 `;
-
-const Tab = styled.button<{ $active: boolean; $glowColor?: string }>`
-  padding: 12px; border-radius: 12px; border: none; font-family: 'Oxanium', sans-serif; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;
-  background: ${(props) => (props.$active ? props.$glowColor || '#0ea5e9' : '#0f172a')};
-  color: ${(props) => (props.$active ? '#fff' : '#94a3b8')};
-  box-shadow: ${(props) => props.$active ? `0 4px 15px ${props.$glowColor}40` : 'none'};
-`;
-
-const BannerWrapper3D = styled.div<{ $borderColor: string }>`
-  background: #020617; border: 1px solid ${(props) => props.$borderColor}; border-radius: 16px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 30px ${(props) => props.$borderColor}40; position: relative; overflow: hidden; height: 260px;
-`;
-
-const BannerTitle = styled.h2` margin: 0; font-size: 22px; letter-spacing: 4px; text-transform: uppercase; font-weight: 900; text-align: center; text-shadow: 0 0 15px currentColor; `;
-const BannerSub = styled.p` margin: 5px 0 0 0; color: #cbd5e1; font-size: 12px; text-align: center; font-weight: bold; letter-spacing: 1px; `;
+const HeroAvatar = styled(motion.div)<{ $color: string, $isFirst: boolean }>` width: ${(props) => props.$isFirst ? '70px' : '55px'}; height: ${(props) => props.$isFirst ? '70px' : '55px'}; border-radius: 50%; border: 3px solid ${(props) => props.$color}; background: rgba(2,6,23,0.9); display: flex; align-items: center; justify-content: center; margin-bottom: 10px; z-index: 10; box-shadow: 0 0 20px ${(props) => props.$color}60, inset 0 0 10px ${(props) => props.$color}40; position: relative; `;
+const HeroName = styled.div<{ $color: string }>` font-size: 13px; font-weight: 900; color: ${(props) => props.$color}; text-shadow: 0 0 10px ${(props) => props.$color}; text-align: center; text-transform: uppercase; white-space: nowrap; `;
+const HeroLevel = styled.div` font-size: 10px; color: #fff; font-weight: bold; margin-top: 4px; text-align: center; line-height: 1.4; `;
+const Crown3D = styled(motion.div)` position: absolute; top: -35px; z-index: 15; filter: drop-shadow(0 0 10px #eab308); `;
+const BeamLight = styled.div<{ $color: string }>` position: absolute; bottom: 0; width: 40px; height: 350px; background: linear-gradient(to top, ${(props) => props.$color}40, transparent); filter: blur(20px); pointer-events: none; z-index: 0; `;
 
 const SearchContainer = styled.div` position: relative; margin-bottom: 25px; `;
 const SearchIconBox = styled.div` position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #0ea5e9; `;
+const SearchInput = styled.input` width: 100%; background: rgba(11, 17, 32, 0.8); border: 1px solid #1e293b; color: #fff; padding: 16px 16px 16px 50px; border-radius: 14px; font-family: 'Oxanium'; font-size: 15px; outline: none; transition: 0.3s; &:focus { border-color: #00f2ff; box-shadow: 0 0 15px rgba(0,242,255,0.2); } &::placeholder { color: #475569; font-weight: bold; } `;
 
-const SearchInput = styled.input`
-  width: 100%; background: rgba(11, 17, 32, 0.8); border: 1px solid #1e293b; color: #fff; padding: 16px 16px 16px 50px; border-radius: 14px; font-family: 'Oxanium'; font-size: 15px; outline: none; transition: 0.3s;
-  &:focus { border-color: #00f2ff; box-shadow: 0 0 15px rgba(0,242,255,0.2); }
-  &::placeholder { color: #475569; font-weight: bold; }
-`;
+// 🚨 تصميم كروت اللاعبين الـ Epic 2D 🚨
+const cardBreathe = keyframes` 0% { box-shadow: 0 4px 10px rgba(0,0,0,0.3); } 50% { box-shadow: 0 4px 20px rgba(255,255,255,0.05); } 100% { box-shadow: 0 4px 10px rgba(0,0,0,0.3); } `;
+const PlayerCard = styled(motion.div)<{ $rankColor: string }>` background: linear-gradient(90deg, #0f172a 0%, #020617 100%); border: 1px solid #1e293b; border-left: 4px solid ${(props) => props.$rankColor}; border-radius: 12px; padding: 15px 15px; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; transition: 0.3s; animation: ${cardBreathe} 4s infinite ease-in-out; &:hover { background: #1e293b; transform: translateX(5px); border-color: ${(props) => props.$rankColor}50; } `;
 
-const TierSeparator = styled.div<{ $color: string }>`
-  display: flex; align-items: center; text-align: center; margin: 30px 0 15px 0;
-  &::before, &::after {
-    content: ''; flex: 1; border-bottom: 1px solid ${(props) => props.$color}40; box-shadow: 0 1px 5px ${(props) => props.$color}20;
-  }
-  &:not(:empty)::before { margin-right: 15px; }
-  &:not(:empty)::after { margin-left: 15px; }
-`;
-
-const TierName = styled.span<{ $color: string }>`
-  font-size: 12px; font-weight: 900; color: ${(props) => props.$color}; letter-spacing: 3px; text-transform: uppercase; text-shadow: 0 0 10px ${(props) => props.$color}80;
-`;
-
-const pulseBadge = keyframes`
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-`;
-
-const TargetBadge = styled.div`
-  position: absolute; top: -10px; right: 10px; background: #ef4444; color: #000; padding: 4px 10px; border-radius: 8px; font-size: 9px; font-weight: 900; letter-spacing: 1px; display: flex; align-items: center; gap: 4px; z-index: 10; animation: ${pulseBadge} 2s infinite; border: 1px solid #fca5a5;
-`;
-
-const PlayerCard = styled(motion.div)<{ $isRank1: boolean; $rankColor: string; $rankGlow: string }>`
-  background: #0f172a; border-left: 4px solid ${(props) => (props.$isRank1 ? '#eab308' : props.$rankColor)}; border-radius: 12px; padding: 15px 20px; margin-bottom: 10px; display: flex; align-items: center; position: relative; overflow: visible; cursor: pointer; transition: 0.3s;
-  box-shadow: ${(props) => (props.$rankGlow !== 'none' ? `0 0 15px ${props.$rankGlow}` : '0 4px 6px rgba(0,0,0,0.3)')};
-  &:hover { background: #1e293b; transform: translateX(5px); }
-`;
-
-const Ribbon = styled.div`
-  position: absolute; top: 12px; right: -35px; background: #eab308; color: #000; padding: 4px 40px; transform: rotate(45deg); font-size: 10px; font-weight: 900; box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 4px; z-index: 10;
-`;
-
-const RankCol = styled.div<{ $rank: number }>`
-  width: 30px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; color: ${(props) => (props.$rank <= 3 ? '#eab308' : '#64748b')};
-`;
-
-const IconCircle = styled.div<{ $color: string; $isRank1: boolean }>`
-  width: 45px; height: 45px; border-radius: 50%; border: 2px solid ${(props) => props.$color}; display: flex; align-items: center; justify-content: center; margin: 0 15px; flex-shrink: 0; background: rgba(0, 0, 0, 0.3);
-  box-shadow: ${(props) => (props.$isRank1 ? `0 0 15px ${props.$color}50` : 'none')}; overflow: hidden;
-`;
-
+const RankCol = styled.div` width: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: #64748b; `;
+const IconCircle = styled.div<{ $color: string; $classColor: string }>` width: 40px; height: 40px; border-radius: 50%; border: 1px solid ${(props) => props.$color}80; display: flex; align-items: center; justify-content: center; margin: 0 10px; flex-shrink: 0; background: rgba(0, 0, 0, 0.5); box-shadow: inset 0 0 10px ${(props) => props.$classColor}40; `;
 const NameCol = styled.div` flex: 1; display: flex; flex-direction: column; justify-content: center; `;
-const PlayerNameText = styled.div<{ $isRank1: boolean; $rankColor: string }>` font-size: 16px; font-weight: bold; color: ${(props) => (props.$isRank1 ? '#eab308' : '#fff')}; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; `;
-const PlayerTitleText = styled.div<{ $rankColor: string }>` font-size: 10px; color: ${(props) => props.$rankColor}; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; `;
+const PlayerNameText = styled.div` font-size: 14px; font-weight: 900; color: #fff; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; `;
+const PlayerTitleText = styled.div<{ $rankColor: string }>` font-size: 9px; color: ${(props) => props.$rankColor}; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; `;
 const LevelCol = styled.div` display: flex; flex-direction: column; align-items: flex-end; justify-content: center; `;
-const LevelTextVal = styled.div<{ $isRank1: boolean; $rankColor: string }>` font-size: 18px; font-weight: 900; color: ${(props) => (props.$isRank1 ? '#eab308' : props.$rankColor)}; transition: 0.3s; `;
-
-const EXPText = styled.div` 
-  font-size: 11px; 
-  color: #0ea5e9; 
-  font-weight: bold; 
-  margin-top: 4px; 
-  text-align: right;
-`;
+const LevelTextVal = styled.div<{ $rankColor: string }>` font-size: 16px; font-weight: 900; color: ${(props) => props.$rankColor}; text-shadow: 0 0 10px ${(props) => props.$rankColor}50; `;
+const EXPText = styled.div` font-size: 10px; color: #94a3b8; font-weight: bold; margin-top: 4px; text-align: right; `;
 
 const LoadingSpinner = styled.div` border: 4px solid rgba(14, 165, 233, 0.1); border-left-color: #0ea5e9; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 60px auto; @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } `;
-const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); `;
-const ModalContent = styled(motion.div)<{ $isCoach?: boolean; $borderColor?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$borderColor || (props.$isCoach ? '#ef4444' : '#1e293b')}; border-radius: 20px; padding: 25px; width: 100%; max-width: 450px; position: relative; box-shadow: 0 0 50px ${(props) => props.$isCoach ? 'rgba(239,68,68,0.3)' : 'rgba(0,0,0,0.8)'}; max-height: 85vh; overflow-y: auto; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: #334155; border-radius: 5px; } `;
-const CloseBtn = styled.button` position: absolute; top: 20px; right: 20px; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; &:hover { color: #fff; } `;
+
+// 🚨 Portal Modals 🚨
+const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); `;
+const ModalContent = styled(motion.div)<{ $isCoach?: boolean; $borderColor?: string; $width?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$borderColor || (props.$isCoach ? '#ef4444' : '#1e293b')}; border-radius: 20px; padding: 25px; width: 100%; max-width: ${(props) => props.$width || '450px'}; position: relative; box-shadow: 0 0 50px ${(props) => props.$isCoach ? 'rgba(239,68,68,0.3)' : 'rgba(0,0,0,0.8)'}; max-height: 90vh; overflow-y: auto; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: ${(props) => props.$borderColor || '#334155'}; border-radius: 5px; } `;
+const CloseBtn = styled.button` position: absolute; top: 15px; right: 15px; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; z-index: 10; &:hover { color: #fff; } `;
 const PasswordOverlay = styled(motion.div)` background: #020617; border: 1px solid #ef4444; padding: 25px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 5px 30px rgba(239,68,68,0.3); width: 100%; max-width: 350px; text-align: center; `;
 const PasswordInput = styled.input` background: #0b1120; border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; font-family: 'Oxanium'; font-size: 16px; text-align: center; letter-spacing: 3px; &:focus { outline: none; border-color: #ef4444; } `;
+
+const ProfileHeader = styled.div` display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 25px; margin-top: 10px; `;
+const DataGrid = styled.div` display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; width: 100%; `;
+const DataBox = styled.div` background: #1e293b50; border: 1px solid #334155; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; text-align: center; `;
+const SectionLabel = styled.div` font-size: 11px; color: #94a3b8; font-weight: 900; letter-spacing: 1px; margin: 25px 0 10px 0; border-bottom: 1px solid #334155; padding-bottom: 5px; display: flex; align-items: center; gap: 5px; text-transform: uppercase; `;
+const TaskRow = styled.div<{ $status: string }>` display: flex; justify-content: space-between; align-items: center; background: rgba(2,6,23,0.8); border: 1px solid ${(props) => props.$status === 'approved' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#ef4444'}; padding: 12px; border-radius: 10px; margin-bottom: 10px; font-size: 12px; transition: 0.3s; box-shadow: ${(props) => props.$status === 'approved' ? 'inset 0 0 15px rgba(16,185,129,0.1)' : 'none'}; `;
+const RecordRow = styled.div` display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-left: 3px solid #38bdf8; padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; `;
 const CoachSection = styled(motion.div)` margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ef4444; `;
-const DataGrid = styled.div` display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; `;
-const DataBox = styled.div` background: #1e293b50; border: 1px solid #334155; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; `;
-const TaskRow = styled.div<{ $status: string }>` display: flex; justify-content: space-between; align-items: center; background: #020617; border: 1px solid ${(props) => props.$status === 'approved' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#ef4444'}; padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 12px; `;
-const RecordRow = styled.div` display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-left: 3px solid #38bdf8; padding: 12px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; `;
+
 const RequestCard = styled.div` background: #0f172a; border: 1px solid #facc15; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; `;
 const RequestHeader = styled.div` display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #334155; padding-bottom: 8px; `;
 const RequestActions = styled.div` display: flex; gap: 10px; margin-top: 5px; `;
@@ -346,7 +277,6 @@ const Rank = ({ player, setPlayer }: any) => {
   const [monthlyLeaderboard, setMonthlyLeaderboard] = useState<any[]>([]);
   const [maleLeaderboard, setMaleLeaderboard] = useState<any[]>([]);
   const [femaleLeaderboard, setFemaleLeaderboard] = useState<any[]>([]);
-  
   const [championsHistory, setChampionsHistory] = useState<any[]>([]);
 
   const [activeBoard, setActiveBoard] = useState<'global' | 'monthly' | 'male' | 'female'>('global');
@@ -743,17 +673,21 @@ const Rank = ({ player, setPlayer }: any) => {
   if (activeBoard === 'female') displayBoard = femaleLeaderboard;
   const filteredBoard = displayBoard.filter((h) => h.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  // 🚨 تم إضافة لون لكل قسم عشان الكريستالة ה-3D تاخد لونه 🚨
-  const getBannerInfo = () => {
-    switch (activeBoard) {
-      case 'monthly': return { title: 'MONTHLY CHAMPIONS', sub: 'أبطال الشهر الحالي', color: '#0ea5e9' };
-      case 'male': return { title: 'MALE DIVISION', sub: 'تصنيف الشباب العام', color: '#38bdf8' };
-      case 'female': return { title: 'FEMALE DIVISION', sub: 'تصنيف البنات العام', color: '#ec4899' };
-      default: return { title: 'ALL-TIME HALL OF FAME', sub: 'الترتيب العام الشامل لجميع اللاعبين', color: '#a855f7' };
-    }
-  };
-  const bannerInfo = getBannerInfo();
+  const topThree = filteredBoard.slice(0, 3);
+  const others = filteredBoard.slice(3);
 
+  const getPedestalHeight = (index: number) => {
+    if (index === 0) return 130;
+    if (index === 1) return 90;
+    return 60;
+  };
+
+  const orderedTopThree = [];
+  if (topThree[1]) orderedTopThree.push({ ...topThree[1], index: 1 });
+  if (topThree[0]) orderedTopThree.push({ ...topThree[0], index: 0 });
+  if (topThree[2]) orderedTopThree.push({ ...topThree[2], index: 2 });
+
+  // 🚨 دالة رسم مهام اللاعب المفتوحة للجميع 🚨
   const renderAllMissions = () => {
     if (!selectedHunter) return null;
     
@@ -825,6 +759,198 @@ const Rank = ({ player, setPlayer }: any) => {
     );
   };
 
+  // 🚨 إنشاء الـ Portal للشاشات 🚨
+  const renderModals = () => {
+    if (typeof document === 'undefined') return null;
+    return createPortal(
+      <>
+        <AnimatePresence>
+          {showKeysModal && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ModalContent $isCoach={true} $borderColor="#10b981" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
+                <CloseBtn onClick={() => setShowKeysModal(false)}><X size={24} /></CloseBtn>
+                <h2 style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 20px 0' }}><Key size={24} /> ACCESS KEYS MANAGER</h2>
+                <ActionBtn $type="primary" onClick={generateNewKey} style={{ marginBottom: '20px' }}><Plus size={18} /> GENERATE NEW KEY</ActionBtn>
+                {loadingKeys ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#10b981' }}><LoadingSpinner /></div>
+                ) : accessKeysList.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '30px', background: '#1e293b30', borderRadius: '12px', color: '#94a3b8' }}>No keys generated yet.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
+                    {accessKeysList.map((keyData) => (
+                      <KeyCard key={keyData.id} $isUsed={keyData.is_used}>
+                        <div>
+                          <KeyText $isUsed={keyData.is_used}>{keyData.key_code}</KeyText>
+                          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>{keyData.is_used ? `Claimed by: ${keyData.used_by}` : 'Status: Unused (Active)'}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => copyToClipboard(keyData.key_code)} style={{ background: '#1e293b', border: 'none', padding: '8px', borderRadius: '8px', color: '#0ea5e9', cursor: 'pointer' }} title="Copy Code"><Copy size={16} /></button>
+                          {!keyData.is_used && (
+                            <button onClick={() => deleteKey(keyData.id)} style={{ background: '#2a0808', border: 'none', padding: '8px', borderRadius: '8px', color: '#ef4444', cursor: 'pointer' }} title="Delete Code"><Trash2 size={16} /></button>
+                          )}
+                        </div>
+                      </KeyCard>
+                    ))}
+                  </div>
+                )}
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showPasswordPrompt && !isCoachMode && (
+            <ModalOverlay style={{ zIndex: 200 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <PasswordOverlay initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}>
+                <button onClick={() => setShowPasswordPrompt(false)} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={18} /></button>
+                <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: '900', letterSpacing: 1 }}><LockIcon size={16} style={{ verticalAlign: 'middle', marginRight: 5 }} /> MASTER OVERRIDE</div>
+                <PasswordInput type="password" placeholder="ENTER PASSWORD" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()} />
+                <button onClick={handlePasswordSubmit} style={{ background: '#ef4444', color: '#000', padding: '10px', border: 'none', borderRadius: '8px', fontWeight: '900', cursor: 'pointer' }}>DECRYPT SYSTEM</button>
+              </PasswordOverlay>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showInboxModal && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ModalContent $isCoach={true} initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
+                <CloseBtn onClick={() => setShowInboxModal(false)}><X size={24} /></CloseBtn>
+                <h2 style={{ color: '#eab308', display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 20px 0' }}><Inbox size={24} /> PENDING REQUESTS</h2>
+                
+                <FilterTabs>
+                  <FilterTab $active={inboxFilter === 'all'} $color="#eab308" onClick={() => setInboxFilter('all')}><Filter size={12}/> All</FilterTab>
+                  <FilterTab $active={inboxFilter === 'quest'} $color="#0ea5e9" onClick={() => setInboxFilter('quest')}><CheckSquare size={12}/> Quests</FilterTab>
+                  <FilterTab $active={inboxFilter === 'record'} $color="#a855f7" onClick={() => setInboxFilter('record')}><Trophy size={12}/> PRs</FilterTab>
+                  <FilterTab $active={inboxFilter === 'injury'} $color="#ef4444" onClick={() => setInboxFilter('injury')}><HeartPulse size={12}/> Rehab</FilterTab>
+                </FilterTabs>
+
+                {loadingInbox ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#eab308' }}><LoadingSpinner /></div>
+                ) : getFilteredInbox().length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '30px', background: '#1e293b30', borderRadius: '12px', color: '#94a3b8' }}>No pending requests in this category.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <BulkBtn disabled={isProcessing} onClick={handleBulkApprove}>
+                      <CheckCircle size={16} /> APPROVE ALL ({getFilteredInbox().length})
+                    </BulkBtn>
+                    {getFilteredInbox().map((req) => (
+                      <RequestCard key={req.id}>
+                        <RequestHeader>
+                          <span style={{ fontWeight: '900', color: '#fff' }}>{req.player_name}</span>
+                          <span style={{ fontSize: '10px', color: '#94a3b8' }}>{new Date(req.created_at).toLocaleDateString()}</span>
+                        </RequestHeader>
+                        <div style={{ fontSize: '14px', color: req.task_name === '[INJURY REPORT]' ? '#ef4444' : '#38bdf8', fontWeight: 'bold' }}>{req.task_name}</div>
+                        <div style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 5, background: '#1e293b50', padding: '8px', borderRadius: '6px' }}>
+                          {req.evidence?.includes('Image') ? <FileImage size={14} color="#10b981" /> : <Activity size={14} color="#facc15" />} {req.evidence || 'No Evidence Provided'}
+                        </div>
+                        <RequestActions>
+                          <ActionBtn disabled={isProcessing} $type="reject" onClick={() => handleRequestAction(req, 'reject')}><X size={16} /> REJECT</ActionBtn>
+                          <ActionBtn disabled={isProcessing} $type="approve" onClick={() => handleRequestAction(req, 'approve')}><Check size={16} /> APPROVE</ActionBtn>
+                        </RequestActions>
+                      </RequestCard>
+                    ))}
+                  </div>
+                )}
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>
+
+        {/* 🚨 بروفايل اللاعب العام 🚨 */}
+        <AnimatePresence>
+          {selectedHunter && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ModalContent $width="650px" $borderColor={selectedHunter.rankColor} initial={{ scale: 0.9 }}>
+                <CloseBtn onClick={() => setSelectedHunter(null)}><X size={24} /></CloseBtn>
+
+                <ProfileHeader>
+                  <IconCircle $color={selectedHunter.rankColor} $classColor={getUserClassInfo(selectedHunter.selectedIcon || selectedHunter.icon).color} style={{ width: 80, height: 80, margin: '0 auto 15px auto', borderWidth: '4px', boxShadow: `0 0 20px ${selectedHunter.rankColor}60` }}>
+                    {getHunterIconOnly(selectedHunter, getUserClassInfo(selectedHunter.selectedIcon || selectedHunter.icon).color, 40)}
+                  </IconCircle>
+                  <h2 style={{ margin: 0, color: selectedHunter.rankColor, textTransform: 'uppercase', fontSize: '22px', letterSpacing: '2px', textShadow: `0 0 10px ${selectedHunter.rankColor}80` }}>{selectedHunter.name}</h2>
+                  <div style={{ color: '#cbd5e1', fontSize: '12px', fontWeight: 'bold', marginTop: '5px' }}>{selectedHunter.rankName}</div>
+                  
+                  {selectedHunter.active_pet && (
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 15 }}>
+                      <MiniOrb type={PETS_DATABASE.find(p => p.name === selectedHunter.active_pet)?.type || 'wyvern'} color={PETS_DATABASE.find(p => p.name === selectedHunter.active_pet)?.color || '#eab308'} />
+                    </div>
+                  )}
+                </ProfileHeader>
+
+                <DataGrid>
+                  <DataBox>
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>LEVEL</span>
+                    <span style={{ fontSize: '18px', color: '#00f2ff', fontWeight: 'bold' }}><ChevronUp size={14} /> {selectedHunter.visualLevel || 1}</span>
+                  </DataBox>
+                  <DataBox>
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>CURRENT EXP</span>
+                    <span style={{ fontSize: '18px', color: '#eab308', fontWeight: 'bold' }}>
+                      <Zap size={14} /> {selectedHunter.visualXp || 0} / {selectedHunter.visualNeeded}
+                    </span>
+                  </DataBox>
+                </DataGrid>
+
+                <SectionLabel><TrendingUp size={14} /> RECENT RECORDS (PRS)</SectionLabel>
+                {loadingHunterData ? (
+                  <div style={{ textAlign: 'center', fontSize: '12px', color: '#0ea5e9' }}>Loading records...</div>
+                ) : hunterRecordsData.length === 0 ? (
+                  <div style={{ textAlign: 'center', color: '#64748b', fontSize: '12px', padding: '10px' }}>No records logged.</div>
+                ) : (
+                  <div style={{ maxHeight: '150px', overflowY: 'auto', paddingRight: '5px' }}>
+                    {hunterRecordsData.map((r, i) => (
+                      <RecordRow key={i}>
+                        <span style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Dumbbell size={16} color="#0ea5e9" /> {String(r.exercise_name)}</span>
+                        <span style={{ color: '#eab308', fontWeight: '900', fontSize: '15px' }}>{String(r.weight_kg || '')} {r.reps ? ` ${String(r.reps)}` : ''}</span>
+                      </RecordRow>
+                    ))}
+                  </div>
+                )}
+
+                <SectionLabel><Database size={14} /> PUBLIC MISSIONS LOG</SectionLabel>
+                {loadingHunterData ? (
+                  <div style={{ textAlign: 'center', fontSize: '12px', color: '#0ea5e9' }}>Loading missions...</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '250px', overflowY: 'auto', paddingRight: '5px' }}>
+                    {renderAllMissions()}
+                  </div>
+                )}
+
+                {/* الكوتش بس اللي بيشوف الحاجات الحساسة */}
+                {isCoachMode && (
+                  <CoachSection initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <h3 style={{ color: '#ef4444', fontSize: '13px', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 15px 0' }}>
+                      <ShieldAlert size={16} /> CLASSIFIED COACH DATA
+                    </h3>
+                    <DataGrid style={{ marginBottom: '15px' }}>
+                      <DataBox>
+                        <span style={{ fontSize: '10px', color: '#94a3b8' }}>HP (HEALTH)</span>
+                        <span style={{ fontSize: '18px', color: '#ef4444', fontWeight: 'bold' }}><HeartPulse size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {selectedHunter.hp ?? 100} / 100</span>
+                      </DataBox>
+                      <DataBox>
+                        <span style={{ fontSize: '10px', color: '#94a3b8' }}>BODY WEIGHT</span>
+                        <span style={{ fontSize: '18px', color: '#38bdf8', fontWeight: 'bold' }}><Scale size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {selectedHunter.weight ? `${selectedHunter.weight} KG` : 'N/A'}</span>
+                      </DataBox>
+                      <DataBox>
+                        <span style={{ fontSize: '10px', color: '#94a3b8' }}>INBODY (FAT %)</span>
+                        <span style={{ fontSize: '18px', color: '#facc15', fontWeight: 'bold' }}><Percent size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {selectedHunter.body_fat ? `${selectedHunter.body_fat}%` : 'N/A'}</span>
+                      </DataBox>
+                      <DataBox>
+                        <span style={{ fontSize: '10px', color: '#94a3b8' }}>ATTENDANCE RATE</span>
+                        <span style={{ fontSize: '18px', color: hunterAttendance.rate >= 80 ? '#10b981' : hunterAttendance.rate >= 50 ? '#eab308' : '#ef4444', fontWeight: 'bold' }}><Activity size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {hunterAttendance.rate}% <span style={{ fontSize: 10, color: '#64748b' }}>({hunterAttendance.attended}/{hunterAttendance.total}D)</span></span>
+                      </DataBox>
+                    </DataGrid>
+                  </CoachSection>
+                )}
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>
+      </>,
+      document.body
+    );
+  };
+
   return (
     <Container initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
       <Toaster position="top-center" theme="dark" />
@@ -850,104 +976,6 @@ const Rank = ({ player, setPlayer }: any) => {
         </AnimatePresence>
       </TopActions>
 
-      {/* Keys Modal */}
-      <AnimatePresence>
-        {showKeysModal && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ModalContent $isCoach={true} $borderColor="#10b981" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
-              <CloseBtn onClick={() => setShowKeysModal(false)}><X size={24} /></CloseBtn>
-              <h2 style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 20px 0' }}><Key size={24} /> ACCESS KEYS MANAGER</h2>
-              <ActionBtn $type="primary" onClick={generateNewKey} style={{ marginBottom: '20px' }}><Plus size={18} /> GENERATE NEW KEY</ActionBtn>
-              {loadingKeys ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: '#10b981' }}><LoadingSpinner /></div>
-              ) : accessKeysList.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '30px', background: '#1e293b30', borderRadius: '12px', color: '#94a3b8' }}>No keys generated yet.</div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
-                  {accessKeysList.map((keyData) => (
-                    <KeyCard key={keyData.id} $isUsed={keyData.is_used}>
-                      <div>
-                        <KeyText $isUsed={keyData.is_used}>{keyData.key_code}</KeyText>
-                        <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>{keyData.is_used ? `Claimed by: ${keyData.used_by}` : 'Status: Unused (Active)'}</div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => copyToClipboard(keyData.key_code)} style={{ background: '#1e293b', border: 'none', padding: '8px', borderRadius: '8px', color: '#0ea5e9', cursor: 'pointer' }} title="Copy Code"><Copy size={16} /></button>
-                        {!keyData.is_used && (
-                          <button onClick={() => deleteKey(keyData.id)} style={{ background: '#2a0808', border: 'none', padding: '8px', borderRadius: '8px', color: '#ef4444', cursor: 'pointer' }} title="Delete Code"><Trash2 size={16} /></button>
-                        )}
-                      </div>
-                    </KeyCard>
-                  ))}
-                </div>
-              )}
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>
-
-      {/* Password Modal */}
-      <AnimatePresence>
-        {showPasswordPrompt && !isCoachMode && (
-          <ModalOverlay style={{ zIndex: 200 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <PasswordOverlay initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}>
-              <button onClick={() => setShowPasswordPrompt(false)} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={18} /></button>
-              <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: '900', letterSpacing: 1 }}><LockIcon size={16} style={{ verticalAlign: 'middle', marginRight: 5 }} /> MASTER OVERRIDE</div>
-              <PasswordInput type="password" placeholder="ENTER PASSWORD" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()} />
-              <button onClick={handlePasswordSubmit} style={{ background: '#ef4444', color: '#000', padding: '10px', border: 'none', borderRadius: '8px', fontWeight: '900', cursor: 'pointer' }}>DECRYPT SYSTEM</button>
-            </PasswordOverlay>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>
-
-      {/* 🚨 Inbox Modal 🚨 */}
-      <AnimatePresence>
-        {showInboxModal && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ModalContent $isCoach={true} initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
-              <CloseBtn onClick={() => setShowInboxModal(false)}><X size={24} /></CloseBtn>
-              <h2 style={{ color: '#eab308', display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 20px 0' }}><Inbox size={24} /> PENDING REQUESTS</h2>
-              
-              <FilterTabs>
-                <FilterTab $active={inboxFilter === 'all'} $color="#eab308" onClick={() => setInboxFilter('all')}><Filter size={12}/> All</FilterTab>
-                <FilterTab $active={inboxFilter === 'quest'} $color="#0ea5e9" onClick={() => setInboxFilter('quest')}><CheckSquare size={12}/> Quests</FilterTab>
-                <FilterTab $active={inboxFilter === 'record'} $color="#a855f7" onClick={() => setInboxFilter('record')}><Trophy size={12}/> PRs</FilterTab>
-                <FilterTab $active={inboxFilter === 'injury'} $color="#ef4444" onClick={() => setInboxFilter('injury')}><HeartPulse size={12}/> Rehab</FilterTab>
-              </FilterTabs>
-
-              {loadingInbox ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: '#eab308' }}><LoadingSpinner /></div>
-              ) : getFilteredInbox().length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '30px', background: '#1e293b30', borderRadius: '12px', color: '#94a3b8' }}>No pending requests in this category.</div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  
-                  <BulkBtn disabled={isProcessing} onClick={handleBulkApprove}>
-                    <CheckCircle size={16} /> APPROVE ALL ({getFilteredInbox().length})
-                  </BulkBtn>
-
-                  {getFilteredInbox().map((req) => (
-                    <RequestCard key={req.id}>
-                      <RequestHeader>
-                        <span style={{ fontWeight: '900', color: '#fff' }}>{req.player_name}</span>
-                        <span style={{ fontSize: '10px', color: '#94a3b8' }}>{new Date(req.created_at).toLocaleDateString()}</span>
-                      </RequestHeader>
-                      <div style={{ fontSize: '14px', color: req.task_name === '[INJURY REPORT]' ? '#ef4444' : '#38bdf8', fontWeight: 'bold' }}>{req.task_name}</div>
-                      <div style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 5, background: '#1e293b50', padding: '8px', borderRadius: '6px' }}>
-                        {req.evidence?.includes('Image') ? <FileImage size={14} color="#10b981" /> : <Activity size={14} color="#facc15" />} {req.evidence || 'No Evidence Provided'}
-                      </div>
-                      <RequestActions>
-                        <ActionBtn disabled={isProcessing} $type="reject" onClick={() => handleRequestAction(req, 'reject')}><X size={16} /> REJECT</ActionBtn>
-                        <ActionBtn disabled={isProcessing} $type="approve" onClick={() => handleRequestAction(req, 'approve')}><Check size={16} /> APPROVE</ActionBtn>
-                      </RequestActions>
-                    </RequestCard>
-                  ))}
-                </div>
-              )}
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>
-
       <TabsGrid>
         <Tab $active={activeBoard === 'global'} $glowColor="#a855f7" onClick={() => { playClick(); setActiveBoard('global'); }}>الترتيب العام <Globe size={16} /></Tab>
         <Tab $active={activeBoard === 'monthly'} $glowColor="#0ea5e9" onClick={() => { playClick(); setActiveBoard('monthly'); }}>بطل الشهر <Trophy size={16} /></Tab>
@@ -955,22 +983,48 @@ const Rank = ({ player, setPlayer }: any) => {
         <Tab $active={activeBoard === 'female'} $glowColor="#ec4899" onClick={() => { playClick(); setActiveBoard('female'); }}>تصنيف البنات <Crown size={16} /></Tab>
       </TabsGrid>
 
-      {/* 🚨 غرفة الـ 3D بدل البانر العادي 🚨 */}
-      <BannerWrapper3D $borderColor={bannerInfo.color}>
-        <Canvas camera={{ position: [0, 0, 5] }}>
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} />
-          <FloatingCrystal color={bannerInfo.color} />
-        </Canvas>
-        <div style={{ position: 'absolute', bottom: '20px', width: '100%', textAlign: 'center', pointerEvents: 'none' }}>
-          <BannerTitle style={{ color: bannerInfo.color, textShadow: `0 0 20px ${bannerInfo.color}` }}>{bannerInfo.title}</BannerTitle>
-          <BannerSub>{bannerInfo.sub}</BannerSub>
-        </div>
-      </BannerWrapper3D>
+      {!loading && topThree.length > 0 && (
+        <HallOfFameContainer>
+          {orderedTopThree.map((hunter) => {
+            const isFirst = hunter.index === 0;
+            const height = getPedestalHeight(hunter.index);
+            const pColor = isFirst ? '#eab308' : hunter.index === 1 ? '#94a3b8' : '#b45309';
+            const classColor = getUserClassInfo(hunter.selectedIcon || hunter.icon).color;
+            
+            return (
+              <PedestalWrapper key={hunter.name} initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: hunter.index * 0.1 }} onClick={() => handlePlayerClick(hunter)} style={{ cursor: 'pointer' }}>
+                <div style={{ textAlign: 'center', zIndex: 15, marginBottom: '10px' }}>
+                  <HeroAvatar $color={pColor} $isFirst={isFirst} style={{ position: 'relative', top: 0, margin: '0 auto 10px auto' }}>
+                    {getHunterIconOnly(hunter, classColor, isFirst ? 35 : 25)}
+                  </HeroAvatar>
+                  <HeroName $color={pColor}>{hunter.name.split(' ')[0]}</HeroName>
+                  <HeroLevel>LVL {hunter.visualLevel} <br/><span style={{color: '#0ea5e9'}}>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.visualXp} XP</span></HeroLevel>
+                  {hunter.active_pet && (
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+                      <MiniOrb type={PETS_DATABASE.find(p => p.name === hunter.active_pet)?.type || 'wyvern'} color={PETS_DATABASE.find(p => p.name === hunter.active_pet)?.color || '#eab308'} />
+                    </div>
+                  )}
+                </div>
+
+                <PedestalBase $color={pColor} $height={height}>
+                  <div style={{ fontSize: isFirst ? '40px' : '30px', fontWeight: '900', color: pColor, opacity: 0.5 }}>{hunter.index + 1}</div>
+                </PedestalBase>
+                
+                <BeamLight $color={pColor} />
+                {isFirst && (
+                  <Crown3D animate={{ y: [-5, 5, -5], rotateY: 360 }} transition={{ y: { duration: 2, repeat: Infinity, ease: "easeInOut" }, rotateY: { duration: 4, repeat: Infinity, ease: "linear" } }}>
+                    <Crown size={35} color="#eab308" fill="#ca8a04" />
+                  </Crown3D>
+                )}
+              </PedestalWrapper>
+            );
+          })}
+        </HallOfFameContainer>
+      )}
 
       <SearchContainer>
         <SearchIconBox><Search size={20} /></SearchIconBox>
-        <SearchInput type="text" placeholder="Search Hunters by name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        <SearchInput type="text" placeholder="ابحث عن لاعب..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
       </SearchContainer>
 
       {loading ? (
@@ -979,73 +1033,32 @@ const Rank = ({ player, setPlayer }: any) => {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <AnimatePresence mode="wait">
             <motion.div key={activeBoard} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              {filteredBoard.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontStyle: 'italic' }}>No hunters found matching "{searchQuery}"</div>
+              {others.length === 0 && topThree.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontStyle: 'italic' }}>لا يوجد لاعبين متاحين</div>
               ) : (
-                filteredBoard.map((hunter, index) => {
+                others.map((hunter) => {
                   const isMe = player?.name === hunter.name;
-                  const isRank1 = hunter.position === 1;
                   const playerWins = championsHistory.filter(c => c.hunter_name === hunter.name).length;
-
-                  const prevHunter = index > 0 ? filteredBoard[index - 1] : null;
-                  const showSeparator = !prevHunter || prevHunter.rankName !== hunter.rankName;
-
-                  let rival = null;
-                  let expToRival = 0;
-                  if (isMe && index > 0) {
-                    rival = filteredBoard[index - 1];
-                    const myXp = activeBoard === 'monthly' ? (hunter.monthly_xp || 0) : (hunter.cumulative_xp || 0);
-                    const rivalXp = activeBoard === 'monthly' ? (rival.monthly_xp || 0) : (rival.cumulative_xp || 0);
-                    expToRival = rivalXp - myXp;
-                  }
+                  const classColor = getUserClassInfo(hunter.selectedIcon || hunter.icon).color;
 
                   return (
-                    <React.Fragment key={`${hunter.name}-${activeBoard}`}>
-                      {showSeparator && (
-                        <TierSeparator $color={hunter.rankColor}>
-                          <TierName $color={hunter.rankColor}>{hunter.rankName.replace('HUNTER', '').replace('👑', '').trim()}</TierName>
-                        </TierSeparator>
-                      )}
-
-                      <PlayerCard 
-                        $isRank1={isRank1} 
-                        $rankColor={hunter.rankColor} 
-                        $rankGlow={hunter.rankGlow}
-                        onClick={() => handlePlayerClick(hunter)} 
-                        onMouseEnter={playHover} 
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {isRank1 && <Ribbon>المركز الأول 👑</Ribbon>}
-                        
-                        {isMe && rival && (
-                           <TargetBadge>
-                             <Crosshair size={10} /> BEAT {rival.name} ({expToRival} XP)
-                           </TargetBadge>
-                        )}
-
-                        <RankCol $rank={hunter.position}>{isRank1 ? <Gem size={24} color="#eab308" fill="#ca8a04" /> : hunter.position}</RankCol>
-                        
-                        <IconCircle $color={getIconBorderColor(hunter, isRank1)} $isRank1={isRank1}>
-                          {getHunterIconOnly(hunter, isRank1, 24)}
-                        </IconCircle>
-                        
-                        <NameCol>
-                          <PlayerNameText $isRank1={isRank1} $rankColor={hunter.rankColor}>
-                            {hunter.name} {isMe && '(YOU)'}
-                            {playerWins > 0 && (
-                              <span style={{ color: '#eab308', fontSize: '11px', textShadow: '0 0 5px rgba(234, 179, 8, 0.5)', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
-                                👑 x{playerWins}
-                              </span>
-                            )}
-                          </PlayerNameText>
-                          <PlayerTitleText $rankColor={hunter.rankColor}>{hunter.rankName}</PlayerTitleText>
-                        </NameCol>
-                        <LevelCol>
-                          <LevelTextVal $isRank1={isRank1} $rankColor={hunter.rankColor}>LVL {hunter.visualLevel}</LevelTextVal>
-                          <EXPText>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.visualXp} / {activeBoard === 'monthly' ? calculateLevelData(hunter.monthly_xp || 0).expNeededForNextLevel : hunter.visualNeeded}</EXPText>
-                        </LevelCol>
-                      </PlayerCard>
-                    </React.Fragment>
+                    <PlayerCard key={`${hunter.name}-${activeBoard}`} $rankColor={hunter.rankColor} onClick={() => handlePlayerClick(hunter)} whileTap={{ scale: 0.95 }}>
+                      <RankCol>{hunter.position}</RankCol>
+                      <IconCircle $color={hunter.rankColor} $classColor={classColor}>
+                         {getHunterIconOnly(hunter, classColor, 20)}
+                      </IconCircle>
+                      <NameCol>
+                        <PlayerNameText>
+                          {hunter.name} {isMe && <span style={{ color: '#0ea5e9', fontSize: 10 }}> (YOU)</span>}
+                          {playerWins > 0 && <span style={{ color: '#eab308', fontSize: '11px', textShadow: '0 0 5px rgba(234, 179, 8, 0.5)' }}>👑 x{playerWins}</span>}
+                        </PlayerNameText>
+                        <PlayerTitleText $rankColor={hunter.rankColor}>{hunter.rankName}</PlayerTitleText>
+                      </NameCol>
+                      <LevelCol>
+                        <LevelTextVal $rankColor={hunter.rankColor}>LVL {hunter.visualLevel}</LevelTextVal>
+                        <EXPText>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.visualXp} XP</EXPText>
+                      </LevelCol>
+                    </PlayerCard>
                   );
                 })
               )}
@@ -1053,96 +1066,8 @@ const Rank = ({ player, setPlayer }: any) => {
           </AnimatePresence>
         </div>
       )}
-
-      {/* Hunter Details Modal */}
-      <AnimatePresence>
-        {selectedHunter && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ModalContent $isCoach={isCoachMode} $borderColor={selectedHunter.rankColor} initial={{ scale: 0.9 }}>
-              <CloseBtn onClick={() => setSelectedHunter(null)}><X size={24} /></CloseBtn>
-
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <IconCircle $color={selectedHunter.rankColor} $isRank1={false} style={{ width: 80, height: 80, margin: '0 auto 15px auto', borderWidth: '4px' }}>
-                  {getHunterIconOnly(selectedHunter, false, 40)}
-                </IconCircle>
-                <h2 style={{ margin: 0, color: selectedHunter.rankColor, textTransform: 'uppercase' }}>{selectedHunter.name}</h2>
-                <div style={{ color: '#64748b', fontSize: '12px' }}>{selectedHunter.rankName}</div>
-              </div>
-
-              <DataGrid>
-                <DataBox>
-                  <span style={{ fontSize: '10px', color: '#94a3b8' }}>LEVEL</span>
-                  <span style={{ fontSize: '18px', color: '#00f2ff', fontWeight: 'bold' }}><ChevronUp size={14} /> {selectedHunter.visualLevel || 1}</span>
-                </DataBox>
-                <DataBox>
-                  <span style={{ fontSize: '10px', color: '#94a3b8' }}>CURRENT EXP</span>
-                  <span style={{ fontSize: '18px', color: '#eab308', fontWeight: 'bold' }}>
-                    <Zap size={14} /> {selectedHunter.visualXp || 0} / {selectedHunter.visualNeeded}
-                  </span>
-                </DataBox>
-              </DataGrid>
-
-              <div style={{ fontSize: '11px', color: '#94a3b8', margin: '20px 0 10px 0', borderBottom: '1px solid #334155', paddingBottom: '5px' }}>
-                <TrendingUp size={12} style={{ verticalAlign: 'middle', marginRight: '5px' }} /> PERFORMANCE RECORDS
-              </div>
-              
-              {loadingHunterData ? (
-                <div style={{ textAlign: 'center', fontSize: '12px', color: '#0ea5e9' }}>Loading records...</div>
-              ) : hunterRecordsData.length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#64748b', fontSize: '12px', padding: '10px' }}>No records logged.</div>
-              ) : (
-                <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                  {hunterRecordsData.map((r, i) => (
-                    <RecordRow key={i}>
-                      <span style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}><Dumbbell size={14} color="#0ea5e9" /> {String(r.exercise_name)}</span>
-                      <span style={{ color: '#eab308', fontWeight: '900' }}>{String(r.weight_kg || '')} {r.reps ? ` ${String(r.reps)}` : ''}</span>
-                    </RecordRow>
-                  ))}
-                </div>
-              )}
-
-              {isCoachMode && (
-                <CoachSection initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h3 style={{ color: '#ef4444', fontSize: '13px', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 15px 0' }}>
-                    <ShieldAlert size={16} /> CLASSIFIED COACH DATA
-                  </h3>
-
-                  <DataGrid style={{ marginBottom: '15px' }}>
-                    <DataBox>
-                      <span style={{ fontSize: '10px', color: '#94a3b8' }}>HP (HEALTH)</span>
-                      <span style={{ fontSize: '18px', color: '#ef4444', fontWeight: 'bold' }}><HeartPulse size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {selectedHunter.hp ?? 100} / 100</span>
-                    </DataBox>
-                    <DataBox>
-                      <span style={{ fontSize: '10px', color: '#94a3b8' }}>BODY WEIGHT</span>
-                      <span style={{ fontSize: '18px', color: '#38bdf8', fontWeight: 'bold' }}><Scale size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {selectedHunter.weight ? `${selectedHunter.weight} KG` : 'N/A'}</span>
-                    </DataBox>
-                    <DataBox>
-                      <span style={{ fontSize: '10px', color: '#94a3b8' }}>INBODY (FAT %)</span>
-                      <span style={{ fontSize: '18px', color: '#facc15', fontWeight: 'bold' }}><Percent size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {selectedHunter.body_fat ? `${selectedHunter.body_fat}%` : 'N/A'}</span>
-                    </DataBox>
-                    <DataBox>
-                      <span style={{ fontSize: '10px', color: '#94a3b8' }}>ATTENDANCE RATE</span>
-                      <span style={{ fontSize: '18px', color: hunterAttendance.rate >= 80 ? '#10b981' : hunterAttendance.rate >= 50 ? '#eab308' : '#ef4444', fontWeight: 'bold' }}><Activity size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {hunterAttendance.rate}% <span style={{ fontSize: 10, color: '#64748b' }}>({hunterAttendance.attended}/{hunterAttendance.total}D)</span></span>
-                    </DataBox>
-                  </DataGrid>
-
-                  <div style={{ fontSize: '11px', color: '#94a3b8', margin: '20px 0 10px 0', borderBottom: '1px solid #334155', paddingBottom: '5px' }}>
-                    <Database size={12} style={{ verticalAlign: 'middle', marginRight: '5px' }} /> MISSIONS TRACKER
-                  </div>
-
-                  {loadingHunterData ? (
-                    <div style={{ textAlign: 'center', fontSize: '12px', color: '#ef4444' }}>Loading missions...</div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '200px', overflowY: 'auto' }}>
-                      {renderAllMissions()}
-                    </div>
-                  )}
-                </CoachSection>
-              )}
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>
+      
+      {renderModals()}
     </Container>
   );
 };

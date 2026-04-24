@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart, Gem, Flame, Zap, Shield, Crown, Package, Clock, Coffee, Target, 
-  Activity, Award, Wind, Footprints, Heart, ChevronUp, Lock, Unlock, CheckCircle, 
-  AlertTriangle, Star, X, Edit2, Trash2, PlusCircle, Save, Medal
+  Activity, Award, Wind, Footprints, Heart, ChevronUp, Lock, CheckCircle, 
+  AlertTriangle, Star, X, Edit2, Trash2, PlusCircle, Save, Medal, Ghost, BatteryCharging
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast, Toaster } from 'sonner';
+import confetti from 'canvas-confetti';
 
 // ==========================================
-// 1. المحرك الصوتي المضاد للسبام
+// 1. المحرك الصوتي
 // ==========================================
 let sharedAudioCtx: AudioContext | null = null;
 let lastPlayTime = 0;
@@ -20,9 +22,7 @@ const getAudioContext = () => {
     const Ctx = window.AudioContext || (window as any).webkitAudioContext;
     if (Ctx) sharedAudioCtx = new Ctx();
   }
-  if (sharedAudioCtx.state === 'suspended') {
-    sharedAudioCtx.resume();
-  }
+  if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
   return sharedAudioCtx;
 };
 
@@ -35,10 +35,8 @@ const canPlay = () => {
 
 const playClick = () => {
   if (!canPlay()) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
+  const ctx = getAudioContext(); if (!ctx) return;
+  const osc = ctx.createOscillator(); const gain = ctx.createGain();
   osc.connect(gain); gain.connect(ctx.destination);
   osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
   gain.gain.setValueAtTime(0.1, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
@@ -47,10 +45,8 @@ const playClick = () => {
 
 const playBuy = () => {
   if (!canPlay()) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
+  const ctx = getAudioContext(); if (!ctx) return;
+  const osc = ctx.createOscillator(); const gain = ctx.createGain();
   osc.connect(gain); gain.connect(ctx.destination);
   osc.type = 'square'; osc.frequency.setValueAtTime(400, ctx.currentTime); osc.frequency.setValueAtTime(800, ctx.currentTime + 0.1); osc.frequency.setValueAtTime(1200, ctx.currentTime + 0.2);
   gain.gain.setValueAtTime(0.2, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.5);
@@ -59,23 +55,132 @@ const playBuy = () => {
 
 const playError = () => {
   if (!canPlay()) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
+  const ctx = getAudioContext(); if (!ctx) return;
+  const osc = ctx.createOscillator(); const gain = ctx.createGain();
   osc.connect(gain); gain.connect(ctx.destination);
   osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
   gain.gain.setValueAtTime(0.2, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
   osc.start(); osc.stop(ctx.currentTime + 0.3);
 };
 
-// ==========================================
-// 2. خريطة الأيقونات ونظام الرانكات (Rank System)
-// ==========================================
-const ICON_MAP: Record<string, any> = {
-  Crown, Activity, Zap, Wind, ChevronUp, Target, Heart, Footprints, Clock, Coffee, Shield, Flame, Star, Package, Award
+const playEpicLoot = () => {
+  if (!canPlay()) return;
+  const ctx = getAudioContext(); if (!ctx) return;
+  const osc1 = ctx.createOscillator(); const osc2 = ctx.createOscillator(); const gain = ctx.createGain();
+  osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
+  osc1.type = 'sine'; osc2.type = 'triangle';
+  osc1.frequency.setValueAtTime(400, ctx.currentTime); osc1.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.8);
+  osc2.frequency.setValueAtTime(600, ctx.currentTime); osc2.frequency.exponentialRampToValueAtTime(1800, ctx.currentTime + 0.8);
+  gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.2); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2.0);
+  osc1.start(); osc2.start(); osc1.stop(ctx.currentTime + 2.0); osc2.stop(ctx.currentTime + 2.0);
 };
-const getIcon = (iconName: string) => ICON_MAP[iconName] || Star;
+
+// ==========================================
+// 2. الأرواح السحرية (VFX)
+// ==========================================
+const SpiritWrapper = styled(motion.div)<{ $size: number }>`
+  width: ${(props) => props.$size}px;
+  height: ${(props) => props.$size}px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  
+  @media (max-width: 480px) {
+    width: ${(props) => props.$size * 0.55}px;
+    height: ${(props) => props.$size * 0.55}px;
+  }
+`;
+
+const AnimatedSpirit = ({ type, color, size = 100 }: { type: string, color: string, size?: number }) => {
+  return (
+    <SpiritWrapper $size={size} animate={{ y: [-3, 3, -3] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
+      <motion.div
+        style={{ position: 'absolute', width: '90%', height: '90%', background: color, filter: 'blur(20px)', borderRadius: '50%', zIndex: 0 }}
+        animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.8, 0.4] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <div style={{ position: 'relative', zIndex: 1, width: '80%', height: '80%' }}>
+        {type === 'wyvern' && (
+          <motion.svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', filter: `drop-shadow(0 0 8px ${color})` }} animate={{ rotateY: 360 }} transition={{ duration: 5, repeat: Infinity, ease: "linear" }}>
+            <polygon points="50,5 90,50 50,95 10,50" fill="none" stroke={color} strokeWidth="4" />
+            <polygon points="50,15 75,50 50,85 25,50" fill={color} opacity="0.8" />
+            <circle cx="50" cy="50" r="10" fill="#fff" />
+          </motion.svg>
+        )}
+        {type === 'phoenix' && (
+          <motion.svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', filter: `drop-shadow(0 0 10px ${color})` }} animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}>
+            <path d="M50 10 Q70 40 50 90 Q30 40 50 10" fill={color} opacity="0.9" />
+            <path d="M50 30 Q60 50 50 80 Q40 50 50 30" fill="#ff7e67" opacity="0.9" />
+            <circle cx="50" cy="65" r="8" fill="#fff" />
+          </motion.svg>
+        )}
+        {type === 'owl' && (
+          <motion.svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', filter: `drop-shadow(0 0 15px ${color})` }} animate={{ rotateZ: [0, 10, -10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
+            <circle cx="50" cy="50" r="40" fill="none" stroke={color} strokeWidth="4" strokeDasharray="10 10" />
+            <circle cx="50" cy="50" r="30" fill="#1e1b4b" stroke={color} strokeWidth="2" />
+            <motion.ellipse cx="50" cy="50" rx="5" ry="20" fill="#fff" animate={{ ry: [20, 2, 20] }} transition={{ duration: 4, repeat: Infinity, times: [0, 0.1, 1] }} />
+          </motion.svg>
+        )}
+        {type === 'golem' && (
+          <motion.svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', filter: `drop-shadow(0 0 8px ${color})` }} animate={{ rotateZ: 360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }}>
+            <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="#334155" stroke={color} strokeWidth="4" />
+            <polygon points="50,20 75,35 75,65 50,80 25,65 25,35" fill="none" stroke={color} strokeWidth="2" />
+            <rect x="40" y="40" width="20" height="20" fill={color} />
+          </motion.svg>
+        )}
+        {type === 'wolf' && (
+          <motion.svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', filter: `drop-shadow(0 0 10px ${color})` }} animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+            <polygon points="50,10 80,40 50,90 20,40" fill="none" stroke={color} strokeWidth="3" />
+            <polygon points="50,20 70,42 50,80 30,42" fill={color} opacity="0.8" />
+            <polygon points="50,30 60,45 50,70 40,45" fill="#fff" opacity="0.9" />
+          </motion.svg>
+        )}
+        {type === 'emerald' && (
+          <motion.svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', filter: `drop-shadow(0 0 10px ${color})` }} animate={{ rotateZ: -360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }}>
+            <path d="M50 10 C 80 10, 90 50, 50 90 C 10 50, 20 10, 50 10 Z" fill="none" stroke={color} strokeWidth="3" />
+            <path d="M50 20 C 70 20, 80 50, 50 80 C 20 50, 30 20, 50 20 Z" fill={color} opacity="0.7" />
+            <circle cx="50" cy="50" r="10" fill="#fff" />
+          </motion.svg>
+        )}
+      </div>
+    </SpiritWrapper>
+  );
+};
+
+const initializeDefaultItems = async () => {
+  const defaults = [
+    { name: 'Golden Wyvern Core', description: 'جوهر مالي: يزيد الذهب المكتسب بنسبة 10%.', price: 3000, category: 'pet', color: '#eab308', icon: 'spirit_wyvern', required_rank: 1 },
+    { name: 'Healing Phoenix Ember', description: 'جوهر طبي: يعيد 10 HP يومياً عند إكمال المهام.', price: 3000, category: 'pet', color: '#ef4444', icon: 'spirit_phoenix', required_rank: 1 },
+    { name: 'Shadow Owl Eye', description: 'جوهر تجاري: يمنحك خصم 10% في المتجر دائماً.', price: 3000, category: 'pet', color: '#a855f7', icon: 'spirit_owl', required_rank: 1 },
+    { name: 'Iron Golem Matrix', description: 'جوهر مدافع: يحمي الستريك من الكسر.', price: 3000, category: 'pet', color: '#0ea5e9', icon: 'spirit_golem', required_rank: 1 },
+    { name: 'Frost Wolf Soul', description: 'صياد الألعاب: يزيد ذهب الألعاب بنسبة 20%.', price: 3000, category: 'pet', color: '#38bdf8', icon: 'spirit_wolf', required_rank: 1 },
+    { name: 'Emerald Dragon Scale', description: 'مخفف الألم: يقلل خسارة الـ HP عند الغياب.', price: 3000, category: 'pet', color: '#10b981', icon: 'spirit_emerald', required_rank: 1 },
+    { name: 'Essence Crystal', description: 'يشحن طاقة مرافقك السحري بنسبة 50%.', price: 500, category: 'consumable', color: '#0ea5e9', icon: 'BatteryCharging', required_rank: 1 }
+  ];
+  
+  const { data } = await supabase.from('shop_items').select('name');
+  const existingNames = data?.map(d => d.name) || [];
+  const missingItems = defaults.filter(item => !existingNames.includes(item.name));
+  if (missingItems.length > 0) {
+    await supabase.from('shop_items').insert(missingItems);
+  }
+};
+
+const ICON_MAP: Record<string, any> = { Crown, Activity, Zap, Wind, ChevronUp, Target, Heart, Footprints, Clock, Coffee, Shield, Flame, Star, Package, Award, Ghost, BatteryCharging };
+
+const renderIcon = (iconValue: string, color: string, size: number = 38) => {
+  if (iconValue.startsWith('spirit_')) {
+    const type = iconValue.replace('spirit_', '');
+    return <AnimatedSpirit type={type} color={color} size={size} />;
+  }
+  if (iconValue.startsWith('/') || iconValue.startsWith('http')) {
+    return <img src={iconValue} alt="item" style={{ width: size, height: size, objectFit: 'contain', filter: `drop-shadow(0 0 15px ${color})` }} />;
+  }
+  const IconComp = ICON_MAP[iconValue] || Star;
+  return <IconComp size={size} color={color} />;
+};
 
 const getRankInfo = (level: number) => {
   if (level >= 30) return { name: 'ELITE', color: '#a855f7' };
@@ -91,80 +196,128 @@ const calculateLevelData = (totalXp: number) => {
   let level = 1;
   let currentXp = totalXp;
   let expNeededForNextLevel = 650;
-
-  while (currentXp >= expNeededForNextLevel) {
-    currentXp -= expNeededForNextLevel;
-    level++;
-    expNeededForNextLevel = Math.min(level * 150 + 500, 4000);
-  }
-
+  while (currentXp >= expNeededForNextLevel) { currentXp -= expNeededForNextLevel; level++; expNeededForNextLevel = Math.min(level * 150 + 500, 4000); }
   return { level, xpInCurrentLevel: currentXp, expNeededForNextLevel };
 };
 
 // ==========================================
-// 3. التصميمات المفرودة
+// 3. التصميمات المفرودة (Responsive UI)
 // ==========================================
-const Container = styled(motion.div)` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; `;
-const Header = styled.div` display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #1e1b4b 0%, #020617 100%); border: 1px solid #4f46e5; padding: 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(79, 70, 229, 0.2); `;
-const Title = styled.h1` font-size: 20px; margin: 0; color: #818cf8; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px; `;
-const GoldDisplay = styled.div` background: rgba(0,0,0,0.5); border: 1px solid #eab308; color: #eab308; padding: 8px 15px; border-radius: 12px; font-size: 16px; font-weight: 900; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(234, 179, 8, 0.2); `;
-const SectionTitle = styled.h2<{ $color: string }>` font-size: 14px; color: ${(props) => props.$color}; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed ${(props) => props.$color}50; padding-bottom: 10px; position: relative; `;
-const ExclusiveCard = styled(motion.div)<{ $soldOut: boolean; $color: string }>` background: ${(props) => props.$soldOut ? '#0f172a' : `linear-gradient(135deg, ${props.$color}20 0%, #020617 100%)`}; border: 2px solid ${(props) => props.$soldOut ? '#334155' : props.$color}; border-radius: 16px; padding: 20px; margin-bottom: 30px; position: relative; overflow: hidden; box-shadow: ${(props) => props.$soldOut ? 'none' : `0 10px 30px ${props.$color}30`}; opacity: ${(props) => props.$soldOut ? 0.7 : 1}; transition: 0.3s; `;
-const ExclusiveBadge = styled.div<{ $color: string }>` position: absolute; top: 15px; right: -35px; background: ${(props) => props.$color}; color: #000; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 10; `;
-const ItemGrid = styled.div` display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 30px; `;
-const TitlesGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px; `;
-const TitleCard = styled.div<{ $color: string }>` background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; transition: 0.3s; position: relative; overflow: hidden; &:hover { border-color: ${(props) => props.$color}; background: ${(props) => props.$color}10; transform: translateY(-2px); } `;
-const ItemCard = styled.div` background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: space-between; transition: 0.3s; position: relative; overflow: hidden; &:hover { border-color: #38bdf8; background: #1e293b; } `;
-const ItemInfo = styled.div` display: flex; align-items: center; gap: 15px; `;
-const IconWrapper = styled.div<{ $color: string }>` width: 50px; height: 50px; border-radius: 12px; background: ${(props) => props.$color}20; border: 1px solid ${(props) => props.$color}; display: flex; align-items: center; justify-content: center; color: ${(props) => props.$color}; flex-shrink: 0; `;
-const BuyBtn = styled.button<{ $affordable: boolean; $color?: string }>` background: ${(props) => props.$affordable ? (props.$color || '#10b981') : '#334155'}; color: ${(props) => props.$affordable ? '#000' : '#94a3b8'}; border: none; padding: 10px 20px; border-radius: 10px; font-family: 'Oxanium'; font-weight: 900; font-size: 14px; cursor: ${(props) => props.$affordable ? 'pointer' : 'not-allowed'}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: 0.3s; &:hover { filter: ${(props) => props.$affordable ? 'brightness(1.2)' : 'none'}; transform: ${(props) => props.$affordable ? 'translateY(-2px)' : 'none'}; } `;
-const BuyButtonSmall = styled.button<{ $affordable: boolean; $color: string }>` background: ${(props) => props.$affordable ? 'transparent' : '#020617'}; color: ${(props) => props.$affordable ? props.$color : '#475569'}; border: 1px solid ${(props) => props.$affordable ? props.$color : '#1e293b'}; width: 100%; padding: 8px; border-radius: 8px; font-family: 'Oxanium'; font-weight: bold; font-size: 12px; cursor: ${(props) => props.$affordable ? 'pointer' : 'not-allowed'}; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; z-index: 2; &:hover { background: ${(props) => props.$affordable ? props.$color : '#020617'}; color: ${(props) => props.$affordable ? '#000' : '#475569'}; } `;
-const SoldOutOverlay = styled.div` position: absolute; inset: 0; background: rgba(2, 6, 23, 0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; backdrop-filter: blur(2px); `;
-const SoldOutText = styled.div` font-size: 24px; font-weight: 900; color: #ef4444; letter-spacing: 4px; text-transform: uppercase; border: 2px solid #ef4444; padding: 10px 20px; border-radius: 8px; transform: rotate(-10deg); background: rgba(239, 68, 68, 0.1); `;
-const ClaimerText = styled.div` margin-top: 10px; font-size: 11px; color: #94a3b8; font-weight: bold; background: #0f172a; padding: 5px 15px; border-radius: 20px; border: 1px solid #334155; text-align: center; line-height: 1.5; `;
-const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); `;
-const ModalContent = styled(motion.div)<{ $color?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$color || '#eab308'}; border-radius: 20px; padding: 25px; width: 100%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 0 50px ${(props) => props.$color ? `${props.$color}50` : 'rgba(234, 179, 8, 0.3)'}; max-height: 90vh; overflow-y: auto; `;
-
-// 🚨 Coach Edit Controls 🚨
-const CoachActions = styled.div` position: absolute; top: 10px; left: 10px; display: flex; gap: 5px; z-index: 30; `;
-const CoachBtn = styled.button<{ $color: string }>` background: #020617; border: 1px solid ${(props) => props.$color}; color: ${(props) => props.$color}; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; &:hover { background: ${(props) => props.$color}; color: #000; } `;
-const AddItemBtn = styled.button` background: #10b98120; color: #10b981; border: 1px dashed #10b981; width: 100%; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-family: 'Oxanium'; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s; &:hover { background: #10b98140; } `;
-const EditInput = styled.input` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Oxanium'; outline: none; &:focus { border-color: #0ea5e9; } `;
-const EditSelect = styled.select` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Oxanium'; outline: none; `;
-const EditTextarea = styled.textarea` width: 100%; background: #020617; border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Oxanium'; outline: none; resize: vertical; min-height: 80px; `;
-
-// 🚨 Rank Lock Mystery Overlay 🚨
-const LockedOverlay = styled.div`
-  position: absolute;
-  inset: 0;
-  background: rgba(2, 6, 23, 0.65);
-  backdrop-filter: blur(4px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 15;
-  border-radius: inherit;
+const Container = styled(motion.div)` 
+  padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 800px; margin: 0 auto; position: relative; 
+  @media (max-width: 480px) { padding: 10px; }
 `;
 
-const LockedText = styled.div<{ $color: string }>`
-  font-size: 13px;
-  font-weight: 900;
-  color: ${(props) => props.$color};
-  text-transform: uppercase;
-  border: 2px solid ${(props) => props.$color};
-  padding: 8px 16px;
-  border-radius: 8px;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  letter-spacing: 1px;
-  box-shadow: 0 0 15px ${(props) => props.$color}40;
+const Header = styled.div` 
+  display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #020617 0%, #1e1b4b 100%); border: 1px solid #6366f1; padding: 20px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); position: relative; overflow: hidden; 
+  @media (max-width: 480px) { padding: 15px; border-radius: 14px; margin-bottom: 15px; }
+`;
+
+const HeaderGlow = styled.div` position: absolute; width: 100px; height: 100px; background: #6366f1; filter: blur(60px); top: -40px; left: -40px; opacity: 0.5; pointer-events: none; `;
+
+const Title = styled.h1` 
+  font-size: 20px; margin: 0; color: #e0e7ff; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 900; z-index: 1; 
+  @media (max-width: 480px) { font-size: 15px; gap: 6px; }
+`;
+
+const GoldDisplay = styled.div` 
+  background: rgba(0,0,0,0.6); border: 2px solid #eab308; color: #fde047; padding: 8px 15px; border-radius: 12px; font-size: 16px; font-weight: 900; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(234, 179, 8, 0.3); z-index: 1; backdrop-filter: blur(10px); 
+  @media (max-width: 480px) { font-size: 14px; padding: 6px 10px; gap: 5px; border-radius: 8px; border-width: 1px; }
+`;
+
+const SectionTitle = styled.h2<{ $color: string }>` 
+  font-size: 16px; color: ${(props) => props.$color}; margin: 30px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid ${(props) => props.$color}40; padding-bottom: 10px; font-weight: 900; text-shadow: 0 0 10px ${(props) => props.$color}80; 
+  @media (max-width: 480px) { font-size: 13px; margin: 20px 0 12px 0; letter-spacing: 1px; padding-bottom: 8px; }
+`;
+
+// 🚨 تحديث الشبكة عشان تعرض عنصرين جنب بعض في الموبايل 🚨
+const ItemGrid = styled.div` 
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-bottom: 30px; 
+  @media (max-width: 480px) { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+`;
+
+const cardHover = keyframes` 0% { transform: translateY(0px); box-shadow: 0 5px 20px rgba(0,0,0,0.3); } 100% { transform: translateY(-3px); box-shadow: 0 10px 25px currentColor; } `;
+
+const ExclusiveCard = styled(motion.div)<{ $soldOut: boolean; $color: string }>` 
+  background: ${(props) => props.$soldOut ? '#0f172a' : `linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, ${props.$color}15 100%)`}; border: 1px solid ${(props) => props.$soldOut ? '#334155' : props.$color}; border-radius: 16px; padding: 20px; margin-bottom: 0px; position: relative; overflow: hidden; opacity: ${(props) => props.$soldOut ? 0.7 : 1}; transition: all 0.3s ease; color: ${(props) => props.$color}40; 
+  display: flex; flex-direction: column; justify-content: space-between;
+  &:hover { animation: ${(props) => props.$soldOut ? 'none' : cardHover} 0.4s forwards; border-color: #fff; } 
+  @media (max-width: 480px) { padding: 12px 10px; border-radius: 12px; }
+`;
+
+const ExclusiveBadge = styled.div<{ $color: string }>` position: absolute; top: 15px; right: -35px; background: ${(props) => props.$color}; color: #000; padding: 4px 40px; transform: rotate(45deg); font-size: 9px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; `;
+
+// غلاف للمنتجات العادية عشان يقلب طولي في الموبايل
+const NormalItemWrapper = styled.div<{ $isCoachMode: boolean }>`
+  display: flex; align-items: center; gap: 15px; margin-top: ${(props) => props.$isCoachMode ? '10px' : '0'};
+  @media (max-width: 480px) { flex-direction: column; text-align: center; gap: 8px; margin-top: 5px; }
+`;
+
+const IconWrapper = styled.div<{ $color: string }>` 
+  width: 55px; height: 55px; border-radius: 15px; background: ${(props) => props.$color}20; border: 1px solid ${(props) => props.$color}; display: flex; align-items: center; justify-content: center; color: ${(props) => props.$color}; flex-shrink: 0; box-shadow: inset 0 0 10px ${(props) => props.$color}40; overflow: hidden; 
+  @media (max-width: 480px) { width: 45px; height: 45px; border-radius: 12px; } 
+`;
+
+const BuyBtn = styled.button<{ $affordable: boolean; $color?: string }>` 
+  background: ${(props) => props.$affordable ? (props.$color || '#10b981') : '#1e293b'}; color: ${(props) => props.$affordable ? '#000' : '#64748b'}; border: ${(props) => props.$affordable ? 'none' : '1px solid #334155'}; padding: 10px 15px; border-radius: 10px; font-family: 'Oxanium'; font-weight: 900; font-size: 13px; cursor: ${(props) => props.$affordable ? 'pointer' : 'not-allowed'}; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.3s; width: 100%; letter-spacing: 1px; margin-top: auto;
+  &:hover { filter: ${(props) => props.$affordable ? 'brightness(1.2)' : 'none'}; box-shadow: ${(props) => props.$affordable ? `0 0 15px ${props.$color}60` : 'none'}; } 
+  @media (max-width: 480px) { padding: 8px; font-size: 10px; border-radius: 8px; gap: 4px; letter-spacing: 0; }
+`;
+
+const SoldOutOverlay = styled.div` position: absolute; inset: 0; background: rgba(2, 6, 23, 0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; pointer-events: none; `;
+const SoldOutText = styled.div` 
+  font-size: 20px; font-weight: 900; color: #ef4444; letter-spacing: 2px; text-transform: uppercase; border: 2px solid #ef4444; padding: 6px 15px; border-radius: 10px; transform: rotate(-5deg); background: rgba(239, 68, 68, 0.1); text-shadow: 0 0 10px #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); pointer-events: auto; 
+  @media (max-width: 480px) { font-size: 11px; padding: 4px 8px; border-width: 1px; letter-spacing: 0px; text-align: center; }
+`;
+
+const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(10px); pointer-events: auto; `;
+const ModalContent = styled(motion.div)<{ $color?: string }>` 
+  background: linear-gradient(135deg, #0b1120 0%, #020617 100%); border: 1px solid ${(props) => props.$color || '#eab308'}; border-radius: 24px; padding: 35px; width: 100%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 0 60px ${(props) => props.$color ? `${props.$color}50` : 'rgba(234, 179, 8, 0.3)'}; max-height: 90vh; overflow-y: auto; &::-webkit-scrollbar { width: 0px; } 
+  @media (max-width: 480px) { padding: 25px 15px; border-radius: 20px; }
+`;
+
+const ModalTitle = styled.h2<{ $color?: string }>` color: ${(props) => props.$color || '#eab308'}; margin-top: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; font-weight: 900; @media (max-width: 480px) { font-size: 16px; } `;
+const ModalDesc = styled.div` font-size: 15px; color: #cbd5e1; margin-bottom: 30px; line-height: 1.6; @media (max-width: 480px) { font-size: 13px; margin-bottom: 20px; } `;
+const ModalItemName = styled.span<{ $color?: string }>` color: ${(props) => props.$color || '#38bdf8'}; font-size: 22px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 15px ${(props) => props.$color || '#38bdf8'}80; @media (max-width: 480px) { font-size: 18px; } `;
+
+const SuccessCardWrapper = styled.div<{ $color: string }>` background: linear-gradient(135deg, ${(props) => props.$color}15, #020617); border: 1px solid ${(props) => props.$color}; border-radius: 20px; padding: 30px 20px; text-align: center; box-shadow: 0 0 50px ${(props) => props.$color}40; max-width: 320px; width: 90vw; @media (max-width: 480px) { padding: 25px 15px; border-radius: 16px; } `;
+const SuccessTitle = styled.h1<{ $color: string }>` margin: 0 0 8px 0; color: #fff; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 15px ${(props) => props.$color}; @media (max-width: 480px) { font-size: 18px; letter-spacing: 1px; } `;
+const SuccessItemName = styled.h2<{ $color: string }>` margin: 0 0 20px 0; color: ${(props) => props.$color}; font-size: 16px; font-weight: bold; @media (max-width: 480px) { font-size: 14px; margin: 0 0 15px 0; } `;
+
+const CoachActions = styled.div` position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; z-index: 30; `;
+const CoachBtn = styled.button<{ $color: string }>` background: rgba(2, 6, 23, 0.8); border: 1px solid ${(props) => props.$color}; color: ${(props) => props.$color}; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); &:hover { background: ${(props) => props.$color}; color: #000; box-shadow: 0 0 10px ${(props) => props.$color}; } `;
+const AddItemBtn = styled.button` 
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%); color: #10b981; border: 1px dashed #10b981; width: 100%; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-family: 'Oxanium'; font-weight: 900; font-size: 13px; letter-spacing: 1px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s; 
+  &:hover { background: rgba(16, 185, 129, 0.2); box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); transform: translateY(-2px); } 
+  @media (max-width: 480px) { padding: 12px; font-size: 11px; margin-bottom: 15px; }
+`;
+
+const EditInput = styled.input` width: 100%; background: rgba(2, 6, 23, 0.8); border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Oxanium'; font-size: 13px; outline: none; transition: 0.3s; &:focus { border-color: #0ea5e9; box-shadow: 0 0 10px rgba(14, 165, 233, 0.3); } @media (max-width: 480px) { padding: 10px; font-size: 11px; } `;
+const EditSelect = styled.select` width: 100%; background: rgba(2, 6, 23, 0.8); border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Oxanium'; font-size: 13px; outline: none; cursor: pointer; @media (max-width: 480px) { padding: 10px; font-size: 11px; } `;
+const EditTextarea = styled.textarea` width: 100%; background: rgba(2, 6, 23, 0.8); border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Oxanium'; font-size: 13px; outline: none; resize: vertical; min-height: 80px; transition: 0.3s; &:focus { border-color: #0ea5e9; box-shadow: 0 0 10px rgba(14, 165, 233, 0.3); } @media (max-width: 480px) { padding: 10px; font-size: 11px; min-height: 60px; } `;
+
+const LockedOverlay = styled.div` position: absolute; inset: 0; background: rgba(2, 6, 23, 0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 15; border-radius: inherit; pointer-events: none; `;
+const LockedText = styled.div<{ $color: string }>` 
+  font-size: 12px; font-weight: 900; color: ${(props) => props.$color}; text-transform: uppercase; border: 1px solid ${(props) => props.$color}; padding: 6px 12px; border-radius: 8px; background: rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px; letter-spacing: 1px; box-shadow: 0 0 15px ${(props) => props.$color}40; pointer-events: auto; 
+  @media (max-width: 480px) { font-size: 9px; padding: 4px 6px; flex-direction: column; text-align: center; } 
+`;
+
+// 🚨 RTL Direction للموبايل عشان النصوص المتلغبطة 🚨
+const PetName = styled.h3<{ $color: string }>` 
+  margin: 0; color: ${(props) => props.$color}; font-size: 18px; font-weight: 900; letter-spacing: 1px; 
+  @media (max-width: 480px) { font-size: 14px; letter-spacing: 0; } 
+`;
+const PetDesc = styled.p` 
+  margin: 0; font-size: 12px; color: #cbd5e1; line-height: 1.5; min-height: 35px; direction: rtl; 
+  @media (max-width: 480px) { font-size: 10px; min-height: 35px; line-height: 1.4; text-align: center; } 
+`;
+const NormalDesc = styled.p`
+  margin: 0; font-size: 11px; color: #cbd5e1; line-height: 1.4; direction: rtl; text-align: right;
+  @media (max-width: 480px) { font-size: 9px; text-align: center; }
 `;
 
 // ==========================================
-// 4. المكون الرئيسي (Shop)
+// 5. المكون الرئيسي (Ultimate Shop)
 // ==========================================
 const Shop = ({ player, setPlayer }: any) => {
   const levelData = calculateLevelData(player?.cumulative_xp ?? player?.xp ?? 0);
@@ -176,29 +329,30 @@ const Shop = ({ player, setPlayer }: any) => {
   
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [confirmModal, setConfirmModal] = useState<{ show: boolean, item: any, type: string }>({ show: false, item: null, type: '' });
+  
+  const [confirmModal, setConfirmModal] = useState<{ show: boolean, item: any }>({ show: false, item: null });
+  const [successModal, setSuccessModal] = useState<{ show: boolean, item: any }>({ show: false, item: null });
+  const [isOpeningBox, setIsOpeningBox] = useState(false);
 
-  // 🚨 Coach Mode State 🚨
   const isCoachMode = localStorage.getItem('elite_coach_mode') === 'true';
   const [editModal, setEditModal] = useState<{ show: boolean, item: any | null }>({ show: false, item: null });
   const [formData, setFormData] = useState({ id: '', name: '', description: '', price: 0, category: 'general', color: '#38bdf8', icon: 'Star', max_stock: '', required_rank: 1 });
 
   useEffect(() => {
-    fetchShopData();
+    initializeDefaultItems().then(() => fetchShopData());
   }, []);
 
   const fetchShopData = async () => {
     setLoading(true);
     try {
-      const { data: hunterData } = await supabase.from('elite_players').select('gold').eq('name', player.name).single();
+      const { data: hunterData } = await supabase.from('elite_players').select('gold, pets, active_pet, pet_hunger, titles').eq('name', player.name).single();
       if (hunterData) {
         setGold(hunterData.gold);
-        setPlayer((prev: any) => ({ ...prev, gold: hunterData.gold }));
+        setPlayer((prev: any) => ({ ...prev, gold: hunterData.gold, pets: hunterData.pets, active_pet: hunterData.active_pet, pet_hunger: hunterData.pet_hunger, titles: hunterData.titles }));
       }
 
-      const { data: items, error: itemsErr } = await supabase.from('shop_items').select('*').order('created_at', { ascending: true });
-      if (itemsErr) throw itemsErr;
-      setDbItems(items || []);
+      const { data: items } = await supabase.from('shop_items').select('*').order('created_at', { ascending: true });
+      if (items) setDbItems(items);
 
       const date = new Date();
       const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
@@ -208,7 +362,6 @@ const Shop = ({ player, setPlayer }: any) => {
         .gte('created_at', firstDay);
 
       setClaimsList(claims || []);
-
     } catch (err) {
       console.error("Shop Sync Error:", err);
     } finally {
@@ -217,12 +370,10 @@ const Shop = ({ player, setPlayer }: any) => {
   };
 
   const executePurchase = async () => {
-    const { item, type } = confirmModal;
-    setConfirmModal({ show: false, item: null, type: '' });
+    const { item } = confirmModal;
+    setConfirmModal({ show: false, item: null });
     
     if (gold < item.price) { playError(); toast.error('NOT ENOUGH GOLD!'); return; }
-    
-    // 🚨 التأكد إن الرانك يسمح بالشراء
     const reqRank = item.required_rank || 1;
     if (currentPlayerLevel < reqRank) { playError(); toast.error('RANK TOO LOW!'); return; }
 
@@ -232,77 +383,92 @@ const Shop = ({ player, setPlayer }: any) => {
     try {
       const date = new Date();
       const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
-
       let taskName = `[SHOP PURCHASE] ${item.name}`;
+      
       if (item.category === 'exclusive') taskName = `[EXCLUSIVE CLAIM] ${item.name}`;
       if (item.category === 'limited') taskName = `[LIMITED CLAIM] ${item.name}`;
       if (item.category === 'title') taskName = `[TITLE UNLOCKED] ${item.name}`;
+      if (item.category === 'pet') taskName = `[COMPANION AWAKENED] ${item.name}`;
+      if (item.category === 'consumable') taskName = `[ESSENCE PURCHASED] ${item.name}`;
 
       if (item.category === 'exclusive' || item.category === 'limited') {
-        const { data: checkStock } = await supabase.from('elite_quests')
-          .select('player_name').eq('task_name', taskName).gte('created_at', firstDay);
-          
+        const { data: checkStock } = await supabase.from('elite_quests').select('player_name').eq('task_name', taskName).gte('created_at', firstDay);
         const currentClaimers = checkStock ? checkStock.map(c => c.player_name) : [];
-        if (item.max_stock && currentClaimers.length >= item.max_stock) {
-          playError(); toast.error('Sold Out!'); setIsProcessing(false); return;
-        }
-        if (currentClaimers.includes(player.name)) {
-          playError(); toast.error('You already claimed this!'); setIsProcessing(false); return;
-        }
+        if (item.max_stock && currentClaimers.length >= item.max_stock) { playError(); toast.error('Sold Out!'); setIsProcessing(false); return; }
+        if (currentClaimers.includes(player.name)) { playError(); toast.error('You already claimed this!'); setIsProcessing(false); return; }
+      }
+
+      let playerPets = Array.isArray(player.pets) ? player.pets.filter((p: string) => p && p.trim() !== '') : [];
+      if (item.category === 'pet') {
+        if (playerPets.length >= 2) { playError(); toast.error('الملاذ ممتلئ! حرر روحاً أولاً.'); setIsProcessing(false); return; }
+        if (playerPets.includes(item.name)) { playError(); toast.error('تمتلك هذا المرافق بالفعل!'); setIsProcessing(false); return; }
       }
 
       const newGold = gold - item.price;
       let updatePayload: any = { gold: newGold };
-      let newTitles = player.titles || [];
-
+      
       if (item.category === 'title') {
-        newTitles = [item.name, ...newTitles.filter((t: string) => t !== item.name)];
-        updatePayload.titles = newTitles;
+        const currentTitles = player.titles || [];
+        updatePayload.titles = Array.from(new Set([item.name, ...currentTitles]));
+      }
+      
+      if (item.category === 'pet') {
+        playerPets = [...playerPets, item.name];
+        updatePayload.pets = playerPets;
+        if (!player.active_pet) { updatePayload.active_pet = item.name; updatePayload.pet_hunger = 100; }
+      }
+
+      if (item.category === 'consumable') {
+        const currentHunger = player.pet_hunger || 0;
+        updatePayload.pet_hunger = Math.min(100, currentHunger + 50); 
       }
 
       const { error: updateError } = await supabase.from('elite_players').update(updatePayload).eq('name', player.name);
-      if (updateError) throw updateError;
+      if (updateError) throw new Error(`Player Update Failed: ${updateError.message}`);
       
       const { error: reqError } = await supabase.from('elite_quests').insert([{
-        player_name: player.name, task_name: taskName, evidence: `Paid ${item.price} Gold.`, type: 'request', status: 'pending' 
+        player_name: player.name, task_name: `[SHOP RECEIPT] ${item.name}`, evidence: `تم الدفع الفوري: ${item.price} Gold.`, type: 'request', status: 'approved' 
       }]);
-      if (reqError) throw reqError;
+      if (reqError) throw new Error(`Quest Insert Failed: ${reqError.message}`);
 
-      // 🚨 تسجيل الخصم في الاقتصاد 🚨
-      await supabase.from('elite_economy').insert([{
-        player_name: player.name, amount: item.price, currency: 'gold', operation: 'decrease', reason: taskName
-      }]);
+      const { error: ecoError } = await supabase.from('elite_economy').insert([{ player_name: player.name, amount: item.price, currency: 'gold', operation: 'decrease', reason: taskName }]);
+      if (ecoError) throw new Error(`Economy Insert Failed: ${ecoError.message}`);
 
-      playBuy();
       setGold(newGold);
-      const updatedPlayer = { ...player, gold: newGold, titles: newTitles };
+      const updatedPlayer = { ...player, ...updatePayload };
       setPlayer(updatedPlayer);
       localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
 
-      toast.success(`Purchase Successful: ${item.name}!`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
-      fetchShopData();
+      if (item.category === 'pet' || item.category === 'exclusive') {
+        setIsOpeningBox(true);
+        playEpicLoot();
+        setTimeout(() => {
+          setIsOpeningBox(false);
+          setSuccessModal({ show: true, item });
+          confetti({ particleCount: 300, spread: 80, origin: { y: 0.6 }, colors: [item.color, '#FFD700', '#ffffff'], zIndex: 999999 });
+        }, 2500);
+      } else {
+        setSuccessModal({ show: true, item });
+        playBuy();
+      }
 
+      fetchShopData();
     } catch (err: any) {
-      playError(); toast.error('Transaction Failed.');
+      playError(); 
+      toast.error(`خطأ: ${err.message}`);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const triggerConfirm = (item: any, type: string) => {
-    playClick(); setConfirmModal({ show: true, item, type });
+  const triggerConfirm = (item: any) => {
+    playClick(); setConfirmModal({ show: true, item });
   };
 
-  // 🚨 دوال الكوتش 🚨
   const openEditModal = (item?: any) => {
     playClick();
     if (item) {
-      setFormData({ 
-        id: item.id, name: item.name, description: item.description || '', price: item.price, 
-        category: item.category, color: item.color, icon: item.icon, 
-        max_stock: item.max_stock ? String(item.max_stock) : '',
-        required_rank: item.required_rank || 1
-      });
+      setFormData({ id: item.id, name: item.name, description: item.description || '', price: item.price, category: item.category, color: item.color, icon: item.icon, max_stock: item.max_stock ? String(item.max_stock) : '', required_rank: item.required_rank || 1 });
     } else {
       setFormData({ id: '', name: '', description: '', price: 0, category: 'general', color: '#38bdf8', icon: 'Star', max_stock: '', required_rank: 1 });
     }
@@ -324,28 +490,17 @@ const Shop = ({ player, setPlayer }: any) => {
     setIsProcessing(true);
     try {
       const payload = {
-        name: formData.name,
-        description: formData.description,
-        price: Number(formData.price),
-        category: formData.category,
-        color: formData.color,
-        icon: formData.icon,
-        max_stock: formData.max_stock ? Number(formData.max_stock) : null,
-        required_rank: Number(formData.required_rank)
+        name: formData.name, description: formData.description, price: Number(formData.price),
+        category: formData.category, color: formData.color, icon: formData.icon,
+        max_stock: formData.max_stock ? Number(formData.max_stock) : null, required_rank: Number(formData.required_rank)
       };
 
-      if (formData.id) {
-        await supabase.from('shop_items').update(payload).eq('id', formData.id);
-        toast.success('تم التعديل بنجاح');
-      } else {
-        await supabase.from('shop_items').insert([payload]);
-        toast.success('تمت الإضافة بنجاح');
-      }
+      if (formData.id) { await supabase.from('shop_items').update(payload).eq('id', formData.id); toast.success('تم التعديل بنجاح'); } 
+      else { await supabase.from('shop_items').insert([payload]); toast.success('تمت الإضافة بنجاح'); }
+      
       setEditModal({ show: false, item: null });
       fetchShopData();
-    } catch (err) {
-      toast.error('حدث خطأ أثناء الحفظ');
-    }
+    } catch (err) { toast.error('حدث خطأ أثناء الحفظ'); }
     setIsProcessing(false);
   };
 
@@ -353,293 +508,225 @@ const Shop = ({ player, setPlayer }: any) => {
     if (!isCoachMode) return null;
     return (
       <CoachActions>
-        <CoachBtn $color="#0ea5e9" onClick={(e) => { e.stopPropagation(); openEditModal(item); }}><Edit2 size={14} /></CoachBtn>
-        <CoachBtn $color="#ef4444" onClick={(e) => handleDeleteItem(e, item.id)}><Trash2 size={14} /></CoachBtn>
+        <CoachBtn $color="#0ea5e9" onClick={(e) => { e.stopPropagation(); openEditModal(item); }}><Edit2 size={12} /></CoachBtn>
+        <CoachBtn $color="#ef4444" onClick={(e) => handleDeleteItem(e, item.id)}><Trash2 size={12} /></CoachBtn>
       </CoachActions>
     );
   };
 
-  const exclusiveItems = dbItems.filter(i => i.category === 'exclusive');
-  const limitedItems = dbItems.filter(i => i.category === 'limited');
+  const petsItems = dbItems.filter(i => i.category === 'pet');
+  const consumableItems = dbItems.filter(i => i.category === 'consumable');
   const titleItems = dbItems.filter(i => i.category === 'title');
-  const generalItems = dbItems.filter(i => i.category === 'general');
+
+  const renderSection = (title: string, icon: any, items: any[], sectionColor: string) => {
+    if (items.length === 0 && !isCoachMode) return null;
+    const SectionIcon = icon;
+
+    return (
+      <div style={{ marginBottom: '40px' }}>
+        <SectionTitle $color={sectionColor}><SectionIcon size={18} /> {title}</SectionTitle>
+        <ItemGrid>
+          {items.map(item => {
+            let playerHasIt = false;
+            if (item.category === 'title') playerHasIt = player?.titles?.includes(item.name);
+            if (item.category === 'pet') {
+              const currentPets = Array.isArray(player?.pets) ? player.pets : [];
+              playerHasIt = currentPets.includes(item.name);
+            }
+
+            const reqRank = item.required_rank || 1;
+            const isRankLocked = currentPlayerLevel < reqRank;
+            const rankInfo = getRankInfo(reqRank);
+
+            return (
+              <ExclusiveCard key={item.id} $soldOut={playerHasIt} $color={item.color}>
+                {renderCoachControls(item)}
+
+                {isRankLocked && !playerHasIt && (
+                  <LockedOverlay>
+                    <LockedText $color={rankInfo.color}><Lock size={10} /> REQUIRES {rankInfo.name}</LockedText>
+                  </LockedOverlay>
+                )}
+
+                {item.category === 'pet' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '8px' }}>
+                    {renderIcon(item.icon, item.color, 110)}
+                    <PetName $color={item.color}>{item.name}</PetName>
+                    <PetDesc>{item.description}</PetDesc>
+                  </div>
+                ) : (
+                  <NormalItemWrapper $isCoachMode={isCoachMode}>
+                    <IconWrapper $color={item.color}>
+                      {renderIcon(item.icon, item.color, 24)}
+                    </IconWrapper>
+                    <div style={{ flex: 1 }}>
+                      <PetName $color={item.color} style={{ marginBottom: '4px' }}>{item.name}</PetName>
+                      <NormalDesc>{item.description}</NormalDesc>
+                    </div>
+                  </NormalItemWrapper>
+                )}
+
+                <div style={{ marginTop: '15px', position: 'relative', zIndex: 16 }}>
+                  {item.category === 'pet' && playerHasIt ? (
+                    <SoldOutOverlay style={{ borderRadius: '10px' }}>
+                       <SoldOutText>ALREADY OWNED</SoldOutText>
+                    </SoldOutOverlay>
+                  ) : playerHasIt ? (
+                    <BuyBtn $affordable={false} $color={item.color} disabled={true}>ALREADY OWNED</BuyBtn>
+                  ) : (
+                    <BuyBtn $affordable={gold >= item.price && !isRankLocked} $color={item.color} disabled={gold < item.price || isRankLocked || isProcessing} onClick={() => triggerConfirm(item)}>
+                      {isRankLocked ? <><Lock size={12} /> RANK TOO LOW</> : <><Gem size={12} /> {item.price} GOLD</>}
+                    </BuyBtn>
+                  )}
+                </div>
+              </ExclusiveCard>
+            );
+          })}
+        </ItemGrid>
+      </div>
+    );
+  };
+
+  const renderModals = () => {
+    if (typeof document === 'undefined') return null;
+    return createPortal(
+      <>
+        <AnimatePresence>
+          {isOpeningBox && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ background: 'rgba(0,0,0,0.95)' }}>
+              <motion.div animate={{ rotate: [-4, 4, -5, 5, -4, 4, 0], scale: [1, 1.1, 1.15, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.15 }} style={{ textAlign: 'center' }}>
+                <svg viewBox="0 0 100 100" style={{ width: '150px', filter: 'drop-shadow(0 0 30px #eab308)', maxWidth: '40vw' }}>
+                  <path d="M10 40 L90 40 L85 90 L15 90 Z" fill="#b45309" stroke="#fde047" strokeWidth="4" />
+                  <path d="M5 40 Q50 10 95 40 Z" fill="#d97706" stroke="#fde047" strokeWidth="4" />
+                  <circle cx="50" cy="40" r="8" fill="#fde047" />
+                  <path d="M50 48 L50 60" stroke="#fde047" strokeWidth="4" />
+                </svg>
+                <motion.div animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.8 }} style={{ color: '#eab308', fontWeight: '900', letterSpacing: '6px', fontSize: '16px', fontFamily: 'Oxanium', marginTop: '15px' }}>
+                  UNCOVERING LEGEND...
+                </motion.div>
+              </motion.div>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {confirmModal.show && confirmModal.item && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ModalContent $color={confirmModal.item.color} initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, opacity: 0 }}>
+                <ModalTitle $color={confirmModal.item.color}><Shield size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} /> SECURITY CHECK</ModalTitle>
+                <ModalDesc>
+                  Are you sure you want to spend <strong style={{ color: '#eab308', fontSize: '14px' }}>{confirmModal.item.price} Gold</strong> to acquire:
+                  <br/><br/>
+                  <ModalItemName $color={confirmModal.item.color}>{confirmModal.item.name}</ModalItemName>
+                </ModalDesc>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <BuyBtn $affordable={true} $color={confirmModal.item.color} onClick={executePurchase} disabled={isProcessing} style={{ flex: 1, color: '#000' }}>
+                    {isProcessing ? 'SYNCING...' : 'CONFIRM'}
+                  </BuyBtn>
+                  <BuyBtn $affordable={false} onClick={() => { playClick(); setConfirmModal({ show: false, item: null }); }} disabled={isProcessing} style={{ flex: 1, background: 'transparent', color: '#94a3b8' }}>
+                    CANCEL
+                  </BuyBtn>
+                </div>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {successModal.show && successModal.item && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.div initial={{ scale: 0.5, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 1.2, opacity: 0 }} transition={{ type: 'spring', damping: 15 }}>
+                <SuccessCardWrapper $color={successModal.item.color}>
+                  <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+                     {successModal.item.category === 'pet' ? (
+                         renderIcon(successModal.item.icon, successModal.item.color, 90)
+                     ) : (
+                         <div style={{ width: 70, height: 70, background: `${successModal.item.color}30`, borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${successModal.item.color}`, boxShadow: `inset 0 0 20px ${successModal.item.color}80, 0 0 30px ${successModal.item.color}` }}>
+                           {renderIcon(successModal.item.icon, successModal.item.color, 35)}
+                         </div>
+                     )}
+                  </div>
+                  <SuccessTitle $color={successModal.item.color}>ITEM ACQUIRED!</SuccessTitle>
+                  <SuccessItemName $color={successModal.item.color}>{successModal.item.name}</SuccessItemName>
+                  <BuyBtn $affordable={true} $color={successModal.item.color} onClick={() => setSuccessModal({ show: false, item: null })} style={{ color: '#000' }}>AWESOME</BuyBtn>
+                </SuccessCardWrapper>
+              </motion.div>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {editModal.show && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ModalContent $color="#0ea5e9" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+                <button onClick={() => setEditModal({ show: false, item: null })} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={18} /></button>
+                <ModalTitle $color="#0ea5e9" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <Edit2 size={16} /> {formData.id ? 'تعديل المنتج' : 'منتج جديد'}
+                </ModalTitle>
+                <div style={{ textAlign: 'right', fontSize: '10px', marginBottom: 4, color: '#94a3b8' }}>القسم</div>
+                <EditSelect value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>
+                  <option value="pet">Mystical Companions (Pets)</option>
+                  <option value="consumable">Essence & Elixirs (Pet Food)</option>
+                  <option value="title">Athletics Title</option>
+                </EditSelect>
+                <div style={{ textAlign: 'right', fontSize: '10px', marginBottom: 4, color: '#94a3b8' }}>اسم المنتج</div>
+                <EditInput placeholder="مثال: Golden Wyvern" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                <div style={{ textAlign: 'right', fontSize: '10px', marginBottom: 4, color: '#94a3b8' }}>وصف المنتج</div>
+                <EditTextarea placeholder="تفاصيل ومميزات المنتج..." value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <div style={{ textAlign: 'right', fontSize: '10px', marginBottom: 4, color: '#94a3b8' }}>السعر (Gold)</div>
+                    <EditInput type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: Number(e.target.value)})} />
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <div style={{ textAlign: 'right', fontSize: '10px', marginBottom: 4, color: '#94a3b8' }}>الأيقونة (spirit_wyvern, spirit_wolf...)</div>
+                    <EditInput placeholder="spirit_wyvern" value={formData.icon} onChange={(e) => setFormData({...formData, icon: e.target.value})} />
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <div style={{ textAlign: 'right', fontSize: '10px', marginBottom: 4, color: '#94a3b8' }}>اللون (HEX)</div>
+                    <EditInput placeholder="#eab308" value={formData.color} onChange={(e) => setFormData({...formData, color: e.target.value})} />
+                  </div>
+                </div>
+                <BuyBtn $affordable={true} $color="#0ea5e9" onClick={handleSaveItem} disabled={isProcessing} style={{ marginTop: 10, color: '#000' }}>
+                  {isProcessing ? 'جاري الحفظ...' : <><Save size={16} /> حفظ التعديلات</>}
+                </BuyBtn>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>
+      </>,
+      document.body
+    );
+  };
 
   return (
-    <Container initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-      <Toaster position="top-center" theme="dark" />
+    <>
+      <Container initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+        <Toaster position="top-center" theme="dark" />
 
-      <Header>
-        <Title><ShoppingCart size={24} color="#818cf8" /> ELITE VAULT</Title>
-        <GoldDisplay><Gem size={18} color="#eab308" /> {gold}</GoldDisplay>
-      </Header>
+        <Header>
+          <HeaderGlow />
+          <Title><ShoppingCart size={20} color="#818cf8" /> ELITE VAULT</Title>
+          <GoldDisplay><Gem size={16} color="#eab308" /> {gold}</GoldDisplay>
+        </Header>
 
-      {isCoachMode && (
-        <AddItemBtn onClick={() => openEditModal()}><PlusCircle size={18} /> إضافة عنصر جديد للمتجر</AddItemBtn>
-      )}
-
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '20px', color: '#94a3b8' }}>Syncing Vault Data...</div>
-      ) : (
-        <>
-          {/* 1. SEASON EXCLUSIVE */}
-          <SectionTitle $color="#eab308"><Flame size={18} /> SEASON EXCLUSIVE</SectionTitle>
-          {exclusiveItems.map(item => {
-            const itemClaims = claimsList.filter(c => c.task_name === `[EXCLUSIVE CLAIM] ${item.name}`);
-            const claimers = itemClaims.map(c => c.player_name);
-            const isSoldOut = item.max_stock ? claimers.length >= item.max_stock : false;
-            const Icon = getIcon(item.icon);
-            
-            // حساب الغموض والرانك
-            const reqRank = item.required_rank || 1;
-            const isRankLocked = currentPlayerLevel < reqRank;
-            const rankInfo = getRankInfo(reqRank);
-
-            return (
-              <ExclusiveCard key={item.id} $soldOut={isSoldOut} $color={item.color}>
-                {renderCoachControls(item)}
-                
-                {isRankLocked && !isSoldOut && (
-                  <LockedOverlay>
-                    <LockedText $color={rankInfo.color}><Lock size={16} /> REQUIRES {rankInfo.name}</LockedText>
-                  </LockedOverlay>
-                )}
-
-                {item.max_stock && <ExclusiveBadge $color={item.color}>{item.max_stock}/{item.max_stock} SERVER</ExclusiveBadge>}
-                
-                {isSoldOut && (
-                  <SoldOutOverlay>
-                    <SoldOutText>SOLD OUT</SoldOutText>
-                    {claimers.length > 0 && <ClaimerText>Claimed by:<br/>{claimers[0]}</ClaimerText>}
-                  </SoldOutOverlay>
-                )}
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: isCoachMode ? 15 : 0 }}>
-                  <IconWrapper $color={item.color} style={{ width: 70, height: 70, borderWidth: '2px' }}><Icon size={35} /></IconWrapper>
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{ margin: '0 0 5px 0', color: item.color, fontSize: '18px', fontWeight: '900' }}>{item.name}</h3>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' }}>{item.description}</p>
-                  </div>
-                </div>
-                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', position: 'relative', zIndex: 16 }}>
-                  <BuyBtn $affordable={gold >= item.price && !isSoldOut && !isRankLocked} $color={item.color} disabled={gold < item.price || isSoldOut || isRankLocked || isProcessing} onClick={() => triggerConfirm(item, 'exclusive')} style={{ width: '100%', padding: '15px', fontSize: '16px' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      {isRankLocked ? <><Lock size={16} /> RANK TOO LOW</> : <><Gem size={16} /> {item.price} GOLD</>}
-                    </span>
-                  </BuyBtn>
-                </div>
-              </ExclusiveCard>
-            );
-          })}
-
-          {/* 2. LIMITED CLINIC */}
-          <SectionTitle $color="#10b981"><Activity size={18} /> ELITE CLINIC (LIMITED)</SectionTitle>
-          {limitedItems.map(item => {
-            const itemClaims = claimsList.filter(c => c.task_name === `[LIMITED CLAIM] ${item.name}`);
-            const claimers = itemClaims.map(c => c.player_name);
-            const isSoldOut = item.max_stock ? claimers.length >= item.max_stock : false;
-            const playerHasIt = claimers.includes(player.name);
-            const remaining = item.max_stock ? item.max_stock - claimers.length : '∞';
-            const Icon = getIcon(item.icon);
-
-            const reqRank = item.required_rank || 1;
-            const isRankLocked = currentPlayerLevel < reqRank;
-            const rankInfo = getRankInfo(reqRank);
-
-            return (
-              <ExclusiveCard key={item.id} $soldOut={isSoldOut || playerHasIt} $color={item.color}>
-                {renderCoachControls(item)}
-
-                {isRankLocked && !(isSoldOut || playerHasIt) && (
-                  <LockedOverlay>
-                    <LockedText $color={rankInfo.color}><Lock size={16} /> REQUIRES {rankInfo.name}</LockedText>
-                  </LockedOverlay>
-                )}
-
-                {item.max_stock && <ExclusiveBadge $color={item.color}>{remaining}/{item.max_stock} SERVER</ExclusiveBadge>}
-                
-                {(isSoldOut || playerHasIt) && (
-                  <SoldOutOverlay>
-                    <SoldOutText>{playerHasIt ? 'CLAIMED' : 'SOLD OUT'}</SoldOutText>
-                    {!playerHasIt && claimers.length > 0 && <ClaimerText>Claimed by:<br/>{claimers.join(' & ')}</ClaimerText>}
-                  </SoldOutOverlay>
-                )}
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: isCoachMode ? 15 : 0 }}>
-                  <IconWrapper $color={item.color} style={{ width: 60, height: 60, borderWidth: '2px' }}><Icon size={30} /></IconWrapper>
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{ margin: '0 0 5px 0', color: item.color, fontSize: '16px', fontWeight: '900' }}>{item.name}</h3>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' }}>{item.description}</p>
-                  </div>
-                </div>
-                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', position: 'relative', zIndex: 16 }}>
-                  <BuyBtn $affordable={gold >= item.price && !isSoldOut && !playerHasIt && !isRankLocked} $color={item.color} disabled={gold < item.price || isSoldOut || playerHasIt || isRankLocked || isProcessing} onClick={() => triggerConfirm(item, 'limited')} style={{ width: '100%', padding: '12px', fontSize: '14px' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      {isRankLocked ? <><Lock size={14} /> RANK TOO LOW</> : <><Gem size={14} /> {item.price} GOLD</>}
-                    </span>
-                  </BuyBtn>
-                </div>
-              </ExclusiveCard>
-            );
-          })}
-
-          {/* 3. TITLES VAULT */}
-          <SectionTitle $color="#f43f5e"><Award size={18} /> ATHLETICS TITLES VAULT</SectionTitle>
-          <TitlesGrid>
-            {titleItems.map((item) => {
-              const hasTitle = player?.titles?.includes(item.name);
-              const Icon = getIcon(item.icon);
-              
-              const reqRank = item.required_rank || 1;
-              const isRankLocked = currentPlayerLevel < reqRank;
-              const rankInfo = getRankInfo(reqRank);
-
-              return (
-                <TitleCard key={item.id} $color={hasTitle ? '#334155' : item.color} style={{ opacity: hasTitle ? 0.5 : 1 }}>
-                  {renderCoachControls(item)}
-
-                  {isRankLocked && !hasTitle && (
-                    <LockedOverlay>
-                      <LockedText $color={rankInfo.color} style={{ fontSize: 10, padding: '5px 10px' }}><Lock size={12} /> {rankInfo.name}</LockedText>
-                    </LockedOverlay>
-                  )}
-
-                  <Icon size={24} color={hasTitle ? '#64748b' : item.color} style={{ marginTop: isCoachMode ? 20 : 0 }} />
-                  <div style={{ fontSize: '12px', fontWeight: '900', color: hasTitle ? '#94a3b8' : '#fff' }}>{item.name}</div>
-                  <div style={{ position: 'relative', zIndex: 16, width: '100%' }}>
-                    <BuyButtonSmall $affordable={gold >= item.price && !hasTitle && !isRankLocked} $color={item.color} disabled={gold < item.price || hasTitle || isRankLocked || isProcessing} onClick={() => triggerConfirm(item, 'title')}>
-                      {hasTitle ? 'OWNED' : isRankLocked ? <Lock size={12}/> : <><Gem size={12} /> {item.price}</>}
-                    </BuyButtonSmall>
-                  </div>
-                </TitleCard>
-              );
-            })}
-          </TitlesGrid>
-
-          {/* 4. GENERAL STORE */}
-          <SectionTitle $color="#38bdf8"><Package size={18} /> GENERAL STORE</SectionTitle>
-          <ItemGrid>
-            {generalItems.map((item) => {
-              const Icon = getIcon(item.icon);
-              
-              const reqRank = item.required_rank || 1;
-              const isRankLocked = currentPlayerLevel < reqRank;
-              const rankInfo = getRankInfo(reqRank);
-
-              return (
-                <ItemCard key={item.id} style={{ flexDirection: isCoachMode ? 'column' : 'row', alignItems: isCoachMode ? 'stretch' : 'center', gap: isCoachMode ? 15 : 0 }}>
-                  {renderCoachControls(item)}
-
-                  {isRankLocked && (
-                    <LockedOverlay style={{ flexDirection: 'row', gap: 10 }}>
-                      <LockedText $color={rankInfo.color} style={{ fontSize: 12 }}><Lock size={14} /> REQUIRES {rankInfo.name}</LockedText>
-                    </LockedOverlay>
-                  )}
-
-                  <ItemInfo style={{ marginTop: isCoachMode ? 25 : 0 }}>
-                    <IconWrapper $color={item.color}><Icon size={24} /></IconWrapper>
-                    <div>
-                      <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#fff', fontWeight: '900' }}>{item.name}</h4>
-                      <p style={{ margin: 0, fontSize: '10px', color: '#94a3b8' }}>{item.description}</p>
-                    </div>
-                  </ItemInfo>
-                  <div style={{ position: 'relative', zIndex: 16 }}>
-                    <BuyBtn $affordable={gold >= item.price && !isRankLocked} disabled={gold < item.price || isRankLocked || isProcessing} onClick={() => triggerConfirm(item, 'general')}>
-                      {isRankLocked ? <Lock size={14} /> : <><Gem size={14} /> {item.price}</>}
-                    </BuyBtn>
-                  </div>
-                </ItemCard>
-              );
-            })}
-          </ItemGrid>
-        </>
-      )}
-
-      {/* 🚨 CONFIRMATION MODAL 🚨 */}
-      <AnimatePresence>
-        {confirmModal.show && confirmModal.item && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ModalContent $color={confirmModal.item.color} initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, opacity: 0 }}>
-              <h2 style={{ color: confirmModal.item.color || '#eab308', marginTop: 0, fontSize: '18px', textTransform: 'uppercase' }}>CONFIRM PURCHASE</h2>
-              <div style={{ fontSize: '14px', color: '#fff', marginBottom: '20px' }}>
-                Are you sure you want to spend <strong style={{ color: '#eab308' }}>{confirmModal.item.price} Gold</strong> to acquire:
-                <br/>
-                <span style={{ color: confirmModal.item.color || '#38bdf8', fontSize: '18px', fontWeight: '900', display: 'block', marginTop: '10px' }}>{confirmModal.item.name}</span>
-              </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={executePurchase} disabled={isProcessing} style={{ flex: 1, background: '#10b981', color: '#000', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: 'bold', fontFamily: 'Oxanium', cursor: 'pointer' }}>{isProcessing ? 'PROCESSING...' : 'CONFIRM'}</button>
-                <button onClick={() => { playClick(); setConfirmModal({ show: false, item: null, type: '' }); }} disabled={isProcessing} style={{ flex: 1, background: 'transparent', color: '#94a3b8', border: '1px solid #334155', padding: '12px', borderRadius: '10px', fontWeight: 'bold', fontFamily: 'Oxanium', cursor: 'pointer' }}>CANCEL</button>
-              </div>
-            </ModalContent>
-          </ModalOverlay>
+        {isCoachMode && (
+          <AddItemBtn onClick={() => openEditModal()}><PlusCircle size={16} /> ADD NEW ITEM TO SHOP</AddItemBtn>
         )}
-      </AnimatePresence>
 
-      {/* 🚨 COACH ADD/EDIT MODAL 🚨 */}
-      <AnimatePresence>
-        {editModal.show && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 200 }}>
-            <ModalContent $color="#0ea5e9" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
-              <button onClick={() => setEditModal({ show: false, item: null })} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20} /></button>
-              <h2 style={{ color: '#0ea5e9', marginTop: 0, fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                <Edit2 size={18} /> {formData.id ? 'تعديل المنتج' : 'منتج جديد'}
-              </h2>
-
-              <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>القسم</div>
-              <EditSelect value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>
-                <option value="exclusive">Season Exclusive</option>
-                <option value="limited">Elite Clinic (Limited)</option>
-                <option value="title">Athletics Title</option>
-                <option value="general">General Store</option>
-              </EditSelect>
-
-              <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>الرانك المطلوب (للقفل)</div>
-              <EditSelect value={formData.required_rank} onChange={(e) => setFormData({...formData, required_rank: Number(e.target.value)})}>
-                <option value={1}>BRONZE (متاح للكل)</option>
-                <option value={5}>SILVER (Level 5+)</option>
-                <option value={10}>GOLD (Level 10+)</option>
-                <option value={15}>PLATINUM (Level 15+)</option>
-                <option value={20}>DIAMOND (Level 20+)</option>
-                <option value={25}>MASTER (Level 25+)</option>
-                <option value={30}>ELITE (Level 30+)</option>
-              </EditSelect>
-
-              <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>اسم المنتج</div>
-              <EditInput placeholder="مثال: Speed Demon" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-
-              <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>وصف المنتج</div>
-              <EditTextarea placeholder="تفاصيل ومميزات المنتج..." value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div>
-                  <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>السعر (Gold)</div>
-                  <EditInput type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: Number(e.target.value)})} />
-                </div>
-                <div>
-                  <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>الكمية المتاحة</div>
-                  <EditInput type="number" placeholder="مثال: 2" value={formData.max_stock} onChange={(e) => setFormData({...formData, max_stock: e.target.value})} />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div>
-                  <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>الأيقونة</div>
-                  <EditInput placeholder="Star, Zap, Crown..." value={formData.icon} onChange={(e) => setFormData({...formData, icon: e.target.value})} />
-                </div>
-                <div>
-                  <div style={{ textAlign: 'right', fontSize: '12px', marginBottom: 5, color: '#94a3b8' }}>اللون (HEX)</div>
-                  <EditInput placeholder="#38bdf8" value={formData.color} onChange={(e) => setFormData({...formData, color: e.target.value})} />
-                </div>
-              </div>
-
-              <button onClick={handleSaveItem} disabled={isProcessing} style={{ width: '100%', background: '#0ea5e9', color: '#000', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 'bold', fontFamily: 'Oxanium', cursor: 'pointer', marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                {isProcessing ? 'جاري الحفظ...' : <><Save size={16} /> حفظ التعديلات</>}
-              </button>
-            </ModalContent>
-          </ModalOverlay>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>SYNCING VAULT...</div>
+        ) : (
+          <>
+            {renderSection('MYSTICAL COMPANIONS', Ghost, petsItems, '#a855f7')}
+            {renderSection('ESSENCE & ELIXIRS', BatteryCharging, consumableItems, '#f43f5e')}
+            {renderSection('TITLES VAULT', Award, titleItems, '#0ea5e9')}
+          </>
         )}
-      </AnimatePresence>
-
-    </Container>
+      </Container>
+      
+      {renderModals()}
+    </>
   );
 };
 
