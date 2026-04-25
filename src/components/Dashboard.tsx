@@ -116,7 +116,6 @@ const calculateLevelData = (totalXp: number) => {
 
 const getSystemDateStr = (date: Date) => { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; };
 
-// 🚨 دالة استخراج قدرات العتاد (موجودة مرة واحدة فقط) 🚨
 const getGearBonuses = (equipped: any) => {
   let bonusGold = 0; let bonusHp = 0; let bonusMaxHp = 0; let healOnLevelUp = false;
   if (!equipped) return { bonusGold, bonusHp, bonusMaxHp, healOnLevelUp };
@@ -247,7 +246,7 @@ const LevelUpDesc = styled.p` font-size: 16px; color: #cbd5e1; margin: 0 0 30px 
 const LevelUpRewardBox = styled.div<{ $color: string }>` background: rgba(255,255,255,0.05); border: 1px solid ${(props) => props.$color}50; border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 15px; font-size: 20px; font-weight: 900; color: #eab308; @media (max-width: 480px) { font-size: 16px; padding: 12px; gap: 10px; }`;
 
 // ==========================================
-// 4. الثوابت وقواعد البيانات
+// 4. الثوابت وقواعد البيانات (Constants & Arrays)
 // ==========================================
 const LOCAL_FOOD_DB = [
   { name: 'صدور دجاج مطهية (100ج)', protein: 31, carbs: 0, fats: 3, calories: 165 },
@@ -358,7 +357,6 @@ const INJURED_DAILY_QUESTS = [
 
 const PENALTY_QUEST = { id: 'penalty_q', title: 'Disciplinary Execution', desc: 'تنفيذ العقوبة الإدارية المطلوبة ورفع الإثبات لرفع تجميد النظام.', exp: 0, gold: 0, type: 'request', icon: ShieldAlert, color: '#ef4444', isPenalty: true };
 
-
 // ==========================================
 // 5. MAIN DASHBOARD COMPONENT
 // ==========================================
@@ -413,7 +411,31 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const rankInfo = useMemo(() => getRankInfo(currentVisualLvl), [currentVisualLvl]);
 
   // 🚨 تفعيل تأثيرات العتاد في الـ Dashboard 🚨
-  const gearBonuses = useMemo(() => getGearBonuses(currentPlayer.equipped_gear), [currentPlayer.equipped_gear]);
+  const gearBonuses = useMemo(() => {
+     let bonusGold = 0; let bonusHp = 0; let bonusMaxHp = 0; let healOnLevelUp = false;
+     const equipped = currentPlayer.equipped_gear;
+     if (!equipped) return { bonusGold, bonusHp, bonusMaxHp, healOnLevelUp };
+     const parseStat = (statStr: string) => {
+       if (!statStr) return;
+       if (statStr.includes('+5 Gold')) bonusGold += 5;
+       if (statStr.includes('+10 Gold')) bonusGold += 10;
+       if (statStr.includes('+15 Gold')) bonusGold += 15;
+       if (statStr.includes('+20 Gold')) bonusGold += 20;
+       if (statStr.includes('+30 Gold')) bonusGold += 30;
+       if (statStr.includes('+2 HP')) bonusHp += 2;
+       if (statStr.includes('+10 Max HP')) bonusMaxHp += 10;
+       if (statStr.includes('+25 Max HP')) bonusMaxHp += 25;
+       if (statStr.includes('+40 Max HP')) bonusMaxHp += 40;
+       if (statStr.includes('+50 Max HP')) bonusMaxHp += 50;
+       if (statStr.includes('Heal 100% on Level Up')) healOnLevelUp = true;
+       if (statStr.includes('+10 HP & +5G')) { bonusMaxHp += 10; bonusGold += 5; }
+     };
+     if (equipped.weapon) parseStat(equipped.weapon.stat);
+     if (equipped.armor) parseStat(equipped.armor.stat);
+     if (equipped.artifact) parseStat(equipped.artifact.stat);
+     return { bonusGold, bonusHp, bonusMaxHp, healOnLevelUp };
+  }, [currentPlayer.equipped_gear]);
+
   const MAX_HP = 100 + gearBonuses.bonusMaxHp;
 
   useEffect(() => {
@@ -670,7 +692,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         protein: prev.protein + Number(food.protein || 0), carbs: prev.carbs + Number(food.carbs || 0),
         fats: prev.fats + Number(food.fats || 0), calories: prev.calories + Number(food.calories || 0), log: updatedLog
       };
-      supabase.from('elite_players').update({ daily_macros: newMacros }).eq('name', currentPlayer.name).catch(e => console.error(e));
+      supabase.from('elite_players').update({ daily_macros: newMacros }).eq('name', currentPlayer.name).then(({error}) => { if (error) console.error(error) });
       return newMacros;
     });
 
@@ -685,7 +707,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         protein: Math.max(0, prev.protein - Number(itemToRemove.protein || 0)), carbs: Math.max(0, prev.carbs - Number(itemToRemove.carbs || 0)),
         fats: Math.max(0, prev.fats - Number(itemToRemove.fats || 0)), calories: Math.max(0, prev.calories - Number(itemToRemove.calories || 0)), log: updatedLog
       };
-      supabase.from('elite_players').update({ daily_macros: newMacros }).eq('name', currentPlayer.name).catch(e => console.error(e));
+      supabase.from('elite_players').update({ daily_macros: newMacros }).eq('name', currentPlayer.name).then(({error}) => { if (error) console.error(error) });
       return newMacros;
     });
     toast.error(`تم مسح ${itemToRemove.name}`, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }});
@@ -700,7 +722,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     
     setCustomFoods(prev => {
       const updatedCustomFoods = [newFood, ...prev];
-      supabase.from('elite_players').update({ custom_foods: updatedCustomFoods }).eq('name', currentPlayer.name).catch(e => console.error(e));
+      supabase.from('elite_players').update({ custom_foods: updatedCustomFoods }).eq('name', currentPlayer.name).then(({error}) => { if (error) console.error(error) });
       return updatedCustomFoods;
     });
     setManualFood({ name: '', protein: '', carbs: '', fats: '', calories: '' });
@@ -710,7 +732,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     playDashSound('error');
     const reset = { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] };
     setDailyMacros(reset);
-    supabase.from('elite_players').update({ daily_macros: reset }).eq('name', currentPlayer.name).catch(e => console.error(e));
+    supabase.from('elite_players').update({ daily_macros: reset }).eq('name', currentPlayer.name).then(({error}) => { if (error) console.error(error) });
     toast.error('تم تصفير عداد الوجبات بنجاح!', { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }});
   };
 
