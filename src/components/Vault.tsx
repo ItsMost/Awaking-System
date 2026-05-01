@@ -1,22 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
+import React, { useState, useEffect, useMemo } from 'react';
+import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, OrbitControls, Environment, Sparkles } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 import confetti from 'canvas-confetti';
 import { toast, Toaster } from 'sonner';
 import { 
   Trophy, Shield, Sword, Gem, Lock, Package, 
-  Zap, Flame, Droplet, Crown, Hexagon, Crosshair, Ghost, Wind,
-  Axe, Heart, Clock 
+  Flame, Crown, Ghost, Wind, Axe, Heart, 
+  Clock, Footprints, Info, XCircle, ChevronRight, Dices
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 // ==========================================
-// 1. المحرك الصوتي הפخم
+// 1. المحرك الصوتي 
 // ==========================================
-const playSound = (type: 'open' | 'epic' | 'click' | 'equip' | 'claim') => {
+const playSound = (type: 'open' | 'epic' | 'click' | 'equip' | 'claim' | 'shake') => {
   const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioContext) return;
   const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain();
@@ -34,6 +34,10 @@ const playSound = (type: 'open' | 'epic' | 'click' | 'equip' | 'claim') => {
     osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.2);
     gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
     osc.start(); osc.stop(now + 0.2);
+  } else if (type === 'shake') {
+    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(200, now + 0.1);
+    gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+    osc.start(); osc.stop(now + 0.1);
   } else {
     osc.type = 'sine'; osc.frequency.setValueAtTime(1200, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
     gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
@@ -42,73 +46,83 @@ const playSound = (type: 'open' | 'epic' | 'click' | 'equip' | 'claim') => {
 };
 
 // ==========================================
-// 2. مجسمات الـ 3D (Trophies & LootBox)
+// 2. مجسم الرياضي الآلي (ثابت)
 // ==========================================
-const TrophyModel = ({ type, color }: { type: string, color: string }) => {
-  const materialProps = { color, roughness: 0.1, transmission: 0.9, thickness: 1, envMapIntensity: 2, clearcoat: 1 };
+const CyberAthlete = () => {
   return (
-    <Float speed={2} rotationIntensity={1} floatIntensity={1.5}>
-      <mesh castShadow receiveShadow position={[0, 0, 0]}>
-        {type === 'diamond' ? <octahedronGeometry args={[1.5, 0]} /> : 
-         type === 'crown' ? <torusGeometry args={[1, 0.4, 16, 32]} /> : 
-         <icosahedronGeometry args={[1.2, 1]} />}
-        <meshPhysicalMaterial {...materialProps} />
+    <group scale={1.3} position={[0, -0.2, 0]} rotation={[0, -0.2, 0]}>
+      <mesh position={[0, 1.2, 0]}>
+        <boxGeometry args={[0.3, 0.4, 0.3]} />
+        <meshStandardMaterial color="#020617" emissive="#0ea5e9" emissiveIntensity={0.3} wireframe />
       </mesh>
-      <mesh position={[0, -2, 0]}>
-        <cylinderGeometry args={[1, 1.2, 0.5, 32]} />
-        <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.2} />
+      <mesh position={[0, 0.5, 0]}>
+        <boxGeometry args={[0.6, 0.9, 0.25]} />
+        <meshStandardMaterial color="#020617" emissive="#0ea5e9" emissiveIntensity={0.2} roughness={0.2} metalness={0.8} />
       </mesh>
-    </Float>
+      <mesh position={[0, 0.6, 0.13]}>
+        <circleGeometry args={[0.1, 32]} />
+        <meshBasicMaterial color="#00f2ff" />
+      </mesh>
+      <mesh position={[-0.4, 0.5, 0]}>
+        <boxGeometry args={[0.15, 0.8, 0.15]} />
+        <meshStandardMaterial color="#1e293b" emissive="#38bdf8" emissiveIntensity={0.1} />
+      </mesh>
+      <mesh position={[0.4, 0.5, 0]}>
+        <boxGeometry args={[0.15, 0.8, 0.15]} />
+        <meshStandardMaterial color="#1e293b" emissive="#38bdf8" emissiveIntensity={0.1} />
+      </mesh>
+      <mesh position={[-0.18, -0.35, 0]}>
+        <boxGeometry args={[0.2, 0.8, 0.2]} />
+        <meshStandardMaterial color="#0f172a" />
+      </mesh>
+      <mesh position={[0.18, -0.35, 0]}>
+        <boxGeometry args={[0.2, 0.8, 0.2]} />
+        <meshStandardMaterial color="#0f172a" />
+      </mesh>
+    </group>
   );
 };
 
-const LootBox3D = ({ isOpening }: { isOpening: boolean }) => {
-  const boxRef = useRef<THREE.Mesh>(null);
-  useFrame((state) => {
-    if (boxRef.current && isOpening) {
-      boxRef.current.position.x = Math.sin(state.clock.elapsedTime * 50) * 0.1;
-      boxRef.current.position.y = Math.cos(state.clock.elapsedTime * 40) * 0.1;
-    }
-  });
-  return (
-    <Float speed={1} rotationIntensity={0.5} floatIntensity={0.5}>
-      <mesh ref={boxRef} castShadow rotation={[0.5, -0.5, 0]}>
-        <boxGeometry args={[2, 2, 2]} />
-        <meshPhysicalMaterial color="#020617" metalness={0.9} roughness={0.1} clearcoat={1} emissive="#a855f7" emissiveIntensity={isOpening ? 2 : 0.2} />
-      </mesh>
-    </Float>
-  );
-};
-
 // ==========================================
-// 3. قاعدة البيانات الشاملة (Drop Rates & Durations)
+// 3. قاعدة البيانات
 // ==========================================
 const ACHIEVEMENTS = [
-  { id: 'ach1', name: 'Awakened', desc: 'أول تسجيل دخول للنظام.', type: 'diamond', color: '#00f2ff', unlocked: true },
-  { id: 'ach2', name: 'Iron Will', desc: 'الوصول لستريك 7 أيام.', type: 'icosahedron', color: '#10b981', unlocked: true },
-  { id: 'ach3', name: 'Monarch', desc: 'الوصول للمستوى 30.', type: 'crown', color: '#eab308', unlocked: false },
-  { id: 'ach4', name: 'Abyss Walker', desc: 'شراء 5 أرواح من المتجر.', type: 'diamond', color: '#a855f7', unlocked: false },
+  { id: 'ach1', name: 'Awakened', desc: 'أول تسجيل دخول للنظام.', color: '#00f2ff', unlocked: true },
+  { id: 'ach2', name: 'Iron Will', desc: 'الوصول لستريك 7 أيام.', color: '#10b981', unlocked: true },
+  { id: 'ach3', name: 'Monarch', desc: 'الوصول للمستوى 30.', color: '#eab308', unlocked: false },
+  { id: 'ach4', name: 'Abyss Walker', desc: 'شراء 5 أرواح من المتجر.', color: '#a855f7', unlocked: false },
+  { id: 'ach5', name: 'Legendary Hunter', desc: 'الحصول على عتاد Mythic.', color: '#ec4899', unlocked: false },
 ];
 
+const PET_MAP: Record<string, any> = {
+  'Shadow Owl Eye': { name: 'Shadow Owl', icon: Ghost, color: '#a855f7', statStr: '+5% Void Luck' },
+  'Healing Phoenix Ember': { name: 'Phoenix', icon: Flame, color: '#ef4444', statStr: '+5 HP Daily' },
+  'Golden Wyvern Scale': { name: 'Wyvern', icon: Crown, color: '#eab308', statStr: '+15% Extra Gold' },
+  'Frost Wolf Fang': { name: 'Frost Wolf', icon: Wind, color: '#0ea5e9', statStr: 'Arcade Boost' },
+  'Iron Golem Core': { name: 'Iron Golem', icon: Shield, color: '#94a3b8', statStr: 'Penalty Resist' },
+  'Obsidian Dragon': { name: 'Obsidian Dragon', icon: Gem, color: '#10b981', statStr: 'Yields Gems 💎' }
+};
+
 const GEAR_DATABASE = [
-  // --- WEAPONS ---
-  { id: 'w1', name: 'Iron Sword', type: 'Weapon', rarity: 'Common', color: '#94a3b8', icon: Sword, stat: '+5 Gold / Quest', chance: 15, durationDays: 3 },
-  { id: 'w2', name: 'Golden Katana', type: 'Weapon', rarity: 'Rare', color: '#38bdf8', icon: Sword, stat: '+15 Gold / Quest', chance: 10, durationDays: 5 },
-  { id: 'w3', name: 'Bloodthirster', type: 'Weapon', rarity: 'Epic', color: '#ef4444', icon: Droplet, stat: '+2 HP / Quest', chance: 6, durationDays: 7 },
-  { id: 'w4', name: 'Abyssal Cleaver', type: 'Weapon', rarity: 'Mythic', color: '#a855f7', icon: Axe, stat: '+30 Gold / Quest', chance: 1, durationDays: 14 },
-  { id: 'w5', name: 'Venom Dagger', type: 'Weapon', rarity: 'Rare', color: '#10b981', icon: Sword, stat: '+10 Gold / Quest', chance: 8, durationDays: 3 },
-  // --- ARMORS ---
-  { id: 'a1', name: 'Leather Vest', type: 'Armor', rarity: 'Common', color: '#94a3b8', icon: Shield, stat: '+10 Max HP', chance: 15, durationDays: 3 },
-  { id: 'a2', name: 'Vanguard Plate', type: 'Armor', rarity: 'Rare', color: '#38bdf8', icon: Shield, stat: '+25 Max HP', chance: 10, durationDays: 5 },
-  { id: 'a3', name: 'Aegis Core', type: 'Armor', rarity: 'Epic', color: '#facc15', icon: Hexagon, stat: '+50 Max HP', chance: 6, durationDays: 7 },
-  { id: 'a4', name: 'Phantom Cloak', type: 'Armor', rarity: 'Mythic', color: '#ec4899', icon: Wind, stat: 'Heal 100% on Level Up', chance: 1, durationDays: 14 },
-  { id: 'a5', name: 'Titan Chestplate', type: 'Armor', rarity: 'Epic', color: '#f97316', icon: Shield, stat: '+40 Max HP', chance: 5, durationDays: 7 },
-  // --- ARTIFACTS & CONSUMABLES ---
-  { id: 'ar1', name: 'Pouch of Wealth', type: 'Consumable', rarity: 'Common', color: '#94a3b8', icon: Package, stat: '+200 Instant Gold', chance: 10, durationDays: 0 },
-  { id: 'ar2', name: 'Vitality Amulet', type: 'Artifact', rarity: 'Rare', color: '#38bdf8', icon: Heart, stat: '+10 HP & +5G / Quest', chance: 8, durationDays: 5 },
-  { id: 'ar3', name: 'Emperor Signet', type: 'Consumable', rarity: 'Epic', color: '#facc15', icon: Crown, stat: 'Unlocks [Emperor] Title', chance: 3, durationDays: 0 },
-  { id: 'ar4', name: 'Obsidian Egg', type: 'Consumable', rarity: 'Mythic', color: '#10b981', icon: Ghost, stat: 'Unlocks Secret Pet', chance: 1, durationDays: 0 },
-  { id: 'ar5', name: 'Time Ring', type: 'Artifact', rarity: 'Epic', color: '#0ea5e9', icon: Zap, stat: '+20 Gold / Quest', chance: 1, durationDays: 2 },
+  { id: 'w1', name: 'Iron Sword', type: 'Weapon', rarity: 'Common', color: '#94a3b8', icon: Sword, statStr: '+5 Gold / Quest', bonus: { gold: 5, hp: 0 }, durationDays: 3 },
+  { id: 'w2', name: 'Elite Dagger', type: 'Weapon', rarity: 'Rare', color: '#38bdf8', icon: Sword, statStr: '+15 Gold / Quest', bonus: { gold: 15, hp: 0 }, durationDays: 5 },
+  { id: 'w3', name: 'Abyssal Cleaver', type: 'Weapon', rarity: 'Mythic', color: '#ec4899', icon: Axe, statStr: '+30 Gold & Crit', bonus: { gold: 30, hp: 0 }, durationDays: 14 },
+  
+  { id: 'a1', name: 'Leather Vest', type: 'Armor', rarity: 'Common', color: '#94a3b8', icon: Shield, statStr: '+10 Max HP', bonus: { gold: 0, hp: 10 }, durationDays: 3 },
+  { id: 'a2', name: 'Vanguard Plate', type: 'Armor', rarity: 'Epic', color: '#facc15', icon: Shield, statStr: '+30 Max HP', bonus: { gold: 0, hp: 30 }, durationDays: 7 },
+  { id: 'a3', name: 'Titanium Cuirass', type: 'Armor', rarity: 'Rare', color: '#38bdf8', icon: Shield, statStr: '+20 Max HP', bonus: { gold: 0, hp: 20 }, durationDays: 5 },
+  
+  { id: 'f1', name: 'Runner Cleats', type: 'Footwear', rarity: 'Common', color: '#94a3b8', icon: Footprints, statStr: 'Minor Agility', bonus: { gold: 0, hp: 0 }, durationDays: 3 },
+  { id: 'f2', name: 'Hermes Sneakers', type: 'Footwear', rarity: 'Epic', color: '#facc15', icon: Footprints, statStr: 'Arcade Agility', bonus: { gold: 0, hp: 0 }, durationDays: 7 },
+  { id: 'f3', name: 'Shadow Treads', type: 'Footwear', rarity: 'Mythic', color: '#ec4899', icon: Wind, statStr: 'Max Arcade Boost', bonus: { gold: 0, hp: 0 }, durationDays: 14 },
+  
+  { id: 'p_egg', name: 'Obsidian Egg', type: 'Pet', rarity: 'Mythic', color: '#10b981', icon: Ghost, statStr: 'Unlocks Secret Dragon', bonus: { gold: 0, hp: 0 }, durationDays: 0 },
+];
+
+const CHESTS = [
+  { id: 'c1', name: 'Standard Chest', price: 500, color: '#94a3b8', rates: { Common: 70, Rare: 25, Epic: 5, Mythic: 0 } },
+  { id: 'c2', name: 'Premium Chest', price: 1200, color: '#eab308', rates: { Common: 30, Rare: 50, Epic: 18, Mythic: 2 } },
+  { id: 'c3', name: 'Abyssal Relic', price: 3000, color: '#a855f7', rates: { Common: 0, Rare: 30, Epic: 60, Mythic: 10 } },
 ];
 
 const formatTimeLeft = (expiresAt: number | null) => {
@@ -117,428 +131,262 @@ const formatTimeLeft = (expiresAt: number | null) => {
   if (diff <= 0) return 'Expired';
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  if (days > 0) return `${days}d ${hours}h`;
-  return `${hours}h`;
+  return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
 };
 
 // ==========================================
-// 4. التصميمات (Styled Components)
+// 4. التصميمات
 // ==========================================
-const Container = styled(motion.div)` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 800px; margin: 0 auto; direction: rtl; @media (max-width: 480px){ padding: 10px; }`;
+const Container = styled(motion.div)` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; direction: rtl; `;
 
-const TabsHeader = styled.div` display: flex; gap: 10px; margin-bottom: 25px; background: rgba(2, 6, 23, 0.8); padding: 10px; border-radius: 16px; border: 1px solid #1e293b; `;
-const TabBtn = styled.button<{ $active: boolean, $color: string }>` flex: 1; padding: 12px; border-radius: 12px; border: none; font-family: 'Oxanium'; font-weight: 900; font-size: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; background: ${(props) => props.$active ? props.$color : 'transparent'}; color: ${(props) => props.$active ? '#000' : '#94a3b8'}; box-shadow: ${(props) => props.$active ? `0 0 20px ${props.$color}60` : 'none'}; @media (max-width: 480px){ font-size: 10px; padding: 10px; }`;
+const TabsHeader = styled.div` display: flex; gap: 8px; margin-bottom: 20px; background: rgba(2, 6, 23, 0.8); padding: 8px; border-radius: 12px; border: 1px solid #1e293b; `;
+const TabBtn = styled.button<{ $active: boolean, $color: string }>` flex: 1; padding: 10px; border-radius: 10px; border: none; font-family: 'Oxanium'; font-weight: bold; font-size: 11px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; background: ${(props) => props.$active ? props.$color : 'transparent'}; color: ${(props) => props.$active ? '#000' : '#94a3b8'}; box-shadow: ${(props) => props.$active ? `0 0 15px ${props.$color}60` : 'none'}; `;
 
-const Viewer3DContainer = styled.div<{ $glow: string }>` width: 100%; height: 300px; background: radial-gradient(circle at center, #0f172a, #020617); border: 1px solid ${(props) => props.$glow}; border-radius: 24px; overflow: hidden; margin-bottom: 20px; box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 30px ${(props) => props.$glow}40; position: relative; @media (max-width: 480px){ height: 250px; }`;
-const ViewerOverlay = styled.div` position: absolute; bottom: 20px; left: 0; width: 100%; text-align: center; pointer-events: none; `;
-const ViewerTitle = styled.h2<{ $color: string }>` margin: 0; font-size: 24px; font-weight: 900; color: ${(props) => props.$color}; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 15px ${(props) => props.$color}; @media (max-width: 480px){ font-size: 18px; }`;
-const ViewerDesc = styled.p` margin: 5px 0 0 0; font-size: 12px; color: #cbd5e1; `;
+const ArmoryLayout = styled.div` display: grid; grid-template-columns: 90px 1fr 90px; gap: 10px; align-items: center; margin-bottom: 20px; @media (max-width: 480px){ grid-template-columns: 85px 1fr 85px; gap: 8px; }`;
+const SideSlots = styled.div` display: flex; flex-direction: column; gap: 15px; `;
+const GearSlot = styled.div<{ $color: string, $empty: boolean }>` background: ${(props) => props.$empty ? 'rgba(2, 6, 23, 0.8)' : `linear-gradient(180deg, ${props.$color}20, rgba(2, 6, 23, 0.9))`}; border: 2px dashed ${(props) => props.$empty ? '#334155' : props.$color}; border-radius: 14px; height: 95px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: ${(props) => props.$empty ? 'none' : `inset 0 0 20px ${props.$color}30`}; @media (max-width: 480px){ height: 90px; }`;
+const GearLabel = styled.div` position: absolute; top: -8px; background: #0b1120; padding: 2px 6px; font-size: 8px; font-weight: 900; color: #94a3b8; border: 1px solid #334155; border-radius: 6px; text-transform: uppercase; `;
+const UnequipBtn = styled.button` position: absolute; top: -5px; right: -5px; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 0 10px rgba(239,68,68,0.5); transition: 0.2s; &:active { transform: scale(0.8); }`;
 
-const GridList = styled.div` display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; @media (max-width: 480px){ grid-template-columns: repeat(2, 1fr); gap: 10px; }`;
-const ItemCard = styled(motion.div)<{ $unlocked: boolean, $color: string }>` background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95)); border: 1px solid ${(props) => props.$unlocked ? props.$color : '#334155'}; border-radius: 16px; padding: 15px; text-align: center; cursor: grab; filter: ${(props) => props.$unlocked ? 'none' : 'grayscale(100%) opacity(0.5)'}; transition: 0.3s; box-shadow: ${(props) => props.$unlocked ? `0 4px 15px ${props.$color}30` : 'none'}; position: relative; &:hover { transform: ${(props) => props.$unlocked ? 'translateY(-5px)' : 'none'}; border-color: ${(props) => props.$unlocked ? '#fff' : '#334155'}; } &:active { cursor: grabbing; }`;
-const TimeBadge = styled.div<{ $color: string }>` position: absolute; top: -8px; right: -8px; background: #020617; border: 1px solid ${(props) => props.$color}; color: ${(props) => props.$color}; padding: 2px 6px; font-size: 9px; font-weight: 900; border-radius: 8px; display: flex; align-items: center; gap: 3px; z-index: 10; `;
+const Viewer3DContainer = styled.div` width: 100%; height: 220px; display: flex; align-items: center; justify-content: center; position: relative; background: radial-gradient(circle at center, #0f172a, transparent); border-radius: 20px; border: 1px solid #1e293b; box-shadow: inset 0 0 30px rgba(0,0,0,0.5); overflow: hidden; `;
 
-const GearSlot = styled.div<{ $color: string, $empty: boolean }>` background: ${(props) => props.$empty ? 'rgba(2, 6, 23, 0.8)' : `linear-gradient(180deg, ${props.$color}20, rgba(2, 6, 23, 0.9))`}; border: 2px dashed ${(props) => props.$empty ? '#334155' : props.$color}; border-radius: 20px; height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: ${(props) => props.$empty ? 'none' : `inset 0 0 20px ${props.$color}30, 0 0 20px ${props.$color}40`}; transition: 0.3s; @media (max-width: 480px){ height: 150px; }`;
-const GearLabel = styled.div` position: absolute; top: -10px; background: #0b1120; padding: 2px 10px; font-size: 10px; font-weight: 900; color: #94a3b8; border: 1px solid #334155; border-radius: 10px; `;
+const StatsBtn = styled.button` width: 100%; background: #0f172a; color: #38bdf8; border: 1px solid #1e293b; padding: 12px; border-radius: 12px; font-family: 'Oxanium'; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 25px; transition: 0.3s; &:hover { background: #1e293b; border-color: #38bdf8; }`;
 
-const LootBoxArea = styled.div` display: flex; flex-direction: column; align-items: center; background: #020617; border: 1px solid #a855f7; border-radius: 24px; padding: 30px; box-shadow: inset 0 0 50px rgba(168, 85, 247, 0.1); `;
-const PullBtn = styled.button` background: linear-gradient(90deg, #9333ea, #a855f7); color: #fff; border: none; padding: 15px 40px; border-radius: 12px; font-family: 'Oxanium'; font-size: 16px; font-weight: 900; letter-spacing: 2px; cursor: pointer; transition: 0.3s; margin-top: 20px; box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); display: flex; align-items: center; gap: 10px; &:hover { transform: scale(1.05); filter: brightness(1.2); } &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; } `;
+const GridList = styled.div` display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; `;
+const ItemCard = styled(motion.div)<{ $color: string }>` background: rgba(15, 23, 42, 0.9); border: 1px solid ${(props) => props.$color}; border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: 0.3s; box-shadow: inset 0 0 20px ${(props) => props.$color}10; position: relative; &:hover { transform: translateY(-3px); border-color: #fff; } &:active { transform: scale(0.95); }`;
+const TimeBadge = styled.div<{ $color: string }>` position: absolute; top: -6px; left: 50%; transform: translateX(-50%); background: #020617; border: 1px solid ${(props) => props.$color}; color: ${(props) => props.$color}; padding: 2px 6px; font-size: 8px; font-weight: 900; border-radius: 6px; display: flex; align-items: center; gap: 3px; white-space: nowrap; `;
+
+const ChestCard = styled.div<{ $color: string }>` background: #0b1120; border: 2px solid ${(props) => props.$color}50; border-radius: 16px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; &:hover { border-color: ${(props) => props.$color}; box-shadow: 0 0 20px ${(props) => props.$color}30; }`;
+const BuyBtn = styled.button<{ $color: string }>` background: ${(props) => props.$color}20; color: ${(props) => props.$color}; border: 1px solid ${(props) => props.$color}; padding: 8px 15px; border-radius: 8px; font-weight: 900; font-family: 'Oxanium'; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.3s; &:hover { background: ${(props) => props.$color}; color: #000; }`;
+
+// 🚨 تصميم الـ Coming Soon 🚨
+const ComingSoonWrapper = styled.div` position: relative; width: 100%; min-height: 400px; border-radius: 16px; overflow: hidden; `;
+const BlurredContent = styled.div` filter: blur(5px); opacity: 0.5; pointer-events: none; user-select: none; `;
+const ComingSoonOverlay = styled.div` position: absolute; inset: 0; z-index: 50; display: flex; alignItems: center; justify-content: center; backdrop-filter: blur(2px); background: rgba(2, 6, 23, 0.4); `;
+const ComingSoonBadge = styled.div` background: #0f172a; border: 1px solid #334155; padding: 12px 25px; border-radius: 24px; font-size: 14px; font-weight: 900; color: #94a3b8; display: flex; align-items: center; gap: 8px; letter-spacing: 2px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); `;
+
 
 // ==========================================
 // 5. المكون الرئيسي (Vault)
 // ==========================================
 const Vault = ({ player, setPlayer }: any) => {
-  const [activeTab, setActiveTab] = useState<'trophies' | 'gear' | 'gacha'>('trophies');
-  const [selectedTrophy, setSelectedTrophy] = useState(ACHIEVEMENTS[0]);
+  // 🚨 التاب الافتراضي Trophies 🚨
+  const [activeTab, setActiveTab] = useState<'trophies' | 'armory' | 'gacha'>('trophies');
   
   const [gold, setGold] = useState(player?.gold || 0);
   const [inventory, setInventory] = useState<any[]>([]); 
-  const [equipped, setEquipped] = useState<{ weapon: any, armor: any, artifact: any }>({ weapon: null, armor: null, artifact: null });
+  const [equipped, setEquipped] = useState<{ weapon: any, armor: any, footwear: any, pet: any }>({ 
+    weapon: null, armor: null, footwear: null, pet: null 
+  });
 
-  const [isOpening, setIsOpening] = useState(false);
-  const [pulledItem, setPulledItem] = useState<any>(null);
+  const [showStats, setShowStats] = useState(false);
 
-  // 🚨 فحص العتاد المنتهي الصلاحية + الحفظ الآمن 🚨
   useEffect(() => {
     if (player) {
        setGold(player.gold || 0);
-       
        const now = Date.now();
-       let invChanged = false;
-       let eqChanged = false;
+       let invChanged = false; let eqChanged = false;
 
-       // ترميم وفلترة المخزن
        let currentInv = player.inventory || [];
-       const validInv = currentInv.map((invItem: any) => {
-           // قراءة الأيقونات والبيانات الأصلية
-           return { ...(GEAR_DATABASE.find(g => g.id === invItem.id) || invItem), instanceId: invItem.instanceId, expiresAt: invItem.expiresAt };
-       }).filter((item: any) => {
-           if (!item.expiresAt) return true;
-           return item.expiresAt > now; // لو ميعاد الانتهاء لسه مجاش
+       const validInv = currentInv.filter((invItem: any) => {
+           if (invItem.type === 'Headgear' || invItem.type === 'Artifact') return false;
+           return !invItem.expiresAt || invItem.expiresAt > now; 
+       }).map((invItem: any) => {
+           const dbItem = GEAR_DATABASE.find(g => g.id === invItem.id);
+           return { ...(dbItem || invItem), icon: dbItem ? dbItem.icon : Sword, instanceId: invItem.instanceId, expiresAt: invItem.expiresAt };
        });
 
        if (validInv.length !== currentInv.length) invChanged = true;
 
-       // ترميم وفلترة العتاد المجهز
-       let eq = player.equipped_gear || { weapon: null, armor: null, artifact: null };
-       let validEq = { ...eq };
+       let eq = player.equipped_gear || { weapon: null, armor: null, footwear: null, pet: null };
+       let validEq: any = { ...eq };
 
-       if (eq.weapon) {
-         validEq.weapon = { ...(GEAR_DATABASE.find(g => g.id === eq.weapon.id) || eq.weapon), instanceId: eq.weapon.instanceId, expiresAt: eq.weapon.expiresAt };
-         if (validEq.weapon.expiresAt && validEq.weapon.expiresAt < now) { validEq.weapon = null; eqChanged = true; }
-       }
-       if (eq.armor) {
-         validEq.armor = { ...(GEAR_DATABASE.find(g => g.id === eq.armor.id) || eq.armor), instanceId: eq.armor.instanceId, expiresAt: eq.armor.expiresAt };
-         if (validEq.armor.expiresAt && validEq.armor.expiresAt < now) { validEq.armor = null; eqChanged = true; }
-       }
-       if (eq.artifact) {
-         validEq.artifact = { ...(GEAR_DATABASE.find(g => g.id === eq.artifact.id) || eq.artifact), instanceId: eq.artifact.instanceId, expiresAt: eq.artifact.expiresAt };
-         if (validEq.artifact.expiresAt && validEq.artifact.expiresAt < now) { validEq.artifact = null; eqChanged = true; }
-       }
+       if (validEq.headgear) { validEq.headgear = null; eqChanged = true; }
+       if (validEq.artifact) { validEq.artifact = null; eqChanged = true; }
 
-       setInventory(validInv);
-       setEquipped(validEq);
+       const checkSlot = (slotName: string, FallbackIcon: any) => {
+          if (validEq[slotName]) {
+             const dbItem = GEAR_DATABASE.find(g => g.id === validEq[slotName].id);
+             validEq[slotName] = { ...(dbItem || validEq[slotName]), icon: dbItem ? dbItem.icon : FallbackIcon, instanceId: validEq[slotName].instanceId, expiresAt: validEq[slotName].expiresAt };
+             if (validEq[slotName].expiresAt && validEq[slotName].expiresAt < now) { validEq[slotName] = null; eqChanged = true; }
+          }
+       };
 
-       // لو فيه حاجات باظت واتمسحت، حدث الداتا بيز عشان اللاعب ميغشش
+       checkSlot('weapon', Sword); checkSlot('armor', Shield); 
+       checkSlot('footwear', Footprints); checkSlot('pet', Ghost); 
+
+       setInventory(validInv); setEquipped(validEq);
+
        if (invChanged || eqChanged) {
           const updatedPlayer = { ...player, inventory: validInv, equipped_gear: validEq };
           setPlayer(updatedPlayer);
           localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
-          supabase.from('elite_players').update({ inventory: validInv, equipped_gear: validEq }).eq('name', player.name);
+          supabase.from('elite_players').update({ inventory: validInv, equipped_gear: validEq }).eq('name', player.name).then();
        }
     }
   }, [player]);
 
-  const handlePull = async () => {
-    if (gold < 1000) { toast.error("لا تملك ذهب كافي! (تحتاج 1000G)", { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }}); return; }
-    
-    playSound('click'); playSound('open');
-    const newGold = gold - 1000;
-    setGold(newGold);
-    setIsOpening(true);
-    setPulledItem(null);
-
-    let randomNum = Math.random() * 100;
-    let selectedGear = GEAR_DATABASE[0];
-    for (let item of GEAR_DATABASE) {
-       if (randomNum <= item.chance) { selectedGear = item; break; }
-       randomNum -= item.chance;
-    }
-
-    try {
-      await supabase.from('elite_players').update({ gold: newGold }).eq('name', player.name);
-      await supabase.from('elite_economy').insert([{ player_name: player.name, amount: 1000, currency: 'gold', operation: 'decrease', reason: 'Void Gacha Pull' }]);
-      setPlayer({ ...player, gold: newGold });
-      localStorage.setItem('elite_system_active_session', JSON.stringify({ ...player, gold: newGold }));
-    } catch(e) {}
-
-    setTimeout(() => {
-      setIsOpening(false);
-      playSound('epic');
-      
-      // 🚨 إنشاء نسخة فريدة (Instance) للعتاد مع تاريخ الانتهاء 🚨
-      const instanceItem = {
-        ...selectedGear,
-        instanceId: Date.now().toString() + Math.random().toString(36).substring(2, 8),
-        expiresAt: selectedGear.durationDays > 0 ? Date.now() + (selectedGear.durationDays * 24 * 60 * 60 * 1000) : null
-      };
-
-      setPulledItem(instanceItem);
-      confetti({ particleCount: 300, spread: 150, startVelocity: 40, colors: [selectedGear.color, '#ffffff'] });
-    }, 2000);
-  };
-
-  const handleClaim = async () => {
-    playSound('claim');
-    try {
-      if (pulledItem.type === 'Consumable') {
-        if (pulledItem.id === 'ar1') { 
-           const newGold = gold + 200; setGold(newGold);
-           await supabase.from('elite_players').update({ gold: newGold }).eq('name', player.name);
-           const updatedPlayer = { ...player, gold: newGold };
-           setPlayer(updatedPlayer);
-           localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
-           toast.success('تمت إضافة 200 ذهب لمحفظتك!', { style: { color: '#eab308' }});
-        } 
-        else if (pulledItem.id === 'ar3') { 
-           const currentTitles = player.titles || [];
-           if(!currentTitles.includes('Emperor')) {
-              const newTitles = [...currentTitles, 'Emperor'];
-              await supabase.from('elite_players').update({ titles: newTitles }).eq('name', player.name);
-              const updatedPlayer = { ...player, titles: newTitles };
-              setPlayer(updatedPlayer);
-              localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
-              toast.success('تم فتح لقب [Emperor]!', { style: { color: '#facc15' }});
-           } else {
-              toast.info('اللقب مملوك مسبقاً. تم تعويضك بـ 500 ذهب.');
-              const newGold = gold + 500; setGold(newGold);
-              await supabase.from('elite_players').update({ gold: newGold }).eq('name', player.name);
-              const updatedPlayer = { ...player, gold: newGold };
-              setPlayer(updatedPlayer);
-              localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
-           }
-        } 
-        else if (pulledItem.id === 'ar4') { 
-           const currentPets = player.pets || [];
-           if(!currentPets.includes('Obsidian Dragon')) {
-              const newPets = [...currentPets, 'Obsidian Dragon'];
-              await supabase.from('elite_players').update({ pets: newPets }).eq('name', player.name);
-              const updatedPlayer = { ...player, pets: newPets };
-              setPlayer(updatedPlayer);
-              localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
-              toast.success('تم فتح الروح السرية [Obsidian Dragon]!', { style: { color: '#10b981' }});
-           } else {
-              toast.info('الروح مملوكة مسبقاً. تم تعويضك بـ 1000 ذهب.');
-              const newGold = gold + 1000; setGold(newGold);
-              await supabase.from('elite_players').update({ gold: newGold }).eq('name', player.name);
-              const updatedPlayer = { ...player, gold: newGold };
-              setPlayer(updatedPlayer);
-              localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
-           }
-        }
-      } else {
-        // 🚨 حفظ العتاد بقوة في الـ Storage والـ DB 🚨
-        const newInv = [...inventory, pulledItem];
-        setInventory(newInv);
-        await supabase.from('elite_players').update({ inventory: newInv }).eq('name', player.name);
-        const updatedPlayer = { ...player, inventory: newInv };
-        setPlayer(updatedPlayer);
-        localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
-        toast.success(`تمت إضافة ${pulledItem.name} للمخزن! (${pulledItem.durationDays} أيام)`);
+  const totalStats = useMemo(() => {
+    let tGold = 0; let tHp = 0;
+    Object.values(equipped).forEach((item: any) => {
+      if (item && item.bonus) {
+        tGold += item.bonus.gold || 0;
+        tHp += item.bonus.hp || 0;
       }
-    } catch(e) { toast.error('حدث خطأ أثناء الاستلام.'); }
-    setPulledItem(null);
-  };
-
-  const handleEquip = async (item: any) => {
-    playSound('equip');
-    const newEq = { ...equipped };
-    if (item.type === 'Weapon') newEq.weapon = item;
-    if (item.type === 'Armor' || item.type === 'Shield') newEq.armor = item;
-    if (item.type === 'Artifact') newEq.artifact = item;
+    });
+    const activePetStr = player?.active_pet;
+    const petInfo = activePetStr ? PET_MAP[activePetStr] : null;
+    if (petInfo && petInfo.name === 'Wyvern') tGold += 15; 
     
-    setEquipped(newEq);
-    try {
-       await supabase.from('elite_players').update({ equipped_gear: newEq }).eq('name', player.name);
-       const updatedPlayer = { ...player, equipped_gear: newEq };
-       setPlayer(updatedPlayer);
-       localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
-       toast.success(`تم تجهيز ${item.name}!`, { style: { color: item.color, border: `1px solid ${item.color}`, background: '#020617' }});
-    } catch(e) { toast.error('فشل التجهيز.'); }
+    return { gold: tGold, hp: tHp };
+  }, [equipped, player?.active_pet]);
+
+  const renderSlot = (slotKey: string, label: string, DefaultIcon: any) => {
+     const item = (equipped as any)[slotKey];
+     const ItemIcon = item?.icon || DefaultIcon;
+     return (
+        <GearSlot $color={item?.color || '#334155'} $empty={!item}>
+          <GearLabel>{label}</GearLabel>
+          {item ? (
+            <>
+              <ItemIcon size={26} color={item.color} style={{ filter: `drop-shadow(0 0 10px ${item.color})` }} />
+              <div style={{ fontSize: 10, fontWeight: '900', color: '#fff', marginTop: 5, textAlign: 'center' }}>{item.name}</div>
+            </>
+          ) : <DefaultIcon size={24} color="#334155" />}
+        </GearSlot>
+     );
   };
 
-  const handleDrop = (e: any, targetSlot: string) => {
-    e.preventDefault();
-    try {
-      const instanceId = e.dataTransfer.getData('text/plain');
-      if (!instanceId) return;
-      
-      const item = inventory.find(i => i.instanceId === instanceId);
-      if (!item) return;
+  const renderPetSlot = () => {
+    const activePetStr = player?.active_pet;
+    const currentPetInfo = activePetStr ? PET_MAP[activePetStr] : null;
 
-      let isValid = false;
-      if (targetSlot === 'Weapon' && item.type === 'Weapon') isValid = true;
-      if (targetSlot === 'Armor' && (item.type === 'Armor' || item.type === 'Shield')) isValid = true;
-      if (targetSlot === 'Artifact' && item.type === 'Artifact') isValid = true;
-
-      if (isValid) {
-        handleEquip(item);
-      } else {
-        playSound('click'); 
-        toast.error(`❌ لا يمكنك وضع [${item.type}] في خانة [${targetSlot}]`, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }});
-      }
-    } catch (err) {}
+    return (
+        <GearSlot $color={currentPetInfo ? currentPetInfo.color : '#334155'} $empty={!currentPetInfo}>
+          <GearLabel>PET</GearLabel>
+          {currentPetInfo ? (
+            <>
+              <currentPetInfo.icon size={26} color={currentPetInfo.color} style={{ filter: `drop-shadow(0 0 10px ${currentPetInfo.color})` }} />
+              <div style={{ fontSize: 10, fontWeight: '900', color: '#fff', marginTop: 5, textAlign: 'center' }}>{currentPetInfo.name}</div>
+            </>
+          ) : <Ghost size={24} color="#334155" />}
+        </GearSlot>
+    )
   };
-
-  // 🚨 تحديث واجهة المخزن كل ثانية عشان العداد ينزل 🚨
-  const [ticker, setTicker] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setTicker(prev => prev + 1), 60000); // تحديث كل دقيقة
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <Container initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
       <Toaster position="top-center" theme="dark" />
       
+      {/* 🚨 الترتيب: Trophies الأول 🚨 */}
       <TabsHeader>
-        <TabBtn $active={activeTab === 'trophies'} $color="#eab308" onClick={() => { playSound('click'); setActiveTab('trophies'); }}><Trophy size={16}/> TROPHIES</TabBtn>
-        <TabBtn $active={activeTab === 'gear'} $color="#0ea5e9" onClick={() => { playSound('click'); setActiveTab('gear'); }}><Shield size={16}/> ARMORY</TabBtn>
-        <TabBtn $active={activeTab === 'gacha'} $color="#a855f7" onClick={() => { playSound('click'); setActiveTab('gacha'); }}><Gem size={16}/> THE VOID</TabBtn>
+        <TabBtn $active={activeTab === 'trophies'} $color="#eab308" onClick={() => { playSound('click'); setActiveTab('trophies'); }}><Trophy size={14}/> TROPHIES</TabBtn>
+        <TabBtn $active={activeTab === 'armory'} $color="#0ea5e9" onClick={() => { playSound('click'); setActiveTab('armory'); }}><Shield size={14}/> ARMORY</TabBtn>
+        <TabBtn $active={activeTab === 'gacha'} $color="#a855f7" onClick={() => { playSound('click'); setActiveTab('gacha'); }}><Dices size={14}/> THE VOID</TabBtn>
       </TabsHeader>
 
       <AnimatePresence mode="wait">
+        
+        {/* 🚨 Trophies Tab (مفتوحة وواضحة بالكامل) 🚨 */}
         {activeTab === 'trophies' && (
           <motion.div key="trophies" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <Viewer3DContainer $glow={selectedTrophy.unlocked ? selectedTrophy.color : '#334155'}>
-              <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
-                <ambientLight intensity={0.5} />
-                <spotLight position={[10, 10, 10]} intensity={1} color={selectedTrophy.color} />
-                <Environment preset="city" />
-                <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={2} minPolarAngle={Math.PI / 3} maxPolarAngle={Math.PI / 1.5} />
-                <TrophyModel type={selectedTrophy.type} color={selectedTrophy.unlocked ? selectedTrophy.color : '#1e293b'} />
-                <Sparkles count={50} scale={5} size={2} speed={0.4} opacity={0.2} color={selectedTrophy.color} />
-              </Canvas>
-              <ViewerOverlay>
-                <ViewerTitle $color={selectedTrophy.unlocked ? selectedTrophy.color : '#64748b'}>
-                  {selectedTrophy.unlocked ? selectedTrophy.name : 'LOCKED'}
-                </ViewerTitle>
-                <ViewerDesc>{selectedTrophy.unlocked ? selectedTrophy.desc : 'Keep grinding to reveal this artifact.'}</ViewerDesc>
-              </ViewerOverlay>
-            </Viewer3DContainer>
-
-            <GridList>
+             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
               {ACHIEVEMENTS.map(ach => (
-                <ItemCard key={ach.id} $unlocked={ach.unlocked} $color={ach.color} onClick={() => { playSound('click'); setSelectedTrophy(ach); }}>
-                  <div style={{ background: `${ach.color}20`, padding: 10, borderRadius: '50%', display: 'inline-block', marginBottom: 10 }}>
+                <div key={ach.id} style={{ display: 'flex', alignItems: 'center', gap: 15, background: '#0b1120', border: `1px solid ${ach.unlocked ? ach.color : '#1e293b'}`, padding: 15, borderRadius: 12, opacity: ach.unlocked ? 1 : 0.5 }}>
+                  <div style={{ background: `${ach.unlocked ? ach.color : '#334155'}20`, padding: 10, borderRadius: '50%' }}>
                     {ach.unlocked ? <Crown size={24} color={ach.color} /> : <Lock size={24} color="#64748b" />}
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 'bold' }}>{ach.name}</div>
-                </ItemCard>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: '900', color: ach.unlocked ? '#fff' : '#64748b' }}>{ach.name}</div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{ach.desc}</div>
+                  </div>
+                </div>
               ))}
-            </GridList>
-          </motion.div>
-        )}
-
-        {activeTab === 'gear' && (
-          <motion.div key="gear" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 30 }}>
-              <GearSlot 
-                $color={equipped.weapon?.color || '#334155'} 
-                $empty={!equipped.weapon}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleDrop(e, 'Weapon')}
-              >
-                <GearLabel>WEAPON</GearLabel>
-                {equipped.weapon ? (
-                  <>
-                    <equipped.weapon.icon size={40} color={equipped.weapon.color} style={{ filter: `drop-shadow(0 0 10px ${equipped.weapon.color})` }} />
-                    <div style={{ fontSize: 11, fontWeight: '900', color: '#fff', marginTop: 15, textAlign: 'center' }}>{equipped.weapon.name}</div>
-                    <div style={{ fontSize: 9, color: equipped.weapon.color, background: `${equipped.weapon.color}20`, padding: '2px 6px', borderRadius: 4, marginTop: 5 }}>{equipped.weapon.stat}</div>
-                  </>
-                ) : <Sword size={30} color="#334155" />}
-              </GearSlot>
-              
-              <GearSlot 
-                $color={equipped.armor?.color || '#334155'} 
-                $empty={!equipped.armor}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleDrop(e, 'Armor')}
-              >
-                <GearLabel>ARMOR</GearLabel>
-                {equipped.armor ? (
-                  <>
-                    <equipped.armor.icon size={40} color={equipped.armor.color} style={{ filter: `drop-shadow(0 0 10px ${equipped.armor.color})` }} />
-                    <div style={{ fontSize: 11, fontWeight: '900', color: '#fff', marginTop: 15, textAlign: 'center' }}>{equipped.armor.name}</div>
-                    <div style={{ fontSize: 9, color: equipped.armor.color, background: `${equipped.armor.color}20`, padding: '2px 6px', borderRadius: 4, marginTop: 5 }}>{equipped.armor.stat}</div>
-                  </>
-                ) : <Shield size={30} color="#334155" />}
-              </GearSlot>
-
-              <GearSlot 
-                $color={equipped.artifact?.color || '#334155'} 
-                $empty={!equipped.artifact}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleDrop(e, 'Artifact')}
-              >
-                <GearLabel>ARTIFACT</GearLabel>
-                {equipped.artifact ? (
-                  <>
-                    <equipped.artifact.icon size={40} color={equipped.artifact.color} style={{ filter: `drop-shadow(0 0 10px ${equipped.artifact.color})` }} />
-                    <div style={{ fontSize: 11, fontWeight: '900', color: '#fff', marginTop: 15, textAlign: 'center' }}>{equipped.artifact.name}</div>
-                    <div style={{ fontSize: 9, color: equipped.artifact.color, background: `${equipped.artifact.color}20`, padding: '2px 6px', borderRadius: 4, marginTop: 5 }}>{equipped.artifact.stat}</div>
-                  </>
-                ) : <Hexagon size={30} color="#334155" />}
-              </GearSlot>
             </div>
-
-            <h3 style={{ fontSize: 14, color: '#0ea5e9', borderBottom: '1px solid #1e293b', paddingBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}><Package size={16}/> INVENTORY (ARMORY)</h3>
-            <div style={{ fontSize: 10, color: '#64748b', marginBottom: 15, textAlign: 'center' }}>اسحب العتاد إلى الخانة العلوية لتجهيزه (Drag & Drop)</div>
-            
-            {inventory.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#64748b', padding: '20px', background: '#0f172a', borderRadius: '16px', border: '1px dashed #1e293b' }}>المخزن فارغ. استخدم صندوق The Void للحصول على عتاد.</div>
-            ) : (
-              <GridList>
-                {inventory.map((item, idx) => {
-                  const Icon = item.icon || Sword;
-                  return (
-                    <ItemCard 
-                      key={item.instanceId || idx} 
-                      $unlocked={true} 
-                      $color={item.color} 
-                      onClick={() => handleEquip(item)}
-                      draggable
-                      onDragStart={(e: any) => {
-                        e.dataTransfer.setData('text/plain', item.instanceId);
-                        e.currentTarget.style.opacity = '0.4';
-                        playSound('click');
-                      }}
-                      onDragEnd={(e: any) => {
-                        e.currentTarget.style.opacity = '1';
-                      }}
-                    >
-                      {/* 🚨 إظهار عداد الوقت 🚨 */}
-                      {item.expiresAt && (
-                        <TimeBadge $color={item.color}>
-                           <Clock size={8} /> {formatTimeLeft(item.expiresAt)}
-                        </TimeBadge>
-                      )}
-                      <Icon size={24} color={item.color} style={{ margin: '0 auto 10px auto', filter: `drop-shadow(0 0 5px ${item.color})` }} />
-                      <div style={{ fontSize: 11, fontWeight: '900', color: '#fff' }}>{item.name}</div>
-                      <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 4 }}>{item.rarity}</div>
-                    </ItemCard>
-                  );
-                })}
-              </GridList>
-            )}
           </motion.div>
         )}
 
+        {/* 🚨 Armory Tab (مقفولة ومضببة Coming Soon) 🚨 */}
+        {activeTab === 'armory' && (
+          <motion.div key="armory" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ComingSoonWrapper>
+              <ComingSoonOverlay>
+                 <ComingSoonBadge><Lock size={16} /> COMING SOON</ComingSoonBadge>
+              </ComingSoonOverlay>
+              
+              <BlurredContent>
+                <ArmoryLayout>
+                  <SideSlots>
+                    {renderSlot('weapon', 'Weapon', Sword)}
+                    {renderSlot('armor', 'Armor', Shield)}
+                  </SideSlots>
+
+                  <Viewer3DContainer>
+                    <Canvas camera={{ position: [0, 0.5, 3.5], fov: 45 }}>
+                      <ambientLight intensity={0.8} />
+                      <spotLight position={[2, 4, 4]} intensity={2} color="#00f2ff" />
+                      <pointLight position={[-2, -2, -2]} intensity={1} color="#38bdf8" />
+                      <CyberAthlete />
+                      <Sparkles count={50} scale={2} size={2} speed={0.4} opacity={0.5} color="#38bdf8" />
+                    </Canvas>
+                  </Viewer3DContainer>
+
+                  <SideSlots>
+                    {renderSlot('footwear', 'Footwear', Footprints)}
+                    {renderPetSlot()}
+                  </SideSlots>
+                </ArmoryLayout>
+
+                <StatsBtn>
+                  <Info size={16} /> عرض الأرقام والقدرات الحالية
+                </StatsBtn>
+
+                <div style={{ background: '#1e293b', padding: 1, marginBottom: 20, opacity: 0.5 }} />
+                
+                <GridList>
+                  {/* Fake items for the blurred background */}
+                  {[1, 2, 3, 4].map(i => (
+                     <ItemCard key={i} $color="#334155">
+                        <Sword size={24} color="#334155" style={{ margin: '5px auto' }} />
+                        <div style={{ fontSize: 10, fontWeight: '900', color: '#334155' }}>LOCKED GEAR</div>
+                     </ItemCard>
+                  ))}
+                </GridList>
+              </BlurredContent>
+            </ComingSoonWrapper>
+          </motion.div>
+        )}
+
+        {/* 🚨 The Void Tab (مقفولة ومضببة Coming Soon) 🚨 */}
         {activeTab === 'gacha' && (
           <motion.div key="gacha" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <LootBoxArea>
-              <div style={{ width: '100%', height: 250, position: 'relative' }}>
-                <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
-                  <ambientLight intensity={0.2} />
-                  <spotLight position={[0, 5, 5]} intensity={2} color="#a855f7" />
-                  <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} />
-                  <LootBox3D isOpening={isOpening} />
-                  <Sparkles count={isOpening ? 200 : 20} scale={4} size={isOpening ? 4 : 2} speed={isOpening ? 2 : 0.2} color="#a855f7" />
-                </Canvas>
-                
-                {pulledItem && (
-                  <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', damping: 12 }} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(2, 6, 23, 0.9)', borderRadius: 20, border: `2px solid ${pulledItem.color}`, boxShadow: `0 0 50px ${pulledItem.color}80` }}>
-                    <pulledItem.icon size={60} color={pulledItem.color} style={{ filter: `drop-shadow(0 0 20px ${pulledItem.color})` }} />
-                    <h2 style={{ color: '#fff', fontSize: 24, margin: '15px 0 5px 0', textTransform: 'uppercase' }}>{pulledItem.name}</h2>
-                    <div style={{ color: pulledItem.color, fontWeight: 'bold', fontSize: 14, letterSpacing: 2, textTransform: 'uppercase' }}>{pulledItem.rarity} {pulledItem.type}</div>
-                    <div style={{ background: `${pulledItem.color}20`, padding: '5px 15px', borderRadius: 8, marginTop: 15, color: pulledItem.color, fontWeight: '900' }}>{pulledItem.stat}</div>
-                  </motion.div>
-                )}
-              </div>
-
-              {!pulledItem && (
-                <PullBtn onClick={handlePull} disabled={isOpening}>
-                  {isOpening ? 'SUMMONING...' : <><Gem size={18} /> SUMMON RELIC (1000G)</>}
-                </PullBtn>
-              )}
-              {pulledItem && (
-                <PullBtn onClick={handleClaim} style={{ background: '#1e293b', boxShadow: 'none', color: '#fff' }}>CLAIM REWARD</PullBtn>
-              )}
+            <ComingSoonWrapper>
+              <ComingSoonOverlay>
+                 <ComingSoonBadge><Lock size={16} /> COMING SOON</ComingSoonBadge>
+              </ComingSoonOverlay>
               
-              <div style={{ marginTop: 20, fontSize: 12, color: '#94a3b8', fontWeight: 'bold' }}>CURRENT GOLD: <span style={{ color: '#eab308' }}>{gold}</span></div>
-            </LootBoxArea>
-
-            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', padding: '15px', marginTop: '20px', fontSize: '11px', color: '#94a3b8' }}>
-              <div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>RNG DROP RATES:</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#94a3b8' }}>Common: 48%</span>
-                <span style={{ color: '#38bdf8' }}>Rare: 30%</span>
-                <span style={{ color: '#facc15' }}>Epic: 18%</span>
-                <span style={{ color: '#ec4899' }}>Mythic: 4%</span>
-              </div>
-            </div>
+              <BlurredContent>
+                <div style={{ textAlign: 'center', fontSize: 14, color: '#eab308', fontWeight: '900', marginBottom: 20 }}>
+                  رصيدك الحالي: {gold} GOLD
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+                  {CHESTS.map(chest => (
+                    <ChestCard key={chest.id} $color={chest.color}>
+                      <div>
+                        <div style={{ fontSize: 16, fontWeight: '900', color: chest.color, display: 'flex', alignItems: 'center', gap: 5 }}><Package size={18}/> {chest.name}</div>
+                        <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 5 }}>Mythic Chance: {chest.rates.Mythic}%</div>
+                      </div>
+                      <BuyBtn $color={chest.color}>
+                        {chest.price}G <ChevronRight size={16}/>
+                      </BuyBtn>
+                    </ChestCard>
+                  ))}
+                </div>
+              </BlurredContent>
+            </ComingSoonWrapper>
           </motion.div>
         )}
+
       </AnimatePresence>
     </Container>
   );

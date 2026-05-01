@@ -1,0 +1,20 @@
+{
+    "short_name": "Elite System",
+    "name": "Awakening System - Elite Athletes",
+    "icons": [
+      {
+        "src": "elite-logo.svg", 
+        "type": "image/svg+xml",
+        "sizes": "512x512"
+      },
+      {
+        "src": "elite-logo.svg",
+        "type": "image/svg+xml",
+        "sizes": "192x192"
+      }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#020617",
+    "background_color": "#020617"
+  }

@@ -12,7 +12,8 @@ import {
   PlusCircle, Box, Stethoscope, HeartPulse, Bandage, ClipboardCheck, Target,
   ChevronLeft, ChevronRight, Calendar, Lock, Scale, Bell, Database, Globe, Timer,
   Trophy, Utensils, Search, Plus, PieChart, RotateCcw, List, Trash2, Gamepad2, MousePointerClick,
-  Crown, Shield, Scan, Crosshair, FileImage, XCircle, Inbox, Check, Key, Copy, Filter, CheckSquare, Percent
+  Crown, Shield, Scan, Crosshair, FileImage, XCircle, Inbox, Check, Key, Copy, Filter, CheckSquare, Percent,
+  Gem, Ghost, Sword
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -116,29 +117,8 @@ const calculateLevelData = (totalXp: number) => {
 
 const getSystemDateStr = (date: Date) => { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; };
 
-const getGearBonuses = (equipped: any) => {
-  let bonusGold = 0; let bonusHp = 0; let bonusMaxHp = 0; let healOnLevelUp = false;
-  if (!equipped) return { bonusGold, bonusHp, bonusMaxHp, healOnLevelUp };
-  const parseStat = (statStr: string) => {
-    if (!statStr) return;
-    if (statStr.includes('+5 Gold')) bonusGold += 5;
-    if (statStr.includes('+15 Gold')) bonusGold += 15;
-    if (statStr.includes('+30 Gold')) bonusGold += 30;
-    if (statStr.includes('+2 HP')) bonusHp += 2;
-    if (statStr.includes('+10 Max HP')) bonusMaxHp += 10;
-    if (statStr.includes('+25 Max HP')) bonusMaxHp += 25;
-    if (statStr.includes('+50 Max HP')) bonusMaxHp += 50;
-    if (statStr.includes('Heal 100% on Level Up')) healOnLevelUp = true;
-    if (statStr.includes('+10 HP & +5G')) { bonusMaxHp += 10; bonusGold += 5; }
-  };
-  if (equipped.weapon) parseStat(equipped.weapon.stat);
-  if (equipped.armor) parseStat(equipped.armor.stat);
-  if (equipped.artifact) parseStat(equipped.artifact.stat);
-  return { bonusGold, bonusHp, bonusMaxHp, healOnLevelUp };
-};
-
 // ==========================================
-// 3. Components (2D VFX & 3D Scanner)
+// 3. Components (2D VFX)
 // ==========================================
 const AnimatedCoin = React.memo(() => (
   <motion.div style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 4 }} animate={{ rotateY: 360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}>
@@ -160,7 +140,7 @@ const AnimatedExpStar = React.memo(() => (
 ));
 
 // ==========================================
-// 4. Styled Components (Responsive)
+// 4. Styled Components (Responsive & Compact)
 // ==========================================
 const Container = styled(motion.div)` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; overflow-x: hidden; @media (max-width: 480px) { padding: 10px; }`;
 
@@ -171,45 +151,47 @@ const TickerText = styled.div` display: flex; gap: 40px; white-space: nowrap; an
 
 const DynamicHeader = styled.div<{ $color: string; $shadow: string }>` display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #0f172a 0%, #020617 100%); border: 1px solid ${(props) => props.$color}; padding: 20px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 0 20px ${(props) => props.$shadow}; transition: all 0.5s ease; @media (max-width: 480px) { padding: 15px; border-radius: 14px; margin-bottom: 15px; }`;
 const HeaderTitle = styled.h1<{ $color: string }>` margin: 0; font-size: 20px; color: ${(props) => props.$color}; display: flex; align-items: center; gap: 10px; @media (max-width: 480px) { font-size: 16px; gap: 6px; svg { width: 18px; height: 18px; } }`;
-const HeaderSub = styled.div<{ $color: string }>` display: flex; align-items: center; gap: 5px; margin-top: 5px; font-size: 11px; color: #94a3b8; font-weight: bold; @media (max-width: 480px) { font-size: 9px; } span { color: ${(props) => props.$color}; font-weight: 900; }`;
 const HeaderStats = styled.div` text-align: right; div { font-size: 10px; color: #94a3b8; font-weight: bold; margin-bottom: 2px; @media (max-width: 480px) { font-size: 9px; } } span { color: #fff; }`;
 
-const DateNav = styled.div` display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 10px 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); @media (max-width: 480px) { padding: 8px 12px; margin-bottom: 15px; }`;
+const DateNav = styled.div` display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 10px 15px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); @media (max-width: 480px) { padding: 8px 12px; }`;
 const NavBtn = styled.button` background: none; border: none; color: #00f2ff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; transition: 0.3s; &:disabled { color: #334155; cursor: not-allowed; } &:hover:not(:disabled) { filter: brightness(1.2); transform: scale(1.1); } @media (max-width: 480px) { svg { width: 18px; height: 18px; } }`;
-const DateDisplay = styled.div` text-align: center; .day { font-size: 15px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; @media (max-width: 480px) { font-size: 13px; } } .full-date { font-size: 10px; color: #ef4444; margin-top: 2px; font-weight: bold; @media (max-width: 480px) { font-size: 9px; } } `;
+const DateDisplay = styled.div` text-align: center; .day { font-size: 14px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; @media (max-width: 480px) { font-size: 12px; } } .full-date { font-size: 9px; color: #ef4444; margin-top: 2px; font-weight: bold; } `;
 
-const SeasonCard = styled.div` background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid #38bdf8; border-radius: 16px; padding: 20px; margin-bottom: 25px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); @media (max-width: 480px) { padding: 15px; border-radius: 14px; margin-bottom: 15px; }`;
-const SeasonHeader = styled.div` display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; @media (max-width: 480px) { margin-bottom: 10px; }`;
-const SeasonTitleText = styled.h2` margin: 0; font-size: 15px; color: #38bdf8; display: flex; align-items: center; gap: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; @media (max-width: 480px) { font-size: 13px; gap: 5px; svg { width: 16px; height: 16px; } }`;
-const CountdownBadge = styled.div` background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 900; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); @media (max-width: 480px) { font-size: 9px; padding: 4px 8px; svg { width: 12px; height: 12px; } }`;
-const SeasonLevelInfo = styled.div` display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; @media (max-width: 480px) { font-size: 10px; margin-bottom: 6px; }`;
-const ProgressBarBG = styled.div` background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; @media (max-width: 480px) { height: 6px; }`;
-const ProgressBarFill = styled.div<{ $progress: number; $color?: string }>` background: ${(props) => props.$color || '#38bdf8'}; height: 100%; width: ${(props) => props.$progress}%; box-shadow: 0 0 10px ${(props) => props.$color || '#38bdf8'}; transition: width 0.5s ease-out; `;
+// 🚨 تصغير كارت الباتل باس 🚨
+const SeasonCard = styled.div` background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 20px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); `;
+const SeasonHeader = styled.div` display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; `;
+const SeasonTitleText = styled.h2` margin: 0; font-size: 13px; color: #38bdf8; display: flex; align-items: center; gap: 5px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; svg { width: 14px; height: 14px; } `;
+const CountdownBadge = styled.div` background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 3px 8px; border-radius: 6px; font-size: 9px; font-weight: 900; display: flex; align-items: center; gap: 4px; svg { width: 10px; height: 10px; } `;
+
+// 🚨 تصميم الـ Battle Pass المُصغر 🚨
+const BpTrack = styled.div` display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; direction: ltr; &::-webkit-scrollbar { height: 3px; } &::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 4px; } `;
+const BpCard = styled(motion.div)<{ $unlocked: boolean, $claimed: boolean, $color: string }>` min-width: 90px; background: ${p => p.$claimed ? '#10b98120' : p.$unlocked ? 'rgba(15, 23, 42, 0.8)' : '#020617'}; border: 1px solid ${p => p.$claimed ? '#10b981' : p.$unlocked ? p.$color : '#1e293b'}; border-radius: 10px; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 4px; opacity: ${p => p.$unlocked ? 1 : 0.5}; transition: 0.3s; box-shadow: ${p => p.$unlocked && !p.$claimed ? `0 0 10px ${p.$color}30` : 'none'}; `;
+const ClaimBtn = styled.button<{ $claimed: boolean, $color: string }>` width: 100%; background: ${p => p.$claimed ? '#10b981' : p.$color}; color: #000; border: none; padding: 4px; border-radius: 4px; font-size: 10px; font-family: 'Oxanium'; font-weight: 900; cursor: ${p => p.$claimed ? 'default' : 'pointer'}; opacity: ${p => p.$claimed ? 0.5 : 1}; transition: 0.3s; &:hover { filter: brightness(1.2); }`;
 
 const PenaltyBanner = styled(motion.div)<{ $isPending: boolean }>` background: ${(props) => (props.$isPending ? '#b45309' : '#2a0808')}; border: 1px dashed ${(props) => (props.$isPending ? '#fcd34d' : '#ef4444')}; color: ${(props) => (props.$isPending ? '#fef3c7' : '#fca5a5')}; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; font-weight: 900; letter-spacing: 1px; margin-bottom: 20px; box-shadow: 0 0 15px ${(props) => (props.$isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)')}; @media (max-width: 480px) { font-size: 10px; padding: 10px; margin-bottom: 15px; text-align: center; }`;
 
-const SectionTitle = styled.h2<{ $color: string }>` font-size: 14px; color: ${(props) => props.$color}; letter-spacing: 2px; margin: 30px 0 15px 0; display: flex; align-items: center; gap: 8px; text-transform: uppercase; border-bottom: 1px solid ${(props) => props.$color}40; padding-bottom: 8px; @media (max-width: 480px) { font-size: 12px; margin: 20px 0 10px 0; padding-bottom: 6px; svg { width: 14px; height: 14px; } }`;
+const SectionTitle = styled.h2<{ $color: string }>` font-size: 14px; color: ${(props) => props.$color}; letter-spacing: 2px; margin: 20px 0 10px 0; display: flex; align-items: center; gap: 8px; text-transform: uppercase; border-bottom: 1px solid ${(props) => props.$color}40; padding-bottom: 6px; @media (max-width: 480px) { font-size: 12px; svg { width: 14px; height: 14px; } }`;
 
 const pulseHologram = keyframes` 0% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.1), inset 0 0 20px rgba(0, 242, 255, 0.05); } 50% { box-shadow: 0 0 30px rgba(0, 242, 255, 0.3), inset 0 0 40px rgba(0, 242, 255, 0.1); } 100% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.1), inset 0 0 20px rgba(0, 242, 255, 0.05); } `;
 
 const QuestCard = styled(motion.div)<{ $status: string; $isPenalty?: boolean; $isLocked?: boolean; $glowColor: string }>`
   background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : props.$status === 'pending' ? 'rgba(234, 179, 8, 0.1)' : props.$isPenalty ? '#2a0808' : 'linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.8))'}; 
   border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#eab308' : props.$isPenalty ? '#ef4444' : props.$glowColor}; 
-  border-radius: 16px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; transition: all 0.3s ease; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; 
+  border-radius: 16px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; transition: all 0.3s ease; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; 
   animation: ${(props) => props.$status === 'idle' && !props.$isLocked && !props.$isPenalty ? pulseHologram : 'none'} 4s infinite;
   &:hover { background: ${(props) => props.$status === 'idle' && !props.$isLocked ? props.$isPenalty ? '#450a0a' : 'rgba(15, 23, 42, 1)' : ''}; transform: ${(props) => (props.$status === 'idle' && !props.$isLocked ? 'translateY(-3px) scale(1.02)' : 'none')}; border-color: ${(props) => props.$status === 'idle' && !props.$isLocked ? '#fff' : ''}; }
-  @media (max-width: 480px) { padding: 12px; margin-bottom: 12px; border-radius: 12px; }
+  @media (max-width: 480px) { padding: 12px; border-radius: 12px; }
 `;
 
 const UrgentCard = styled(QuestCard)` border-width: 2px; background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.15)' : 'linear-gradient(90deg, #450a0a 0%, #020617 100%)'}; &::before { content: 'CRITICAL DIRECTIVE'; position: absolute; top: 8px; right: 15px; font-size: 9px; font-weight: 900; color: #ef4444; letter-spacing: 2px; @media (max-width: 480px) { font-size: 8px; top: 6px; right: 12px; } } `;
 
-const LeftContent = styled.div` display: flex; align-items: center; gap: 15px; flex: 1; @media (max-width: 480px) { gap: 10px; }`;
-const IconWrapper = styled.div<{ $color: string }>` background: ${(props) => props.$color}15; border: 1px solid ${(props) => props.$color}40; width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: inset 0 0 15px ${(props) => props.$color}20; @media (max-width: 480px) { width: 40px; height: 40px; border-radius: 10px; svg { width: 20px; height: 20px; } } `;
+const LeftContent = styled.div` display: flex; align-items: center; gap: 12px; flex: 1; `;
+const IconWrapper = styled.div<{ $color: string }>` background: ${(props) => props.$color}15; border: 1px solid ${(props) => props.$color}40; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: inset 0 0 15px ${(props) => props.$color}20; @media (max-width: 480px) { width: 40px; height: 40px; border-radius: 10px; svg { width: 20px; height: 20px; } } `;
 const TextContent = styled.div` display: flex; flex-direction: column; gap: 4px; flex: 1; `;
-const QuestTitle = styled.div<{ $status: string; $isPenalty?: boolean }>` font-size: 15px; font-weight: 900; color: ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : props.$isPenalty ? '#fca5a5' : '#fff'}; text-decoration: ${(props) => (props.$status === 'completed' ? 'line-through' : 'none')}; line-height: 1.3; text-shadow: ${(props) => props.$status === 'idle' && !props.$isPenalty ? '0 0 10px rgba(255,255,255,0.3)' : 'none'}; @media (max-width: 480px) { font-size: 13px; } `;
+const QuestTitle = styled.div<{ $status: string; $isPenalty?: boolean }>` font-size: 14px; font-weight: 900; color: ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : props.$isPenalty ? '#fca5a5' : '#fff'}; text-decoration: ${(props) => (props.$status === 'completed' ? 'line-through' : 'none')}; line-height: 1.3; text-shadow: ${(props) => props.$status === 'idle' && !props.$isPenalty ? '0 0 10px rgba(255,255,255,0.3)' : 'none'}; @media (max-width: 480px) { font-size: 13px; } `;
 const QuestDesc = styled.div` font-size: 11px; color: #94a3b8; line-height: 1.4; @media (max-width: 480px) { font-size: 10px; line-height: 1.3; }`;
 const Rewards = styled.div` display: flex; align-items: center; gap: 15px; font-size: 11px; font-weight: 900; margin-top: 4px; @media (max-width: 480px) { font-size: 10px; gap: 10px; margin-top: 2px; }`;
-const RightAction = styled.div<{ $type: string; $status: string }>` width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: ${(props) => props.$status === 'completed' ? '#10b98120' : props.$status === 'pending' ? '#facc1520' : props.$type === 'request' ? '#1e293b' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#334155'}; flex-shrink: 0; transition: 0.3s; box-shadow: ${(props) => props.$status === 'idle' ? '0 0 10px rgba(255,255,255,0.05)' : 'none'}; @media (max-width: 480px) { width: 35px; height: 35px; border-radius: 10px; svg { width: 18px; height: 18px; } } `;
+const RightAction = styled.div<{ $type: string; $status: string }>` width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: ${(props) => props.$status === 'completed' ? '#10b98120' : props.$status === 'pending' ? '#facc1520' : props.$type === 'request' ? '#1e293b' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#334155'}; flex-shrink: 0; transition: 0.3s; box-shadow: ${(props) => props.$status === 'idle' ? '0 0 10px rgba(255,255,255,0.05)' : 'none'}; @media (max-width: 480px) { width: 35px; height: 35px; svg { width: 18px; height: 18px; } } `;
 
 const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; `;
 const ModalContent = styled(motion.div)<{ $color: string; $width?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$color}; border-radius: 20px; padding: 30px; width: 100%; max-width: ${(props) => props.$width || '450px'}; position: relative; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 50px ${(props) => props.$color}40; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: ${(props) => props.$color}; border-radius: 5px; } @media (max-width: 480px) { padding: 20px; border-radius: 16px; }`;
@@ -246,7 +228,7 @@ const LevelUpDesc = styled.p` font-size: 16px; color: #cbd5e1; margin: 0 0 30px 
 const LevelUpRewardBox = styled.div<{ $color: string }>` background: rgba(255,255,255,0.05); border: 1px solid ${(props) => props.$color}50; border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 15px; font-size: 20px; font-weight: 900; color: #eab308; @media (max-width: 480px) { font-size: 16px; padding: 12px; gap: 10px; }`;
 
 // ==========================================
-// 4. الثوابت وقواعد البيانات (Constants & Arrays)
+// 4. الثوابت وقواعد البيانات
 // ==========================================
 const LOCAL_FOOD_DB = [
   { name: 'صدور دجاج مطهية (100ج)', protein: 31, carbs: 0, fats: 3, calories: 165 },
@@ -357,11 +339,20 @@ const INJURED_DAILY_QUESTS = [
 
 const PENALTY_QUEST = { id: 'penalty_q', title: 'Disciplinary Execution', desc: 'تنفيذ العقوبة الإدارية المطلوبة ورفع الإثبات لرفع تجميد النظام.', exp: 0, gold: 0, type: 'request', icon: ShieldAlert, color: '#ef4444', isPenalty: true };
 
+// 🚨 قاعدة بيانات الـ Battle Pass 🚨 (تم تغيير الجوائز للعملات فقط)
+const BATTLE_PASS_TIERS = [
+  { id: 'bp_1', xpReq: 1000, rewardType: 'gold', rewardAmount: 500, title: '500 GOLD', icon: Trophy, color: '#eab308' },
+  { id: 'bp_2', xpReq: 2500, rewardType: 'gem', rewardAmount: 5, title: '5 GEMS', icon: Gem, color: '#0ea5e9' },
+  { id: 'bp_3', xpReq: 4000, rewardType: 'gold', rewardAmount: 1500, title: '1500 GOLD', icon: Trophy, color: '#eab308' },
+  { id: 'bp_4', xpReq: 6000, rewardType: 'gem', rewardAmount: 15, title: '15 GEMS', icon: Gem, color: '#a855f7' },
+  { id: 'bp_5', xpReq: 8000, rewardType: 'gold', rewardAmount: 3000, title: '3000 GOLD', icon: Crown, color: '#facc15' }
+];
+
 // ==========================================
 // 5. MAIN DASHBOARD COMPONENT
 // ==========================================
 const Dashboard = ({ player, setPlayer }: any) => {
-  const currentPlayer = player || { id: 'me', name: 'Athlete', cumulative_xp: 0, monthly_xp: 0, gold: 0, hp: 100, is_injured: false, active_penalty: false, weight: 75, streak: 0, last_active: null, last_penalty_check: null };
+  const currentPlayer = player || { id: 'me', name: 'Athlete', cumulative_xp: 0, monthly_xp: 0, gold: 0, hp: 100, is_injured: false, active_penalty: false, weight: 75, streak: 0, last_active: null, last_penalty_check: null, claimed_rewards: [] };
 
   const DAILY_QUESTS = useMemo(() => currentPlayer.is_injured ? INJURED_DAILY_QUESTS : NORMAL_DAILY_QUESTS, [currentPlayer.is_injured]);
 
@@ -406,11 +397,13 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
   const [levelUpData, setLevelUpData] = useState<{ show: boolean, newLevel: number, bonusGold: number, color: string } | null>(null);
 
+  // 🚨 ستيت لمعرفة الهدايا المستلمة 🚨
+  const [claimedRewards, setClaimedRewards] = useState<string[]>([]);
+
   const levelData = useMemo(() => calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0), [currentPlayer.cumulative_xp, currentPlayer.xp]);
   const currentVisualLvl = levelData.level;
   const rankInfo = useMemo(() => getRankInfo(currentVisualLvl), [currentVisualLvl]);
 
-  // 🚨 تفعيل تأثيرات العتاد في الـ Dashboard 🚨
   const gearBonuses = useMemo(() => {
      let bonusGold = 0; let bonusHp = 0; let bonusMaxHp = 0; let healOnLevelUp = false;
      const equipped = currentPlayer.equipped_gear;
@@ -461,6 +454,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
   
   const isToday = selStr === todayStr;
   const isLocked = useCallback(() => !isToday, [isToday]);
+
+  const isBloodMoon = timeLeft.days <= 3;
+  const bloodMoonMultiplier = isBloodMoon ? 2 : 1;
 
   const changeDate = useCallback((offset: number) => {
     playHoverSound();
@@ -538,6 +534,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
             setTimeout(() => setLevelUpData(null), 5000);
           }
           prevLevelRef.current = fetchedLvl;
+
+          // 🚨 سحب الـ claimed_rewards لضمان عدم الاستلام المتكرر 🚨
+          setClaimedRewards(userData.claimed_rewards || []);
 
           let fetchedHp = Math.min(MAX_HP, userData.hp ?? 100);
           let fetchedGold = userData.gold || 0;
@@ -736,7 +735,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
     toast.error('تم تصفير عداد الوجبات بنجاح!', { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }});
   };
 
-  // 🚨 تفعيل تأثير العتاد في المهمة 🚨
   const completeQuest = async (quest: any) => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -747,11 +745,11 @@ const Dashboard = ({ player, setPlayer }: any) => {
       const { error: questError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: quest.title, evidence: 'Honor System', type: 'quest', status: 'approved', created_at: getLogDate() }]);
       if (questError) throw new Error("السيرفر مشغول، يرجى المحاولة مرة أخرى!");
       
-      let newXp = (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) + quest.exp;
+      const earnedExp = quest.exp * bloodMoonMultiplier;
+      let newXp = (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) + earnedExp;
       
-      // 🚨 إضافة ذهب العتاد 🚨
       const baseGold = quest.gold || 0;
-      const earnedGold = baseGold + (baseGold > 0 ? gearBonuses.bonusGold : 0);
+      const earnedGold = (baseGold * bloodMoonMultiplier) + (baseGold > 0 ? gearBonuses.bonusGold : 0);
       let newGold = (currentPlayer.gold || 0) + earnedGold;
       
       const oldLevelData = calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0);
@@ -767,7 +765,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
       newGold += levelGoldBonus;
       const isRecoveryTask = [SHARED_HYDRATION.title, SHARED_NUTRITION.title, SHARED_MOBILITY.title, 'Recovery Cooldown'].includes(quest.title);
       
-      // 🚨 إضافة دماء العتاد 🚨
       const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0);
       let newHp = Math.min(MAX_HP, (currentPlayer.hp || 100) + earnedHp);
 
@@ -783,15 +780,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
         }
       }
       
-      // 🚨 قدرة عباءة الفانتوم 🚨
       if (leveledUp && gearBonuses.healOnLevelUp) {
          newHp = MAX_HP;
          toast.success('Phantom Cloak activated: 100% HP Restored! 🛡️', { style: { background: '#020617', color: '#ec4899', border: '1px solid #ec4899' }});
       }
 
-      const dbUpdates = { cumulative_xp: newXp, monthly_xp: (currentPlayer.monthly_xp || 0) + quest.exp, gold: newGold, hp: newHp, streak: newStreak };
+      const dbUpdates = { cumulative_xp: newXp, monthly_xp: (currentPlayer.monthly_xp || 0) + earnedExp, gold: newGold, hp: newHp, streak: newStreak };
       await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
-      await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: quest.exp, currency: 'xp', operation: 'increase', reason: quest.title }]);
+      await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: earnedExp, currency: 'xp', operation: 'increase', reason: quest.title }]);
       if (levelGoldBonus > 0) await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: levelGoldBonus, currency: 'gold', operation: 'increase', reason: 'Level Up Bonus' }]);
       
       setPlayer((prev: any) => ({ ...prev, ...dbUpdates })); 
@@ -810,7 +806,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         } else {
            playDashSound('complete'); 
            confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }, colors: [quest.color, '#ffffff'] });
-           toast.success(`Completed! +${quest.exp} EXP`);
+           toast.success(`Completed! +${earnedExp} EXP ${isBloodMoon ? '(2X BLOOD MOON 🩸)' : ''}`);
            if (earnedHp > 0) toast.success(`+${earnedHp} HP Restored 🩸`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
         }
       }
@@ -864,12 +860,12 @@ const Dashboard = ({ player, setPlayer }: any) => {
       await supabase.from('elite_quests').delete().eq('id', existingReqs[0].id);
 
       if (status === 'completed') {
-        let newXp = Math.max(0, (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) - quest.exp);
-        let newMonthlyXp = Math.max(0, (currentPlayer.monthly_xp || 0) - quest.exp);
-        
-        // 🚨 خصم ذهب العتاد 🚨
+        const earnedExp = quest.exp * bloodMoonMultiplier;
         const baseGold = quest.gold || 0;
-        const earnedGold = baseGold + (baseGold > 0 ? gearBonuses.bonusGold : 0);
+        const earnedGold = (baseGold * bloodMoonMultiplier) + (baseGold > 0 ? gearBonuses.bonusGold : 0);
+
+        let newXp = Math.max(0, (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) - earnedExp);
+        let newMonthlyXp = Math.max(0, (currentPlayer.monthly_xp || 0) - earnedExp);
         let newGold = Math.max(0, (currentPlayer.gold || 0) - earnedGold);
         
         const isRecoveryTask = [SHARED_HYDRATION.title, SHARED_NUTRITION.title, SHARED_MOBILITY.title, 'Recovery Cooldown'].includes(quest.title);
@@ -886,12 +882,49 @@ const Dashboard = ({ player, setPlayer }: any) => {
         }
 
         await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp, streak: newStreak }).eq('name', currentPlayer.name);
-        await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: quest.exp, currency: 'xp', operation: 'decrease', reason: `Player Reverted: ${quest.title}` }]);
+        await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: earnedExp, currency: 'xp', operation: 'decrease', reason: `Player Reverted: ${quest.title}` }]);
 
         setPlayer((prev: any) => ({ ...prev, cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp, streak: newStreak }));
       }
       playDashSound('error'); toast.error('Reverted.');
     } catch (err: any) { toast.error(err.message); }
+    setIsProcessing(false);
+  };
+
+  // 🚨 دالة استلام جوائز الـ Battle Pass 🚨 (تم حل مشكلة الـ Infinite Claim)
+  const handleClaimBP = async (tier: any) => {
+    if ((currentPlayer.monthly_xp || 0) < tier.xpReq) return;
+    
+    // فحص حماية دقيق منعا للتكرار
+    if (claimedRewards.includes(tier.id) || currentPlayer?.claimed_rewards?.includes(tier.id)) return;
+
+    setIsProcessing(true);
+    try {
+      const newClaimed = [...new Set([...claimedRewards, ...(currentPlayer.claimed_rewards || []), tier.id])];
+      let newGold = currentPlayer.gold || 0;
+      let newGems = currentPlayer.gems || 0; 
+
+      if (tier.rewardType === 'gold') {
+        newGold += tier.rewardAmount;
+      } else if (tier.rewardType === 'gem') {
+        newGems += tier.rewardAmount;
+      }
+
+      const updates = { claimed_rewards: newClaimed, gold: newGold, gems: newGems };
+      await supabase.from('elite_players').update(updates).eq('name', currentPlayer.name);
+
+      setClaimedRewards(newClaimed);
+      const updatedPlayer = { ...currentPlayer, ...updates };
+      setPlayer(updatedPlayer);
+      localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer)); // حفظ فوري في المتصفح
+
+      playDashSound('streak');
+      confetti({ particleCount: 200, spread: 100, colors: [tier.color, '#fff'] });
+      toast.success(`Claimed: ${tier.title}!`, { style: { color: tier.color }});
+
+    } catch(e) {
+      toast.error('Failed to claim.');
+    }
     setIsProcessing(false);
   };
 
@@ -912,7 +945,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const seasonName = `SEASON: ${currentMonthName} WARFARE`; 
   
   const actualMonthlyXp = currentPlayer.monthly_xp || 0;
-  const seasonLevel = Math.floor(actualMonthlyXp / 500) + 1; 
   const xpInCurrentLevel = actualMonthlyXp % 500;
   const progressPercent = (xpInCurrentLevel / 500) * 100;
 
@@ -942,10 +974,16 @@ const Dashboard = ({ player, setPlayer }: any) => {
         </div>
         <div style={{ textAlign: 'right' }}>
            <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 'bold' }}>🔥 STREAK: <span style={{ color: '#fff' }}>{currentPlayer.streak}</span></div>
-           {/* 🚨 تحديث عرض الحد الأقصى للـ HP 🚨 */}
            <div style={{ fontSize: '10px', color: '#ef4444', fontWeight: 'bold' }}>❤️ HP: <span style={{ color: '#fff' }}>{currentPlayer.hp}/{MAX_HP}</span></div>
         </div>
       </DynamicHeader>
+
+      {isBloodMoon && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#450a0a', border: '1px solid #ef4444', borderRadius: 12, padding: 10, marginBottom: 20, textAlign: 'center', boxShadow: '0 0 20px rgba(239, 68, 68, 0.4)' }}>
+          <div style={{ color: '#fca5a5', fontWeight: '900', fontSize: 14, letterSpacing: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}><Flame size={16} /> BLOOD MOON EVENT ACTIVE <Flame size={16} /></div>
+          <div style={{ color: '#ef4444', fontSize: 11, fontWeight: 'bold', marginTop: 4 }}>DOUBLE XP & GOLD FOR ALL MISSIONS!</div>
+        </motion.div>
+      )}
 
       <DateNav>
         <NavBtn onClick={() => changeDate(-1)}><ChevronLeft /></NavBtn>
@@ -971,11 +1009,31 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
       <SeasonCard>
         <SeasonHeader>
-          <SeasonTitleText><Trophy size={20} color="#38bdf8" /> {seasonName}</SeasonTitleText>
-          <CountdownBadge><Timer size={14} /> {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m</CountdownBadge>
+          <SeasonTitleText><Trophy size={16} color="#38bdf8" /> BATTLE PASS</SeasonTitleText>
+          <div style={{ fontSize: 11, color: '#0ea5e9', fontWeight: 'bold' }}>{currentPlayer.monthly_xp || 0} XP</div>
         </SeasonHeader>
-        <SeasonLevelInfo><span>SEASON PASS TIER {seasonLevel}</span><span>{xpInCurrentLevel} / 500 EXP</span></SeasonLevelInfo>
-        <ProgressBarBG><ProgressBarFill $progress={progressPercent} /></ProgressBarBG>
+
+        {/* 🚨 شريط الباتل باس المُصغر جداً 🚨 */}
+        <BpTrack>
+          {BATTLE_PASS_TIERS.map(tier => {
+            const isUnlocked = (currentPlayer.monthly_xp || 0) >= tier.xpReq;
+            const isClaimed = claimedRewards.includes(tier.id) || currentPlayer?.claimed_rewards?.includes(tier.id);
+            return (
+              <BpCard key={tier.id} $unlocked={isUnlocked} $claimed={isClaimed} $color={tier.color}>
+                <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 'bold' }}>{tier.xpReq} XP</div>
+                <tier.icon size={18} color={isClaimed ? '#10b981' : tier.color} />
+                <div style={{ fontSize: 10, fontWeight: '900', color: '#fff', textAlign: 'center' }}>{tier.title}</div>
+                {isUnlocked ? (
+                   <ClaimBtn $claimed={isClaimed} $color={tier.color} disabled={isClaimed || isProcessing} onClick={() => handleClaimBP(tier)}>
+                     {isClaimed ? 'CLAIMED' : 'CLAIM'}
+                   </ClaimBtn>
+                ) : (
+                   <div style={{ fontSize: 9, color: '#64748b' }}><Lock size={10} style={{verticalAlign: 'middle', marginBottom: 2}}/> LOCKED</div>
+                )}
+              </BpCard>
+            );
+          })}
+        </BpTrack>
       </SeasonCard>
 
       {currentPlayer.active_penalty && (
@@ -1002,15 +1060,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
         return (
           <QuestCard key={quest.id} $status={status} $isLocked={isLocked()} $glowColor={quest.color} onClick={() => !isLocked() && handleQuestClick(quest)}>
             <LeftContent>
-              <IconWrapper $color={quest.color}><quest.icon size={24} color={quest.color} /></IconWrapper>
+              <IconWrapper $color={quest.color}><quest.icon size={20} color={quest.color} /></IconWrapper>
               <TextContent>
                 <QuestTitle $status={status}>{quest.title}</QuestTitle>
                 <QuestDesc>{getDynamicDesc(quest)}</QuestDesc>
                 <Rewards>
-                   <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp} XP</span> 
+                   <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP</span> 
                    <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
-                     <AnimatedCoin /> +{quest.gold} 
-                     {/* 🚨 إظهار بونص السلاح 🚨 */}
+                     <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)} 
                      {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
                    </span>
                 </Rewards>
@@ -1038,9 +1095,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
                     <QuestTitle $status={status} style={{ color: status === 'completed' ? '#10b981' : '#fff' }}>{quest.title}</QuestTitle>
                     <QuestDesc style={{ color: status === 'completed' ? '#10b981' : '#fca5a5' }}>{quest.desc}</QuestDesc>
                     <Rewards>
-                      <span style={{ color: status === 'completed' ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp} XP</span>
+                      <span style={{ color: status === 'completed' ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP</span>
                       <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
-                         <AnimatedCoin /> +{quest.gold} 
+                         <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)} 
                          {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
                       </span>
                     </Rewards>
@@ -1059,14 +1116,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
         return (
           <QuestCard key={quest.id} $status={status} $isLocked={isLocked()} $glowColor={quest.color} onClick={() => !isLocked() && handleQuestClick(quest)}>
             <LeftContent>
-              <IconWrapper $color={quest.color}><quest.icon size={24} color={quest.color} /></IconWrapper>
+              <IconWrapper $color={quest.color}><quest.icon size={20} color={quest.color} /></IconWrapper>
               <TextContent>
                 <QuestTitle $status={status}>{quest.title}</QuestTitle>
                 <QuestDesc>{quest.desc}</QuestDesc>
                 <Rewards>
-                   <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp} XP</span> 
+                   <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP</span> 
                    <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
-                     <AnimatedCoin /> +{quest.gold} 
+                     <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)} 
                      {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
                    </span>
                 </Rewards>
@@ -1085,14 +1142,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
         return (
           <QuestCard key={quest.id} $status={status} $isLocked={isLocked()} $glowColor={quest.color} onClick={() => handleQuestClick(quest)}>
             <LeftContent>
-              <IconWrapper $color={quest.color}><quest.icon size={24} color={quest.color} /></IconWrapper>
+              <IconWrapper $color={quest.color}><quest.icon size={20} color={quest.color} /></IconWrapper>
               <TextContent>
                 <QuestTitle $status={status}>{quest.title}</QuestTitle>
                 <QuestDesc>{quest.desc}</QuestDesc>
                 <Rewards>
-                   <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp} XP</span> 
+                   <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP</span> 
                    <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
-                     <AnimatedCoin /> +{quest.gold} 
+                     <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)} 
                      {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
                    </span>
                 </Rewards>

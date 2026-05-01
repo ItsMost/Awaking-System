@@ -70,7 +70,6 @@ const playUnlock = () => {
 // ==========================================
 // 2. الثوابت وقواعد البيانات
 // ==========================================
-// 🚨 تم إضافة الـ PETS_DATABASE هنا لمنع الإيرور 🚨
 const PETS_DATABASE = [
   { name: 'Golden Wyvern Core', type: 'wyvern', color: '#eab308' },
   { name: 'Healing Phoenix Ember', type: 'phoenix', color: '#ef4444' },
@@ -475,15 +474,19 @@ const Rank = ({ player, setPlayer }: any) => {
   };
 
   const handleResetMonth = async () => {
-    const confirmReset = window.confirm('⚠️ DANGER ZONE: هل أنت متأكد من إنهاء الموسم؟ سيتم تتويج الأبطال الحاليين ثم تصفير النقاط الشهرية لجميع اللاعبين!');
+    const confirmReset = window.confirm('⚠️ DANGER ZONE: هل أنت متأكد من إنهاء الشهر؟ سيتم تتويج الأبطال للشهر المنتهي وتصفير نقاط الـ Monthly XP لجميع اللاعبين ليبدأ شهر جديد!');
     if (!confirmReset) return;
     
     setIsProcessing(true);
     try {
       const topMale = maleLeaderboard[0];
       const topFemale = femaleLeaderboard[0];
-      const currentMonthName = new Date().toLocaleString('en-US', { month: 'long' }).toUpperCase();
-      const seasonName = `SEASON: ${currentMonthName} WARFARE`;
+      
+      // الحصول على اسم الشهر المنصرم لتتويج الأبطال
+      const lastMonthDate = new Date();
+      lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+      const lastMonthName = lastMonthDate.toLocaleString('en-US', { month: 'long' }).toUpperCase();
+      const seasonName = `SEASON: ${lastMonthName} WARFARE`;
       
       const championsToInsert = [];
       if (topMale && topMale.monthly_xp > 0) {
@@ -495,17 +498,24 @@ const Rank = ({ player, setPlayer }: any) => {
 
       if (championsToInsert.length > 0) {
         const { error: champError } = await supabase.from('season_champions').insert(championsToInsert);
-        if (champError) throw champError;
+        if (champError) {
+          console.error(champError);
+          toast.error("فشل تسجيل الأبطال في قاعدة البيانات.");
+        }
       }
 
-      const { error: resetError } = await supabase.from('elite_players').update({ monthly_xp: 0 }).gte('cumulative_xp', 0);
+      // تصفير النقاط الشهرية لجميع اللاعبين المسجلين (للتأكد أن لا أحد يفوت التصفير)
+      const { error: resetError } = await supabase.from('elite_players').update({ monthly_xp: 0 }).not('name', 'is', null);
       if (resetError) throw resetError;
 
-      toast.success('🏆 Season Ended! Champions Crowned & Monthly Leaderboard Reset!', { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
-      await supabase.from('elite_economy').insert([{ player_name: 'SYSTEM', amount: 0, currency: 'xp', operation: 'increase', reason: 'A NEW SEASON HAS BEGUN! 🏆' }]);
+      toast.success(`🏆 تم إنهاء ${seasonName}! تم تتويج الأبطال وتصفير لوحة الشهر للجميع!`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
+      await supabase.from('elite_economy').insert([{ player_name: 'SYSTEM', amount: 0, currency: 'xp', operation: 'increase', reason: 'A NEW MONTH HAS BEGUN! 🏆' }]);
       
       fetchAndProcessLeaderboard();
-    } catch (err) { toast.error('Error ending season.'); }
+    } catch (err) { 
+      console.error(err);
+      toast.error('حدث خطأ أثناء تصفير الشهر.'); 
+    }
     setIsProcessing(false);
   };
 
