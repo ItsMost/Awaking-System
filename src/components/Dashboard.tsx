@@ -207,6 +207,11 @@ const MacroGrid = styled.div` display: grid; grid-template-columns: repeat(4, 1f
 const MacroBox = styled.div` background: #020617; border: 1px solid #1e293b; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; @media (max-width: 480px) { padding: 8px 4px; border-radius: 10px; }`;
 const MacroLabel = styled.div<{ $color: string }>` font-size: 10px; font-weight: 900; color: ${(props) => props.$color}; text-transform: uppercase; @media (max-width: 480px) { font-size: 8px; }`;
 const MacroValue = styled.div` font-size: 14px; font-weight: bold; color: #fff; @media (max-width: 480px) { font-size: 12px; }`;
+
+// 🚨 إرجاع تعريفات شريط التغذية (ProgressBarBG / ProgressBarFill) 🚨
+const ProgressBarBG = styled.div` background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-top: 5px; @media (max-width: 480px) { height: 6px; }`;
+const ProgressBarFill = styled(motion.div)<{ $progress: number; $color?: string }>` background: ${(props) => props.$color || '#38bdf8'}; height: 100%; width: ${(props) => props.$progress}%; box-shadow: 0 0 10px ${(props) => props.$color || '#38bdf8'}; transition: width 0.5s ease-out; `;
+
 const NutriTabs = styled.div` display: flex; gap: 10px; margin-bottom: 15px; `;
 const NutriTab = styled.button<{ $active: boolean }>` flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-family: 'Oxanium'; cursor: pointer; transition: 0.3s; background: ${(props) => props.$active ? '#f97316' : '#1e293b'}; color: ${(props) => props.$active ? '#000' : '#94a3b8'}; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; @media (max-width: 480px) { font-size: 10px; padding: 8px; }`;
 const FoodSearchInput = styled.input` width: 100%; background: #020617; border: 1px solid #334155; padding: 12px 15px; border-radius: 8px; color: #fff; font-family: 'Oxanium'; margin-bottom: 15px; outline: none; &:focus { border-color: #f97316; } @media (max-width: 480px) { padding: 10px 12px; font-size: 12px; margin-bottom: 10px; }`;
