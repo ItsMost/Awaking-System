@@ -4,8 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import styled, { keyframes } from 'styled-components';
 import { Toaster, toast } from 'sonner';
 import confetti from 'canvas-confetti';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
 import {
   CheckCircle, Circle, AlertTriangle, ShieldAlert, Camera, X, Activity, Flame, Droplet,
   Dumbbell, Zap, Star, Clock, Users, Wind, Loader, Footprints, StretchHorizontal,
@@ -140,7 +138,7 @@ const AnimatedExpStar = React.memo(() => (
 ));
 
 // ==========================================
-// 4. Styled Components (Responsive & Compact)
+// 4. Styled Components (Responsive)
 // ==========================================
 const Container = styled(motion.div)` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; overflow-x: hidden; @media (max-width: 480px) { padding: 10px; }`;
 
@@ -153,45 +151,43 @@ const DynamicHeader = styled.div<{ $color: string; $shadow: string }>` display: 
 const HeaderTitle = styled.h1<{ $color: string }>` margin: 0; font-size: 20px; color: ${(props) => props.$color}; display: flex; align-items: center; gap: 10px; @media (max-width: 480px) { font-size: 16px; gap: 6px; svg { width: 18px; height: 18px; } }`;
 const HeaderStats = styled.div` text-align: right; div { font-size: 10px; color: #94a3b8; font-weight: bold; margin-bottom: 2px; @media (max-width: 480px) { font-size: 9px; } } span { color: #fff; }`;
 
-const DateNav = styled.div` display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 10px 15px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); @media (max-width: 480px) { padding: 8px 12px; }`;
+const DateNav = styled.div` display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 10px 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); @media (max-width: 480px) { padding: 8px 12px; margin-bottom: 15px; }`;
 const NavBtn = styled.button` background: none; border: none; color: #00f2ff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; transition: 0.3s; &:disabled { color: #334155; cursor: not-allowed; } &:hover:not(:disabled) { filter: brightness(1.2); transform: scale(1.1); } @media (max-width: 480px) { svg { width: 18px; height: 18px; } }`;
-const DateDisplay = styled.div` text-align: center; .day { font-size: 14px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; @media (max-width: 480px) { font-size: 12px; } } .full-date { font-size: 9px; color: #ef4444; margin-top: 2px; font-weight: bold; } `;
+const DateDisplay = styled.div` text-align: center; .day { font-size: 15px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; @media (max-width: 480px) { font-size: 13px; } } .full-date { font-size: 10px; color: #ef4444; margin-top: 2px; font-weight: bold; @media (max-width: 480px) { font-size: 9px; } } `;
 
-// 🚨 تصغير كارت الباتل باس 🚨
-const SeasonCard = styled.div` background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 20px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); `;
-const SeasonHeader = styled.div` display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; `;
-const SeasonTitleText = styled.h2` margin: 0; font-size: 13px; color: #38bdf8; display: flex; align-items: center; gap: 5px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; svg { width: 14px; height: 14px; } `;
-const CountdownBadge = styled.div` background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 3px 8px; border-radius: 6px; font-size: 9px; font-weight: 900; display: flex; align-items: center; gap: 4px; svg { width: 10px; height: 10px; } `;
+const SeasonCard = styled.div` background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid #38bdf8; border-radius: 16px; padding: 20px; margin-bottom: 25px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); @media (max-width: 480px) { padding: 15px; border-radius: 14px; margin-bottom: 15px; }`;
+const SeasonHeader = styled.div` display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; @media (max-width: 480px) { margin-bottom: 10px; }`;
+const SeasonTitleText = styled.h2` margin: 0; font-size: 15px; color: #38bdf8; display: flex; align-items: center; gap: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; @media (max-width: 480px) { font-size: 13px; gap: 5px; svg { width: 16px; height: 16px; } }`;
+const CountdownBadge = styled.div` background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 900; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); @media (max-width: 480px) { font-size: 9px; padding: 4px 8px; svg { width: 12px; height: 12px; } }`;
 
-// 🚨 تصميم الـ Battle Pass المُصغر 🚨
-const BpTrack = styled.div` display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; direction: ltr; &::-webkit-scrollbar { height: 3px; } &::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 4px; } `;
-const BpCard = styled(motion.div)<{ $unlocked: boolean, $claimed: boolean, $color: string }>` min-width: 90px; background: ${p => p.$claimed ? '#10b98120' : p.$unlocked ? 'rgba(15, 23, 42, 0.8)' : '#020617'}; border: 1px solid ${p => p.$claimed ? '#10b981' : p.$unlocked ? p.$color : '#1e293b'}; border-radius: 10px; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 4px; opacity: ${p => p.$unlocked ? 1 : 0.5}; transition: 0.3s; box-shadow: ${p => p.$unlocked && !p.$claimed ? `0 0 10px ${p.$color}30` : 'none'}; `;
-const ClaimBtn = styled.button<{ $claimed: boolean, $color: string }>` width: 100%; background: ${p => p.$claimed ? '#10b981' : p.$color}; color: #000; border: none; padding: 4px; border-radius: 4px; font-size: 10px; font-family: 'Oxanium'; font-weight: 900; cursor: ${p => p.$claimed ? 'default' : 'pointer'}; opacity: ${p => p.$claimed ? 0.5 : 1}; transition: 0.3s; &:hover { filter: brightness(1.2); }`;
+const BpTrack = styled.div` display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; direction: ltr; &::-webkit-scrollbar { height: 4px; } &::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 4px; } `;
+const BpCard = styled(motion.div)<{ $unlocked: boolean, $claimed: boolean, $color: string }>` min-width: 110px; background: ${p => p.$claimed ? '#10b98120' : p.$unlocked ? 'rgba(15, 23, 42, 0.8)' : '#020617'}; border: 1px solid ${p => p.$claimed ? '#10b981' : p.$unlocked ? p.$color : '#1e293b'}; border-radius: 12px; padding: 12px 10px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 8px; opacity: ${p => p.$unlocked ? 1 : 0.5}; transition: 0.3s; box-shadow: ${p => p.$unlocked && !p.$claimed ? `0 0 15px ${p.$color}30` : 'none'}; `;
+const ClaimBtn = styled.button<{ $claimed: boolean, $color: string }>` width: 100%; background: ${p => p.$claimed ? '#10b981' : p.$color}; color: #000; border: none; padding: 6px; border-radius: 6px; font-size: 11px; font-family: 'Oxanium'; font-weight: 900; cursor: ${p => p.$claimed ? 'default' : 'pointer'}; opacity: ${p => p.$claimed ? 0.5 : 1}; transition: 0.3s; &:hover { filter: brightness(1.2); }`;
 
 const PenaltyBanner = styled(motion.div)<{ $isPending: boolean }>` background: ${(props) => (props.$isPending ? '#b45309' : '#2a0808')}; border: 1px dashed ${(props) => (props.$isPending ? '#fcd34d' : '#ef4444')}; color: ${(props) => (props.$isPending ? '#fef3c7' : '#fca5a5')}; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; font-weight: 900; letter-spacing: 1px; margin-bottom: 20px; box-shadow: 0 0 15px ${(props) => (props.$isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)')}; @media (max-width: 480px) { font-size: 10px; padding: 10px; margin-bottom: 15px; text-align: center; }`;
 
-const SectionTitle = styled.h2<{ $color: string }>` font-size: 14px; color: ${(props) => props.$color}; letter-spacing: 2px; margin: 20px 0 10px 0; display: flex; align-items: center; gap: 8px; text-transform: uppercase; border-bottom: 1px solid ${(props) => props.$color}40; padding-bottom: 6px; @media (max-width: 480px) { font-size: 12px; svg { width: 14px; height: 14px; } }`;
+const SectionTitle = styled.h2<{ $color: string }>` font-size: 14px; color: ${(props) => props.$color}; letter-spacing: 2px; margin: 30px 0 15px 0; display: flex; align-items: center; gap: 8px; text-transform: uppercase; border-bottom: 1px solid ${(props) => props.$color}40; padding-bottom: 8px; @media (max-width: 480px) { font-size: 12px; margin: 20px 0 10px 0; padding-bottom: 6px; svg { width: 14px; height: 14px; } }`;
 
 const pulseHologram = keyframes` 0% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.1), inset 0 0 20px rgba(0, 242, 255, 0.05); } 50% { box-shadow: 0 0 30px rgba(0, 242, 255, 0.3), inset 0 0 40px rgba(0, 242, 255, 0.1); } 100% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.1), inset 0 0 20px rgba(0, 242, 255, 0.05); } `;
 
 const QuestCard = styled(motion.div)<{ $status: string; $isPenalty?: boolean; $isLocked?: boolean; $glowColor: string }>`
   background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : props.$status === 'pending' ? 'rgba(234, 179, 8, 0.1)' : props.$isPenalty ? '#2a0808' : 'linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.8))'}; 
   border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#eab308' : props.$isPenalty ? '#ef4444' : props.$glowColor}; 
-  border-radius: 16px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; transition: all 0.3s ease; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; 
+  border-radius: 16px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; transition: all 0.3s ease; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; 
   animation: ${(props) => props.$status === 'idle' && !props.$isLocked && !props.$isPenalty ? pulseHologram : 'none'} 4s infinite;
   &:hover { background: ${(props) => props.$status === 'idle' && !props.$isLocked ? props.$isPenalty ? '#450a0a' : 'rgba(15, 23, 42, 1)' : ''}; transform: ${(props) => (props.$status === 'idle' && !props.$isLocked ? 'translateY(-3px) scale(1.02)' : 'none')}; border-color: ${(props) => props.$status === 'idle' && !props.$isLocked ? '#fff' : ''}; }
-  @media (max-width: 480px) { padding: 12px; border-radius: 12px; }
+  @media (max-width: 480px) { padding: 12px; margin-bottom: 12px; border-radius: 12px; }
 `;
 
 const UrgentCard = styled(QuestCard)` border-width: 2px; background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.15)' : 'linear-gradient(90deg, #450a0a 0%, #020617 100%)'}; &::before { content: 'CRITICAL DIRECTIVE'; position: absolute; top: 8px; right: 15px; font-size: 9px; font-weight: 900; color: #ef4444; letter-spacing: 2px; @media (max-width: 480px) { font-size: 8px; top: 6px; right: 12px; } } `;
 
-const LeftContent = styled.div` display: flex; align-items: center; gap: 12px; flex: 1; `;
-const IconWrapper = styled.div<{ $color: string }>` background: ${(props) => props.$color}15; border: 1px solid ${(props) => props.$color}40; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: inset 0 0 15px ${(props) => props.$color}20; @media (max-width: 480px) { width: 40px; height: 40px; border-radius: 10px; svg { width: 20px; height: 20px; } } `;
+const LeftContent = styled.div` display: flex; align-items: center; gap: 15px; flex: 1; @media (max-width: 480px) { gap: 10px; }`;
+const IconWrapper = styled.div<{ $color: string }>` background: ${(props) => props.$color}15; border: 1px solid ${(props) => props.$color}40; width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: inset 0 0 15px ${(props) => props.$color}20; @media (max-width: 480px) { width: 40px; height: 40px; border-radius: 10px; svg { width: 20px; height: 20px; } } `;
 const TextContent = styled.div` display: flex; flex-direction: column; gap: 4px; flex: 1; `;
-const QuestTitle = styled.div<{ $status: string; $isPenalty?: boolean }>` font-size: 14px; font-weight: 900; color: ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : props.$isPenalty ? '#fca5a5' : '#fff'}; text-decoration: ${(props) => (props.$status === 'completed' ? 'line-through' : 'none')}; line-height: 1.3; text-shadow: ${(props) => props.$status === 'idle' && !props.$isPenalty ? '0 0 10px rgba(255,255,255,0.3)' : 'none'}; @media (max-width: 480px) { font-size: 13px; } `;
+const QuestTitle = styled.div<{ $status: string; $isPenalty?: boolean }>` font-size: 15px; font-weight: 900; color: ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : props.$isPenalty ? '#fca5a5' : '#fff'}; text-decoration: ${(props) => (props.$status === 'completed' ? 'line-through' : 'none')}; line-height: 1.3; text-shadow: ${(props) => props.$status === 'idle' && !props.$isPenalty ? '0 0 10px rgba(255,255,255,0.3)' : 'none'}; @media (max-width: 480px) { font-size: 13px; } `;
 const QuestDesc = styled.div` font-size: 11px; color: #94a3b8; line-height: 1.4; @media (max-width: 480px) { font-size: 10px; line-height: 1.3; }`;
 const Rewards = styled.div` display: flex; align-items: center; gap: 15px; font-size: 11px; font-weight: 900; margin-top: 4px; @media (max-width: 480px) { font-size: 10px; gap: 10px; margin-top: 2px; }`;
-const RightAction = styled.div<{ $type: string; $status: string }>` width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: ${(props) => props.$status === 'completed' ? '#10b98120' : props.$status === 'pending' ? '#facc1520' : props.$type === 'request' ? '#1e293b' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#334155'}; flex-shrink: 0; transition: 0.3s; box-shadow: ${(props) => props.$status === 'idle' ? '0 0 10px rgba(255,255,255,0.05)' : 'none'}; @media (max-width: 480px) { width: 35px; height: 35px; svg { width: 18px; height: 18px; } } `;
+const RightAction = styled.div<{ $type: string; $status: string }>` width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: ${(props) => props.$status === 'completed' ? '#10b98120' : props.$status === 'pending' ? '#facc1520' : props.$type === 'request' ? '#1e293b' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#334155'}; flex-shrink: 0; transition: 0.3s; box-shadow: ${(props) => props.$status === 'idle' ? '0 0 10px rgba(255,255,255,0.05)' : 'none'}; @media (max-width: 480px) { width: 35px; height: 35px; border-radius: 10px; svg { width: 18px; height: 18px; } } `;
 
 const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; `;
 const ModalContent = styled(motion.div)<{ $color: string; $width?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$color}; border-radius: 20px; padding: 30px; width: 100%; max-width: ${(props) => props.$width || '450px'}; position: relative; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 50px ${(props) => props.$color}40; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: ${(props) => props.$color}; border-radius: 5px; } @media (max-width: 480px) { padding: 20px; border-radius: 16px; }`;
@@ -207,11 +203,6 @@ const MacroGrid = styled.div` display: grid; grid-template-columns: repeat(4, 1f
 const MacroBox = styled.div` background: #020617; border: 1px solid #1e293b; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; @media (max-width: 480px) { padding: 8px 4px; border-radius: 10px; }`;
 const MacroLabel = styled.div<{ $color: string }>` font-size: 10px; font-weight: 900; color: ${(props) => props.$color}; text-transform: uppercase; @media (max-width: 480px) { font-size: 8px; }`;
 const MacroValue = styled.div` font-size: 14px; font-weight: bold; color: #fff; @media (max-width: 480px) { font-size: 12px; }`;
-
-// 🚨 إرجاع تعريفات شريط التغذية (ProgressBarBG / ProgressBarFill) 🚨
-const ProgressBarBG = styled.div` background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-top: 5px; @media (max-width: 480px) { height: 6px; }`;
-const ProgressBarFill = styled(motion.div)<{ $progress: number; $color?: string }>` background: ${(props) => props.$color || '#38bdf8'}; height: 100%; width: ${(props) => props.$progress}%; box-shadow: 0 0 10px ${(props) => props.$color || '#38bdf8'}; transition: width 0.5s ease-out; `;
-
 const NutriTabs = styled.div` display: flex; gap: 10px; margin-bottom: 15px; `;
 const NutriTab = styled.button<{ $active: boolean }>` flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-family: 'Oxanium'; cursor: pointer; transition: 0.3s; background: ${(props) => props.$active ? '#f97316' : '#1e293b'}; color: ${(props) => props.$active ? '#000' : '#94a3b8'}; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; @media (max-width: 480px) { font-size: 10px; padding: 8px; }`;
 const FoodSearchInput = styled.input` width: 100%; background: #020617; border: 1px solid #334155; padding: 12px 15px; border-radius: 8px; color: #fff; font-family: 'Oxanium'; margin-bottom: 15px; outline: none; &:focus { border-color: #f97316; } @media (max-width: 480px) { padding: 10px 12px; font-size: 12px; margin-bottom: 10px; }`;
@@ -219,6 +210,8 @@ const FoodList = styled.div` max-height: 200px; overflow-y: auto; display: flex;
 const FoodItem = styled.div` background: #1e293b50; border: 1px solid #334155; padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; @media (max-width: 480px) { padding: 8px 10px; }`;
 const ManualInputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; `;
 const ResetMacrosBtn = styled.button` background: #2a0808; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; &:hover { background: #450a0a; } @media (max-width: 480px) { font-size: 11px; padding: 6px 10px; }`;
+const ProgressBarBG = styled.div` background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-top: 5px; @media (max-width: 480px) { height: 6px; }`;
+const ProgressBarFill = styled(motion.div)<{ $progress: number; $color?: string }>` background: ${(props) => props.$color || '#38bdf8'}; height: 100%; width: ${(props) => props.$progress}%; box-shadow: 0 0 10px ${(props) => props.$color || '#38bdf8'}; transition: width 0.5s ease-out; `;
 
 const GameFAB = styled(motion.button)` position: fixed; bottom: 80px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: 2px solid #d8b4fe; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; &:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(168, 85, 247, 0.6); } @media (max-width: 480px) { width: 45px; height: 45px; svg { width: 20px; height: 20px; } } `;
 const GameArea = styled.div<{ $state: string }>` width: 100%; height: 250px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: ${(props) => props.$state === 'result_final' ? 'default' : 'pointer'}; user-select: none; transition: background 0.1s; background: ${(props) => props.$state === 'waiting' ? '#ef4444' : props.$state === 'ready' ? '#10b981' : props.$state === 'early' ? '#b45309' : (props.$state === 'result' || props.$state === 'result_final') ? '#0ea5e9' : '#1e293b' }; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); border: 4px solid rgba(255,255,255,0.1); @media (max-width: 480px) { height: 200px; }`;
@@ -515,7 +508,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     };
     fetchRadarNews();
 
-    const newsSub = supabase.channel('public:global_news').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_news' }, payload => {
+    const newsSub = supabase.channel('dashboard_news_channel').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_news' }, payload => {
         setSystemLogs(prev => [`🌍 ${payload.new.title}: ${payload.new.content}`, ...prev.slice(0, 4)]);
         toast.info(payload.new.title, { description: payload.new.content, style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' } });
       }).subscribe();
@@ -700,7 +693,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       return newMacros;
     });
 
-    toast.success(`تمت إضافة ${food.name} بنجاح!`, { style: { background: '#020617', border: '1px solid #f97316', color: '#f97316' }});
+    toast.success(`تمت إضافة ${food.name} بنجاح!`, { style: { background: '#020617', border: '1px solid #eab308', color: '#eab308' }});
   }, [currentPlayer.name]);
 
   const handleRemoveConsumedFood = useCallback((itemToRemove: any) => {
@@ -896,11 +889,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
     setIsProcessing(false);
   };
 
-  // 🚨 دالة استلام جوائز الـ Battle Pass 🚨 (تم حل مشكلة الـ Infinite Claim)
   const handleClaimBP = async (tier: any) => {
     if ((currentPlayer.monthly_xp || 0) < tier.xpReq) return;
     
-    // فحص حماية دقيق منعا للتكرار
     if (claimedRewards.includes(tier.id) || currentPlayer?.claimed_rewards?.includes(tier.id)) return;
 
     setIsProcessing(true);
@@ -921,7 +912,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       setClaimedRewards(newClaimed);
       const updatedPlayer = { ...currentPlayer, ...updates };
       setPlayer(updatedPlayer);
-      localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer)); // حفظ فوري في المتصفح
+      localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
 
       playDashSound('streak');
       confetti({ particleCount: 200, spread: 100, colors: [tier.color, '#fff'] });
@@ -1018,7 +1009,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
           <div style={{ fontSize: 11, color: '#0ea5e9', fontWeight: 'bold' }}>{currentPlayer.monthly_xp || 0} XP</div>
         </SeasonHeader>
 
-        {/* 🚨 شريط الباتل باس المُصغر جداً 🚨 */}
         <BpTrack>
           {BATTLE_PASS_TIERS.map(tier => {
             const isUnlocked = (currentPlayer.monthly_xp || 0) >= tier.xpReq;
