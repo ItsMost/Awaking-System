@@ -174,8 +174,7 @@ const BackgroundGrid = styled.div`
   position: fixed; inset: 0; background-image: linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; animation: ${panBackground} 60s linear infinite; pointer-events: none; z-index: 0;
 `;
 
-const ContentWrapper = styled.div` position: relative; z-index: 10; padding-bottom: 50px; `;
-
+const ContentWrapper = styled.div` position: relative; padding-bottom: 50px; `;
 const BootScreen = styled(motion.div)` position: fixed; inset: 0; background: #020617; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; font-family: 'Courier New', Courier, monospace; `;
 const scanline = keyframes` 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } `;
 const ScanlineEffect = styled.div` position: absolute; top: 0; left: 0; width: 100%; height: 10px; background: rgba(0, 242, 255, 0.3); box-shadow: 0 0 20px rgba(0, 242, 255, 0.5); animation: ${scanline} 3s linear infinite; pointer-events: none; `;
