@@ -804,7 +804,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
            toast.success(`🔥 STREAK INCREASED: ${newStreak} DAYS!`, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444', fontWeight: 'bold' } });
         } else {
            playDashSound('complete'); 
-           confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }, colors: [quest.color, '#ffffff'] });
            toast.success(`Completed! +${earnedExp} EXP ${isBloodMoon ? '(2X BLOOD MOON 🩸)' : ''}`);
            if (earnedHp > 0) toast.success(`+${earnedHp} HP Restored 🩸`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
         }
