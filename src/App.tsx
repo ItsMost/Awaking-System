@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sword, LogOut, CheckSquare, Medal, ShoppingCart, Shield, User,
+  Sword, LogOut, CheckSquare, Medal, Shield, User,
   Book, Activity, Moon, Eye, Wind, Dumbbell, Zap, Footprints, Lock as LockIcon, Flame,
   Crown, Skull, Target, Heart, Droplet, Axe, Anchor, Fingerprint, Cpu, Infinity as InfinityIcon,
   Hexagon, Globe, Terminal, Power, Bell, X, MessageSquare, WifiOff, Volume2, VolumeX, Package,
-  LayoutDashboard, Box, Trophy, Store, Settings, Crosshair
+  LayoutDashboard, Trophy, Settings
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { Howl, Howler } from 'howler';
@@ -14,22 +14,18 @@ import { Howl, Howler } from 'howler';
 import AwakeningScreen from './components/AwakeningScreen';
 import Dashboard from './components/Dashboard';
 import Rank from './components/Rank';
-import Shop from './components/Shop';
 import Profile from './components/Profile';
 import Records from './components/Records';
 import Rules from './components/Rules';
 import Rehab from './components/Rehab';
-import Vault from './components/Vault'; 
 import CoachPanel from './components/CoachPanel'; 
 import { supabase } from './lib/supabase';
 
 // ==========================================
-// 1. ADVANCED AUDIO ENGINE (Howler + Web Audio)
+// 1. ADVANCED AUDIO ENGINE
 // ==========================================
 const bgmMain = new Howl({ src: ['https://cdn.freesound.org/previews/514/514214_10901551-lq.mp3'], loop: true, volume: 0.15 });
-const bgmShop = new Howl({ src: ['https://cdn.freesound.org/previews/612/612085_5674468-lq.mp3'], loop: true, volume: 0.15 });
 
-let currentBGM = bgmMain;
 const createAudioContext = () => { const AudioContext = window.AudioContext || (window as any).webkitAudioContext; if (!AudioContext) return null; return new AudioContext(); };
 let sharedAudioCtx: AudioContext | null = null;
 let lastPlayTime = 0;
@@ -161,9 +157,8 @@ const MiniOrb = ({ type, color }: { type: string, color: string }) => {
   );
 };
 
-
 // ==========================================
-// 3. EPIC STYLED COMPONENTS 🎨 (صغيرة ومناسبة للموبايل)
+// 3. EPIC STYLED COMPONENTS
 // ==========================================
 const panBackground = keyframes` 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } `;
 
@@ -230,19 +225,13 @@ const NavButton = styled.button<{ $active: boolean; $color: string; }>`
 `;
 
 const TopRightControls = styled.div` display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; width: 100%; `;
-const IconButton = styled.button<{ $hasUnread?: boolean }>` background: rgba(0,0,0,0.5); border: 1px solid #334155; color: ${(props) => props.$hasUnread ? '#00f2ff' : '#94a3b8'}; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; position: relative; box-shadow: ${(props) => props.$hasUnread ? '0 0 10px rgba(0,242,255,0.3)' : 'none'}; &:hover { color: #00f2ff; border-color: #00f2ff; background: rgba(0,242,255,0.1); } svg { width: 16px; height: 16px; } `;
-const UnreadDot = styled.div` position: absolute; top: -4px; right: -4px; background: #ef4444; color: #fff; font-size: 9px; font-weight: bold; padding: 2px 4px; border-radius: 10px; box-shadow: 0 0 8px #ef4444; `;
-const HeartIcon = ({ size, color }: { size: number; color: string }) => ( <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> );
-
-const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(8px); `;
-const ModalContent = styled(motion.div)` background: #0b1120; border: 2px solid #00f2ff; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; position: relative; max-height: 80vh; overflow-y: auto; box-shadow: 0 0 30px rgba(0,242,255,0.2); &::-webkit-scrollbar { width: 4px; } &::-webkit-scrollbar-thumb { background: #00f2ff; border-radius: 4px; } `;
-const NotificationCard = styled.div<{ $type: string }>` background: #0f172a; border-left: 3px solid ${(props) => props.$type === 'broadcast' ? '#0ea5e9' : props.$type === 'penalty' ? '#ef4444' : '#10b981'}; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; `;
+const IconButton = styled.button` background: rgba(0,0,0,0.5); border: 1px solid #334155; color: #94a3b8; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; &:hover { color: #00f2ff; border-color: #00f2ff; background: rgba(0,242,255,0.1); } svg { width: 16px; height: 16px; } `;
 
 // ==========================================
 // 4. MAIN APP COMPONENT
 // ==========================================
 const App = () => {
-  const SYSTEM_VERSION = "1.0.3"; 
+  const SYSTEM_VERSION = "1.0.4"; 
 
   const [player, setPlayer] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -250,10 +239,6 @@ const App = () => {
   const [bootText, setBootText] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [isMusicMuted, setIsMusicMuted] = useState(false);
-
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   const bootSequenceText = [ "INITIALIZING NEURAL LINK...", "DECRYPTING HUNTER PROFILE...", "SYNCING WITH ELITE_PLAYERS MAINFRAME...", "CALIBRATING CUMULATIVE EXP MATRIX...", "WELCOME TO THE ELITE SYSTEM." ];
   const isCoachMode = localStorage.getItem('elite_coach_mode') === 'true';
@@ -274,8 +259,8 @@ const App = () => {
   useEffect(() => { Howler.mute(isMusicMuted); }, [isMusicMuted]);
 
   useEffect(() => {
-    const handleOnline = () => { setIsOffline(false); toast.success('SYSTEM ONLINE: Neural Link Restored.', { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' } }); };
-    const handleOffline = () => { setIsOffline(true); toast.error('SYSTEM OFFLINE: Operating on Local Cache.', { duration: 10000, style: { background: '#2a0808', border: '1px solid #ef4444', color: '#fca5a5' } }); };
+    const handleOnline = () => { setIsOffline(false); toast.success('SYSTEM ONLINE'); };
+    const handleOffline = () => { setIsOffline(true); toast.error('SYSTEM OFFLINE'); };
     window.addEventListener('online', handleOnline); window.addEventListener('offline', handleOffline);
     return () => { window.removeEventListener('online', handleOnline); window.removeEventListener('offline', handleOffline); };
   }, []);
@@ -291,32 +276,12 @@ const App = () => {
           const { data, error } = await supabase.from('elite_players').select('*').eq('name', parsedData.name).single();
           if (data && !error) {
             const updatedPlayer = { ...parsedData, ...data }; setPlayer(updatedPlayer); localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
-            let lastMacroDate = data.last_macro_date; const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
-            if (lastMacroDate && lastMacroDate !== todayStr) {
-               await supabase.from('player_snapshots').insert([{ player_name: updatedPlayer.name, snapshot_date: lastMacroDate, xp: data.cumulative_xp || data.xp || 0, gold: data.gold || 0, hp: data.hp || 100 }]);
-               let fetchedMacros = { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] }; await supabase.from('elite_players').update({ daily_macros: fetchedMacros, last_macro_date: todayStr }).eq('name', updatedPlayer.name);
-            }
           } else { setPlayer(parsedData); }
-        } catch (err) { console.error("Sync error", err); setPlayer(parsedData); } finally { setTimeout(() => { setIsBooting(false); playSound('startup'); if (!bgmMain.playing()) { bgmMain.play(); } }, 2500); }
+        } catch (err) { setPlayer(parsedData); } finally { setTimeout(() => { setIsBooting(false); playSound('startup'); if (!bgmMain.playing()) { bgmMain.play(); } }, 2500); }
       }; fetchLatestData();
     }
   }, []);
 
-  useEffect(() => {
-    if (!player || isBooting || isOffline) return;
-    const fetchInitialNotifications = async () => {
-      try {
-        const { data } = await supabase.from('global_news').select('*').order('created_at', { ascending: false }).limit(10);
-        if (data) { const formatted = data.map((n: any) => ({ id: n.id, title: n.title, msg: n.content, time: new Date(n.created_at).toLocaleString(), type: 'broadcast', read: true })); setNotifications(formatted); }
-      } catch (err) { console.error(err); }
-    }; fetchInitialNotifications();
-    const newsSub = supabase.channel('public:global_news').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_news' }, payload => { const newNotif = { id: payload.new.id, title: payload.new.title, msg: payload.new.content, time: new Date(payload.new.created_at).toLocaleTimeString(), type: 'broadcast', read: false }; setNotifications(prev => [newNotif, ...prev]); playSound('notification'); toast(payload.new.title, { description: payload.new.content, style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' } }); }).subscribe();
-    const questSub = supabase.channel('public:elite_quests').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'elite_quests', filter: `player_name=eq.${player.name}` }, payload => { if (payload.new.status !== payload.old.status) { if (payload.new.status === 'approved') { const newNotif = { id: payload.new.id, title: 'REQUEST APPROVED', msg: `Coach has approved your request: ${payload.new.task_name}. Rewards granted!`, time: new Date().toLocaleTimeString(), type: 'success', read: false }; setNotifications(prev => [newNotif, ...prev]); playSound('startup'); toast.success('REQUEST APPROVED!', { description: payload.new.task_name, style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' } }); } else if (payload.new.status === 'rejected') { const newNotif = { id: payload.new.id, title: 'REQUEST REJECTED', msg: `Coach rejected your request: ${payload.new.task_name}.`, time: new Date().toLocaleTimeString(), type: 'penalty', read: false }; setNotifications(prev => [newNotif, ...prev]); playSound('error'); toast.error('REQUEST REJECTED', { description: payload.new.task_name, style: { background: '#2a0808', border: '1px solid #ef4444', color: '#ef4444' } }); } } }).subscribe();
-    const playerSub = supabase.channel('public:elite_players').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'elite_players', filter: `name=eq.${player.name}` }, payload => { if (payload.new.active_penalty && !payload.old.active_penalty) { playSound('error'); toast.error('SYSTEM PENALTY ACTIVATED', { description: 'The Punisher has frozen your account. Execute Disciplinary Quest.', duration: 8000, style: { background: '#450a0a', border: '2px solid #ef4444', color: '#fca5a5', fontWeight: 'bold' } }); } }).subscribe();
-    return () => { supabase.removeChannel(newsSub); supabase.removeChannel(questSub); supabase.removeChannel(playerSub); };
-  }, [player, isBooting, isOffline]);
-
-  useEffect(() => { if (player && !isBooting) { localStorage.setItem('elite_system_active_session', JSON.stringify(player)); } }, [player, isBooting]);
   const handleAwaken = (playerData: any) => { setPlayer(playerData); setIsBooting(true); playSound('boot'); setTimeout(() => { setIsBooting(false); playSound('startup'); if (!bgmMain.playing()) { bgmMain.play(); } }, 2000); };
   const handleLogout = () => { playSound('click'); localStorage.removeItem('elite_system_active_session'); localStorage.removeItem('elite_coach_mode'); Howler.stop(); setPlayer(null); };
 
@@ -324,16 +289,9 @@ const App = () => {
     if (tabId === 'rank' || tabId === 'profile') playSound('shield');
     else if (tabId === 'records' || tabId === 'rehab') playAuraSound(player);
     else playSound('click');
-    
-    if (tabId === 'shop') {
-      if (currentBGM !== bgmShop) { currentBGM.fade(0.15, 0, 800); setTimeout(() => { currentBGM.pause(); bgmShop.play(); bgmShop.fade(0, 0.15, 800); currentBGM = bgmShop; }, 800); }
-    } else {
-      if (currentBGM !== bgmMain) { currentBGM.fade(0.15, 0, 800); setTimeout(() => { currentBGM.pause(); bgmMain.play(); bgmMain.fade(0, 0.15, 800); currentBGM = bgmMain; }, 800); }
-    }
     setActiveTab(tabId);
   };
 
-  const openNotificationCenter = () => { playSound('click'); setShowNotifications(true); setNotifications(prev => prev.map(n => ({ ...n, read: true }))); };
   const toggleMute = () => { playSound('click'); setIsMusicMuted(!isMusicMuted); };
 
   if (!player) return <AwakeningScreen onAwaken={handleAwaken} />;
@@ -344,33 +302,20 @@ const App = () => {
         <ScanlineEffect />
         <Terminal size={50} color="#00f2ff" style={{ marginBottom: 15, filter: 'drop-shadow(0 0 10px #00f2ff)' }} />
         <h2 style={{ color: '#00f2ff', letterSpacing: '2px', textShadow: '0 0 10px #00f2ff', fontSize: 20 }}>SYSTEM BOOT</h2>
-        <p style={{ color: '#94a3b8', fontFamily: 'monospace', marginTop: 15, fontSize: 12, textAlign: 'center', padding: '0 20px' }}>{bootText}</p>
+        <p style={{ color: '#94a3b8', fontFamily: 'monospace', marginTop: 15, fontSize: 12 }}>{bootText}</p>
         <div style={{ width: '200px', height: '2px', background: '#1e293b', marginTop: 20, position: 'relative', overflow: 'hidden' }}>
-          <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 2.2, ease: 'easeInOut' }} style={{ position: 'absolute', top: 0, left: 0, height: '100%', background: '#00f2ff', boxShadow: '0 0 10px #00f2ff' }} />
+          <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 2.2, ease: 'easeInOut' }} style={{ position: 'absolute', top: 0, left: 0, height: '100%', background: '#00f2ff' }} />
         </div>
       </BootScreen>
     );
   }
 
   const levelData = calculateLevelData(player.cumulative_xp ?? player.xp ?? 0);
-  const currentLvl = levelData.level;
-  const currentVisualXp = levelData.xpInCurrentLevel;
-  const xpNeededForNextLevel = levelData.expNeededForNextLevel;
-  const progressPercent = Math.min(100, (currentVisualXp / xpNeededForNextLevel) * 100);
-
-  const hp = player.hp ?? 100;
-  const auraColor = getIconColor(player);
-  const currentStreak = player.streak || 0;
-  const streakColor = getStreakColor(currentStreak);
-  const activePetName = player?.active_pet || null;
-  const petData = activePetName ? PETS_DATABASE.find(p => p.name === activePetName) : null;
-  const isPetDead = player?.pet_hunger <= 0;
+  const progressPercent = Math.min(100, (levelData.xpInCurrentLevel / levelData.expNeededForNextLevel) * 100);
 
   const TABS = [
     { id: 'dashboard', label: 'QUESTS', icon: LayoutDashboard, color: '#00f2ff' },
-    { id: 'vault', label: 'VAULT', icon: Box, color: '#818cf8' }, 
     { id: 'records', label: 'RECORDS', icon: Trophy, color: '#facc15' },
-    { id: 'shop', label: 'SHOP', icon: Store, color: '#38bdf8' },
     { id: 'rank', label: 'RANK', icon: Target, color: '#a855f7' },
     { id: 'profile', label: 'PROFILE', icon: User, color: '#ec4899' },
     { id: 'rules', label: 'RULES', icon: Book, color: '#f43f5e' },
@@ -378,107 +323,70 @@ const App = () => {
     ...(isCoachMode ? [{ id: 'coach', label: 'COMMAND', icon: Settings, color: '#ef4444' }] : []),
   ];
 
-  const pageVariants = { initial: { opacity: 0, scale: 0.98, y: 5 }, in: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } }, out: { opacity: 0, scale: 0.98, y: -5, transition: { duration: 0.2, ease: 'easeIn' } } };
-
   return (
     <AppContainer>
       <BackgroundGrid />
       <Toaster position="top-center" theme="dark" />
       
-      <AnimatePresence>
-        {isOffline && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ background: '#b45309', color: '#fef3c7', padding: '6px', textAlign: 'center', fontSize: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <WifiOff size={12} /> OFFLINE MODE: Local Cache.
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <StatusBar>
         <TopRightControls>
-          <IconButton onClick={toggleMute} title={isMusicMuted ? "Unmute Music" : "Mute Music"}>
+          <IconButton onClick={toggleMute}>
             {isMusicMuted ? <VolumeX size={16} color="#ef4444" /> : <Volume2 size={16} color="#10b981" />}
           </IconButton>
-          <IconButton onClick={openNotificationCenter} $hasUnread={unreadCount > 0} title="Notifications" style={{ display: 'none' }}>
-            <Bell size={16} />
-            {unreadCount > 0 && <UnreadDot>{unreadCount}</UnreadDot>}
-          </IconButton>
-          <IconButton onClick={handleLogout} title="System Logout"><Power size={16} /></IconButton>
+          <IconButton onClick={handleLogout}><Power size={16} /></IconButton>
         </TopRightControls>
 
         <HPBarContainer>
-          <HeartIcon size={14} color={hp > 50 ? '#10b981' : hp > 20 ? '#eab308' : '#ef4444'} />
           <HPBarWrapper>
-            <HPBarFill $hp={hp} />
+            <HPBarFill $hp={player.hp ?? 100} />
           </HPBarWrapper>
-          <HPText $hp={hp}>{hp} HP</HPText>
+          <HPText $hp={player.hp ?? 100}>{player.hp ?? 100} HP</HPText>
         </HPBarContainer>
 
         <PlayerInfoRow>
           <ClassBadge>
-            <HexagonBox $color={auraColor} onClick={() => playAuraSound(player)}>
+            <HexagonBox $color={getIconColor(player)} onClick={() => playAuraSound(player)}>
               {getDynamicIcon(player, 20)}
             </HexagonBox>
-            
-            {petData && (
-              <MiniOrb type={petData.type} color={isPetDead ? '#64748b' : petData.color} />
-            )}
-
             <PlayerDetails>
               <SystemLinkText>System Link Active</SystemLinkText>
               <PlayerNameRow>
-                <NameText>LVL {currentLvl} - {player.name}</NameText>
+                <NameText>LVL {levelData.level} - {player.name}</NameText>
               </PlayerNameRow>
               <PlayerNameRow>
                  <PlayerTitleText>{`[ ${player.titles?.[0] || 'Athlete'} ]`}</PlayerTitleText>
-                 {currentStreak >= 3 && (
-                  <StreakBadge $color={streakColor} title={`${currentStreak} Days Streak!`}>
-                    <Flame size={10} color={streakColor} fill={streakColor} style={{ marginRight: '4px' }} />
-                    <span style={{ color: streakColor, fontWeight: '900' }}>{currentStreak}</span>
-                  </StreakBadge>
-                )}
               </PlayerNameRow>
             </PlayerDetails>
           </ClassBadge>
 
           <GoldBadge>
-            <img src="https://cdn-icons-png.flaticon.com/512/138/138246.png" width="14" alt="gold" style={{ filter: 'brightness(0) saturate(100%) invert(75%) sepia(55%) saturate(1637%) hue-rotate(352deg) brightness(101%) contrast(106%)' }} />
+            <img src="https://cdn-icons-png.flaticon.com/512/138/138246.png" width="14" alt="gold" />
             <span>{player.gold || 0}</span>
           </GoldBadge>
         </PlayerInfoRow>
 
         <EXPBarContainer>
-          <span style={{ color: '#00f2ff', fontWeight: '900', letterSpacing: '1px' }}>EXP</span>
+          <span style={{ color: '#00f2ff' }}>EXP</span>
           <EXPBarWrapper>
             <EXPBarFill $progress={progressPercent} />
           </EXPBarWrapper>
-          <span style={{ color: '#00f2ff', fontWeight: 'bold' }}>{currentVisualXp} / {xpNeededForNextLevel}</span>
         </EXPBarContainer>
       </StatusBar>
 
       <NavigationGrid>
-        {TABS.map((tab) => {
-          const IconComponent = tab.icon;
-          return (
-            <NavButton 
-              key={tab.id} 
-              $active={activeTab === tab.id} 
-              $color={tab.color} 
-              onClick={() => handleTabChange(tab.id)}
-            >
-              <IconComponent />
-              <span>{tab.label}</span>
-            </NavButton>
-          )
-        })}
+        {TABS.map((tab) => (
+          <NavButton key={tab.id} $active={activeTab === tab.id} $color={tab.color} onClick={() => handleTabChange(tab.id)}>
+            <tab.icon />
+            <span>{tab.label}</span>
+          </NavButton>
+        ))}
       </NavigationGrid>
 
       <ContentWrapper>
         <AnimatePresence mode="wait">
-          <motion.div key={activeTab} initial="initial" animate="in" exit="out" variants={pageVariants}>
+          <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             {activeTab === 'dashboard' && <Dashboard player={player} setPlayer={setPlayer} />}
-            {activeTab === 'vault' && <Vault player={player} setPlayer={setPlayer} />}
             {activeTab === 'records' && <Records player={player} setPlayer={setPlayer} />}
-            {activeTab === 'shop' && <Shop player={player} setPlayer={setPlayer} />}
             {activeTab === 'rank' && <Rank player={player} setPlayer={setPlayer} />}
             {activeTab === 'profile' && <Profile player={player} setPlayer={setPlayer} />}
             {activeTab === 'rules' && <Rules />}
