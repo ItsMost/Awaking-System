@@ -200,23 +200,67 @@ const MiniOrb = ({ type, color }: { type: string, color: string }) => {
 // ==========================================
 // 4. التصميمات المفرودة (Styled Components)
 // ==========================================
-const Container = styled(motion.div)` padding: 15px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; `;
-const TopActions = styled.div` display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; `;
-const TopBtn = styled.button<{ $active?: boolean; $color?: string }>` background: ${(props) => (props.$active ? `${props.$color}20` : '#0f172a')}; border: 1px solid ${(props) => (props.$active ? props.$color : '#1e293b')}; color: ${(props) => (props.$active ? props.$color : '#94a3b8')}; padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 8px; font-family: 'Oxanium'; font-weight: 900; font-size: 12px; cursor: pointer; transition: 0.3s; box-shadow: ${(props) => props.$active ? `0 0 15px ${props.$color}40` : '0 4px 10px rgba(0,0,0,0.3)'}; &:hover { background: ${(props) => (props.$active ? `${props.$color}40` : '#1e293b')}; color: ${(props) => props.$color || '#fff'}; } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
+const Container = styled(motion.div)` padding: 20px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 650px; margin: 0 auto; position: relative; `;
+const TopActions = styled.div` display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; `;
+const TopBtn = styled.button<{ $active?: boolean; $color?: string }>` background: ${(props) => (props.$active ? `${props.$color}20` : 'rgba(15, 23, 42, 0.45)')}; border: 1px solid ${(props) => (props.$active ? props.$color : 'rgba(255,255,255,0.05)')}; color: ${(props) => (props.$active ? props.$color : '#94a3b8')}; padding: 10px 18px; border-radius: 12px; display: flex; align-items: center; gap: 8px; font-family: 'Oxanium'; font-weight: 900; font-size: 12px; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(8px); box-shadow: ${(props) => props.$active ? `0 0 15px ${props.$color}30` : '0 4px 15px rgba(0,0,0,0.2)'}; &:hover { background: ${(props) => (props.$active ? `${props.$color}30` : 'rgba(255,255,255,0.08)')}; color: ${(props) => props.$color || '#fff'}; transform: translateY(-2px); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
 const InboxBadge = styled.span` background: #ef4444; color: #fff; padding: 2px 6px; border-radius: 20px; font-size: 10px; font-weight: 900; margin-left: 5px; `;
 const TabsGrid = styled.div` display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; `;
-const Tab = styled.button<{ $active: boolean; $glowColor?: string }>` padding: 12px; border-radius: 12px; border: none; font-family: 'Oxanium', sans-serif; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; background: ${(props) => (props.$active ? props.$glowColor || '#0ea5e9' : '#0f172a')}; color: ${(props) => (props.$active ? '#000' : '#94a3b8')}; box-shadow: ${(props) => props.$active ? `0 0 20px ${props.$glowColor}60` : 'none'}; `;
+const Tab = styled.button<{ $active: boolean; $glowColor?: string }>`
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid ${(props) => (props.$active ? `${props.$glowColor}40` : 'rgba(255,255,255,0.05)')};
+  font-family: 'Oxanium', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: ${(props) => (props.$active ? `${props.$glowColor}15` : 'rgba(15, 23, 42, 0.45)')};
+  color: ${(props) => (props.$active ? props.$glowColor || '#0ea5e9' : '#94a3b8')};
+  backdrop-filter: blur(8px);
+  box-shadow: ${(props) => props.$active ? `0 0 25px ${props.$glowColor}25, inset 0 0 10px ${props.$glowColor}15` : 'none'};
+  
+  &:hover {
+    border-color: ${(props) => props.$glowColor || '#0ea5e9'}70;
+    color: ${(props) => props.$glowColor || '#0ea5e9'};
+    transform: translateY(-2px);
+  }
+`;
 
-// 🚨 تصميم قاعة الأبطال (Top 3) بعد هندسة المسافات 🚨
-const HallOfFameContainer = styled.div` display: flex; justify-content: center; align-items: flex-end; min-height: 300px; padding-bottom: 10px; margin-bottom: 30px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.1); `;
+// 🚨 تصميم قاعة الأبطال (Top 3) بجماليات الـ Glassmorphism الداكنة الفخمة 🚨
+const HallOfFameContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  min-height: 310px;
+  padding-bottom: 15px;
+  margin-bottom: 35px;
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: radial-gradient(circle at bottom, rgba(15, 23, 42, 0.4) 0%, transparent 80%);
+`;
 const PedestalWrapper = styled(motion.div)<{ $isFirst?: boolean }>` display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 32%; position: relative; z-index: ${(props) => props.$isFirst ? 10 : 5}; margin: 0 2px; `;
 const PedestalBase = styled.div<{ $color: string; $height: number }>` 
-  width: 100%; height: ${(props) => props.$height}px; background: linear-gradient(to top, rgba(2,6,23,0.9), ${(props) => props.$color}40); 
-  border: 1px solid ${(props) => props.$color}; border-bottom: none; border-top-left-radius: 10px; border-top-right-radius: 10px; position: relative; 
-  box-shadow: inset 0 10px 20px rgba(0,0,0,0.5), 0 -10px 30px ${(props) => props.$color}20; display: flex; justify-content: center; align-items: center; 
-  &::after { content: ''; position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, ${(props) => props.$color}20, transparent); filter: blur(15px); pointer-events: none; } 
+  width: 100%; height: ${(props) => props.$height}px; background: linear-gradient(to top, rgba(15, 23, 42, 0.95), ${(props) => props.$color}15); 
+  border: 1px solid ${(props) => props.$color}40; border-bottom: none; border-top-left-radius: 16px; border-top-right-radius: 16px; position: relative; 
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 15px ${(props) => props.$color}10, 0 -5px 20px ${(props) => props.$color}15; display: flex; justify-content: center; align-items: center; 
+  &::after { content: ''; position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, ${(props) => props.$color}15, transparent); filter: blur(15px); pointer-events: none; } 
 `;
-const HeroAvatar = styled(motion.div)<{ $color: string, $isFirst: boolean }>` width: ${(props) => props.$isFirst ? '70px' : '55px'}; height: ${(props) => props.$isFirst ? '70px' : '55px'}; border-radius: 50%; border: 3px solid ${(props) => props.$color}; background: rgba(2,6,23,0.9); display: flex; align-items: center; justify-content: center; margin-bottom: 10px; z-index: 10; box-shadow: 0 0 20px ${(props) => props.$color}60, inset 0 0 10px ${(props) => props.$color}40; position: relative; `;
+const HeroAvatar = styled(motion.div)<{ $color: string, $isFirst: boolean }>` 
+  width: ${(props) => props.$isFirst ? '76px' : '62px'}; 
+  height: ${(props) => props.$isFirst ? '76px' : '62px'}; 
+  border-radius: 50%; border: 3px solid ${(props) => props.$color}; background: rgba(2,6,23,0.9); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; z-index: 10; 
+  box-shadow: 0 0 25px ${(props) => props.$color}50, inset 0 0 12px ${(props) => props.$color}30; position: relative; 
+  transition: all 0.3s ease;
+  &:hover {
+    box-shadow: 0 0 35px ${(props) => props.$color}80, inset 0 0 15px ${(props) => props.$color}50;
+    transform: scale(1.05);
+  }
+`;
 const HeroName = styled.div<{ $color: string }>` font-size: 13px; font-weight: 900; color: ${(props) => props.$color}; text-shadow: 0 0 10px ${(props) => props.$color}; text-align: center; text-transform: uppercase; white-space: nowrap; `;
 const HeroLevel = styled.div` font-size: 10px; color: #fff; font-weight: bold; margin-top: 4px; text-align: center; line-height: 1.4; `;
 const Crown3D = styled(motion.div)` position: absolute; top: -35px; z-index: 15; filter: drop-shadow(0 0 10px #eab308); `;
@@ -224,11 +268,24 @@ const BeamLight = styled.div<{ $color: string }>` position: absolute; bottom: 0;
 
 const SearchContainer = styled.div` position: relative; margin-bottom: 25px; `;
 const SearchIconBox = styled.div` position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #0ea5e9; `;
-const SearchInput = styled.input` width: 100%; background: rgba(11, 17, 32, 0.8); border: 1px solid #1e293b; color: #fff; padding: 16px 16px 16px 50px; border-radius: 14px; font-family: 'Oxanium'; font-size: 15px; outline: none; transition: 0.3s; &:focus { border-color: #00f2ff; box-shadow: 0 0 15px rgba(0,242,255,0.2); } &::placeholder { color: #475569; font-weight: bold; } `;
+const SearchInput = styled.input` width: 100%; background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255,255,255,0.05); color: #fff; padding: 16px 16px 16px 50px; border-radius: 14px; font-family: 'Oxanium'; font-size: 15px; outline: none; transition: 0.3s; backdrop-filter: blur(8px); &:focus { border-color: #00f2ff; box-shadow: 0 0 15px rgba(0,242,255,0.2); } &::placeholder { color: #475569; font-weight: bold; } `;
 
-// 🚨 تصميم كروت اللاعبين الـ Epic 2D 🚨
+// 🚨 تصميم كروت اللاعبين الـ Epic 2D بجماليات Glassmorphism داكنة 🚨
 const cardBreathe = keyframes` 0% { box-shadow: 0 4px 10px rgba(0,0,0,0.3); } 50% { box-shadow: 0 4px 20px rgba(255,255,255,0.05); } 100% { box-shadow: 0 4px 10px rgba(0,0,0,0.3); } `;
-const PlayerCard = styled(motion.div)<{ $rankColor: string }>` background: linear-gradient(90deg, #0f172a 0%, #020617 100%); border: 1px solid #1e293b; border-left: 4px solid ${(props) => props.$rankColor}; border-radius: 12px; padding: 15px 15px; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; transition: 0.3s; animation: ${cardBreathe} 4s infinite ease-in-out; &:hover { background: #1e293b; transform: translateX(5px); border-color: ${(props) => props.$rankColor}50; } `;
+const PlayerCard = styled(motion.div)<{ $rankColor: string }>` 
+  background: rgba(15, 23, 42, 0.4); 
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05); 
+  border-left: 4px solid ${(props) => props.$rankColor}; border-radius: 16px; padding: 16px 20px; margin-bottom: 14px; display: flex; align-items: center; cursor: pointer; 
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1), inset 0 0 10px rgba(255, 255, 255, 0.01);
+  &:hover { 
+    background: rgba(21, 32, 54, 0.55); 
+    border-color: ${(props) => props.$rankColor}60;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 15px ${(props) => props.$rankColor}15;
+    transform: translateX(4px); 
+  } 
+`;
 
 const RankCol = styled.div` width: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: #64748b; `;
 const IconCircle = styled.div<{ $color: string; $classColor: string }>` width: 40px; height: 40px; border-radius: 50%; border: 1px solid ${(props) => props.$color}80; display: flex; align-items: center; justify-content: center; margin: 0 10px; flex-shrink: 0; background: rgba(0, 0, 0, 0.5); box-shadow: inset 0 0 10px ${(props) => props.$classColor}40; `;

@@ -323,6 +323,14 @@ const Shop = ({ player, setPlayer }: any) => {
   const levelData = calculateLevelData(player?.cumulative_xp ?? player?.xp ?? 0);
   const currentPlayerLevel = levelData.level;
   
+  const getDiscountedPrice = (price: number) => {
+    const hasOwl = player?.active_pet === 'Shadow Owl Eye';
+    if (hasOwl) {
+      return Math.round(price * 0.9);
+    }
+    return price;
+  };
+
   const [gold, setGold] = useState(player?.gold || 0);
   const [dbItems, setDbItems] = useState<any[]>([]);
   const [claimsList, setClaimsList] = useState<any[]>([]);
@@ -373,7 +381,8 @@ const Shop = ({ player, setPlayer }: any) => {
     const { item } = confirmModal;
     setConfirmModal({ show: false, item: null });
     
-    if (gold < item.price) { playError(); toast.error('NOT ENOUGH GOLD!'); return; }
+    const discountedPrice = getDiscountedPrice(item.price);
+    if (gold < discountedPrice) { playError(); toast.error('NOT ENOUGH GOLD!'); return; }
     const reqRank = item.required_rank || 1;
     if (currentPlayerLevel < reqRank) { playError(); toast.error('RANK TOO LOW!'); return; }
 
@@ -404,7 +413,7 @@ const Shop = ({ player, setPlayer }: any) => {
         if (playerPets.includes(item.name)) { playError(); toast.error('تمتلك هذا المرافق بالفعل!'); setIsProcessing(false); return; }
       }
 
-      const newGold = gold - item.price;
+      const newGold = gold - discountedPrice;
       let updatePayload: any = { gold: newGold };
       
       if (item.category === 'title') {
@@ -427,11 +436,11 @@ const Shop = ({ player, setPlayer }: any) => {
       if (updateError) throw new Error(`Player Update Failed: ${updateError.message}`);
       
       const { error: reqError } = await supabase.from('elite_quests').insert([{
-        player_name: player.name, task_name: `[SHOP RECEIPT] ${item.name}`, evidence: `تم الدفع الفوري: ${item.price} Gold.`, type: 'request', status: 'approved' 
+        player_name: player.name, task_name: `[SHOP RECEIPT] ${item.name}`, evidence: `تم الدفع الفوري: ${discountedPrice} Gold.`, type: 'request', status: 'approved' 
       }]);
       if (reqError) throw new Error(`Quest Insert Failed: ${reqError.message}`);
 
-      const { error: ecoError } = await supabase.from('elite_economy').insert([{ player_name: player.name, amount: item.price, currency: 'gold', operation: 'decrease', reason: taskName }]);
+      const { error: ecoError } = await supabase.from('elite_economy').insert([{ player_name: player.name, amount: discountedPrice, currency: 'gold', operation: 'decrease', reason: taskName }]);
       if (ecoError) throw new Error(`Economy Insert Failed: ${ecoError.message}`);
 
       setGold(newGold);
@@ -574,9 +583,15 @@ const Shop = ({ player, setPlayer }: any) => {
                   ) : playerHasIt ? (
                     <BuyBtn $affordable={false} $color={item.color} disabled={true}>ALREADY OWNED</BuyBtn>
                   ) : (
-                    <BuyBtn $affordable={gold >= item.price && !isRankLocked} $color={item.color} disabled={gold < item.price || isRankLocked || isProcessing} onClick={() => triggerConfirm(item)}>
-                      {isRankLocked ? <><Lock size={12} /> RANK TOO LOW</> : <><Gem size={12} /> {item.price} GOLD</>}
-                    </BuyBtn>
+                    (() => {
+                      const discountedPrice = getDiscountedPrice(item.price);
+                      const affordable = gold >= discountedPrice && !isRankLocked;
+                      return (
+                        <BuyBtn $affordable={affordable} $color={item.color} disabled={gold < discountedPrice || isRankLocked || isProcessing} onClick={() => triggerConfirm(item)}>
+                          {isRankLocked ? <><Lock size={12} /> RANK TOO LOW</> : <><Gem size={12} /> {discountedPrice} GOLD {player?.active_pet === 'Shadow Owl Eye' && <span style={{fontSize: '9px', opacity: 0.8}}>(10% 🦉)</span>}</>}
+                        </BuyBtn>
+                      );
+                    })()
                   )}
                 </div>
               </ExclusiveCard>
@@ -615,7 +630,7 @@ const Shop = ({ player, setPlayer }: any) => {
               <ModalContent $color={confirmModal.item.color} initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, opacity: 0 }}>
                 <ModalTitle $color={confirmModal.item.color}><Shield size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} /> SECURITY CHECK</ModalTitle>
                 <ModalDesc>
-                  Are you sure you want to spend <strong style={{ color: '#eab308', fontSize: '14px' }}>{confirmModal.item.price} Gold</strong> to acquire:
+                  Are you sure you want to spend <strong style={{ color: '#eab308', fontSize: '14px' }}>{getDiscountedPrice(confirmModal.item.price)} Gold</strong> to acquire:
                   <br/><br/>
                   <ModalItemName $color={confirmModal.item.color}>{confirmModal.item.name}</ModalItemName>
                 </ModalDesc>

@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Box, Trophy, Store, Settings, Crosshair
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
-import { Howl, Howler } from 'howler';
+
 
 import AwakeningScreen from './components/AwakeningScreen';
 import Dashboard from './components/Dashboard';
@@ -23,12 +23,12 @@ import CoachPanel from './components/CoachPanel';
 import { supabase } from './lib/supabase';
 
 // ==========================================
-// 1. ADVANCED AUDIO ENGINE (Howler + Web Audio)
+// 1. ADVANCED AUDIO ENGINE (Web Audio Only)
 // ==========================================
-const bgmMain = new Howl({ src: ['https://cdn.freesound.org/previews/514/514214_10901551-lq.mp3'], loop: true, volume: 0.15 });
-const bgmShop = new Howl({ src: ['https://cdn.freesound.org/previews/612/612085_5674468-lq.mp3'], loop: true, volume: 0.15 });
 
-let currentBGM = bgmMain;
+
+
+
 const createAudioContext = () => { const AudioContext = window.AudioContext || (window as any).webkitAudioContext; if (!AudioContext) return null; return new AudioContext(); };
 let sharedAudioCtx: AudioContext | null = null;
 let lastPlayTime = 0;
@@ -164,14 +164,15 @@ const MiniOrb = ({ type, color }: { type: string, color: string }) => {
 // ==========================================
 // 3. EPIC STYLED COMPONENTS 🎨 (صغيرة ومناسبة للموبايل)
 // ==========================================
-const panBackground = keyframes` 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } `;
+
+
 
 const AppContainer = styled.div`
   min-height: 100vh; background: radial-gradient(circle at top right, #0f172a, #020617 70%); color: #fff; font-family: 'Oxanium', sans-serif; overflow-x: hidden; position: relative;
 `;
 
 const BackgroundGrid = styled.div`
-  position: fixed; inset: 0; background-image: linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; animation: ${panBackground} 60s linear infinite; pointer-events: none; z-index: 0;
+  position: fixed; inset: 0; background-image: linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0;
 `;
 
 const ContentWrapper = styled.div` position: relative; padding-bottom: 50px; `;
@@ -185,8 +186,8 @@ const StatusBar = styled.div`
 
 const HPBarContainer = styled.div` display: flex; align-items: center; gap: 8px; margin-bottom: 12px; width: 100%; `;
 const HPBarWrapper = styled.div` flex: 1; height: 8px; background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 0 5px rgba(0,0,0,0.5); `;
-const HPBarFill = styled(motion.div)<{ $hp: number; }>` 
-  height: 100%; background: ${(props) => props.$hp > 50 ? 'linear-gradient(90deg, #059669, #10b981)' : props.$hp > 20 ? 'linear-gradient(90deg, #d97706, #eab308)' : 'linear-gradient(90deg, #991b1b, #ef4444)'}; width: ${(props) => props.$hp}%; position: relative; overflow: hidden; box-shadow: 0 0 10px ${(props) => props.$hp > 50 ? 'rgba(16, 185, 129, 0.6)' : props.$hp > 20 ? 'rgba(234, 179, 8, 0.6)' : 'rgba(239, 68, 68, 0.6)'};
+const HPBarFill = styled(motion.div)<{ $hpPercent: number; $hp: number; }>` 
+  height: 100%; background: ${(props) => props.$hp > 50 ? 'linear-gradient(90deg, #059669, #10b981)' : props.$hp > 20 ? 'linear-gradient(90deg, #d97706, #eab308)' : 'linear-gradient(90deg, #991b1b, #ef4444)'}; width: ${(props) => props.$hpPercent}%; position: relative; overflow: hidden; box-shadow: 0 0 10px ${(props) => props.$hp > 50 ? 'rgba(16, 185, 129, 0.6)' : props.$hp > 20 ? 'rgba(234, 179, 8, 0.6)' : 'rgba(239, 68, 68, 0.6)'};
 `;
 const HPText = styled.span<{ $hp: number }>` font-size: 11px; font-weight: 900; color: ${(props) => props.$hp > 50 ? '#10b981' : props.$hp > 20 ? '#eab308' : '#ef4444'}; text-shadow: 0 0 5px currentColor; `;
 
@@ -204,7 +205,7 @@ const PlayerNameRow = styled.div` display: flex; align-items: center; gap: 6px; 
 const SystemLinkText = styled.div` font-size: 8px; color: #00f2ff; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; `;
 const NameText = styled.div` font-size: 15px; font-weight: 900; text-transform: uppercase; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; `;
 const PlayerTitleText = styled.div` font-size: 10px; color: #94a3b8; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; `;
-const StreakBadge = styled.div<{ $color: string }>` display: flex; align-items: center; background: linear-gradient(90deg, ${(props) => props.$color}20, transparent); padding: 2px 6px; border-radius: 6px; border-left: 2px solid ${(props) => props.$color}; flex-shrink: 0; svg { width: 10px; height: 10px; } span { font-size: 11px; } `;
+const StreakBadge = styled(motion.div)<{ $color: string }>` display: flex; align-items: center; background: linear-gradient(135deg, ${(props) => props.$color}15 0%, transparent 100%); border: 1px solid ${(props) => props.$color}; padding: 2px 6px; border-radius: 6px; flex-shrink: 0; box-shadow: 0 0 10px ${(props) => props.$color}30; svg { width: 10px; height: 10px; } span { font-size: 11px; } `;
 
 const GoldBadge = styled.div` 
   background: linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(202, 138, 4, 0.2) 100%); border: 1px solid #eab308; color: #fef08a; padding: 6px 12px; border-radius: 10px; font-weight: 900; display: flex; align-items: center; gap: 5px; flex-shrink: 0; box-shadow: 0 0 10px rgba(234, 179, 8, 0.2);
@@ -247,7 +248,7 @@ const App = () => {
   const [isBooting, setIsBooting] = useState(false);
   const [bootText, setBootText] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
-  const [isMusicMuted, setIsMusicMuted] = useState(false);
+
 
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -269,7 +270,7 @@ const App = () => {
     }
   }, []);
 
-  useEffect(() => { Howler.mute(isMusicMuted); }, [isMusicMuted]);
+
 
   useEffect(() => {
     const handleOnline = () => { setIsOffline(false); toast.success('SYSTEM ONLINE: Neural Link Restored.', { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' } }); };
@@ -291,11 +292,13 @@ const App = () => {
             const updatedPlayer = { ...parsedData, ...data }; setPlayer(updatedPlayer); localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
             let lastMacroDate = data.last_macro_date; const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
             if (lastMacroDate && lastMacroDate !== todayStr) {
-               await supabase.from('player_snapshots').insert([{ player_name: updatedPlayer.name, snapshot_date: lastMacroDate, xp: data.cumulative_xp || data.xp || 0, gold: data.gold || 0, hp: data.hp || 100 }]);
-               let fetchedMacros = { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] }; await supabase.from('elite_players').update({ daily_macros: fetchedMacros, last_macro_date: todayStr }).eq('name', updatedPlayer.name);
+               // NON-BLOCKING ASYNC: حفظ اللقطة وتحديث الماكروز في الخلفية لتفادي تعطل تشغيل التطبيق
+               supabase.from('player_snapshots').insert([{ player_name: updatedPlayer.name, snapshot_date: lastMacroDate, xp: data.cumulative_xp || data.xp || 0, gold: data.gold || 0, hp: data.hp || 100 }]).then(({ error }) => { if (error) console.error("Snapshot error:", error); });
+               let fetchedMacros = { protein: 0, carbs: 0, fats: 0, calories: 0, log: [] }; 
+               supabase.from('elite_players').update({ daily_macros: fetchedMacros, last_macro_date: todayStr }).eq('name', updatedPlayer.name).then(({ error }) => { if (error) console.error("Macro reset error:", error); });
             }
           } else { setPlayer(parsedData); }
-        } catch (err) { console.error("Sync error", err); setPlayer(parsedData); } finally { setTimeout(() => { setIsBooting(false); playSound('startup'); if (!bgmMain.playing()) { bgmMain.play(); } }, 2500); }
+        } catch (err) { console.error("Sync error", err); setPlayer(parsedData); } finally { setTimeout(() => { setIsBooting(false); playSound('startup'); }, 2500); }
       }; fetchLatestData();
     }
   }, []);
@@ -330,24 +333,46 @@ const App = () => {
   }, [player, isBooting, isOffline]);
 
   useEffect(() => { if (player && !isBooting) { localStorage.setItem('elite_system_active_session', JSON.stringify(player)); } }, [player, isBooting]);
-  const handleAwaken = (playerData: any) => { setPlayer(playerData); setIsBooting(true); playSound('boot'); setTimeout(() => { setIsBooting(false); playSound('startup'); if (!bgmMain.playing()) { bgmMain.play(); } }, 2000); };
-  const handleLogout = () => { playSound('click'); localStorage.removeItem('elite_system_active_session'); localStorage.removeItem('elite_coach_mode'); Howler.stop(); setPlayer(null); };
+  const handleAwaken = (playerData: any) => { setPlayer(playerData); setIsBooting(true); playSound('boot'); setTimeout(() => { setIsBooting(false); playSound('startup'); }, 2000); };
+  const handleLogout = () => { playSound('click'); localStorage.removeItem('elite_system_active_session'); localStorage.removeItem('elite_coach_mode'); setPlayer(null); };
 
   const handleTabChange = (tabId: string) => {
     if (tabId === 'rank' || tabId === 'profile') playSound('shield');
     else if (tabId === 'records' || tabId === 'rehab') playAuraSound(player);
     else playSound('click');
     
-    if (tabId === 'shop') {
-      if (currentBGM !== bgmShop) { currentBGM.fade(0.15, 0, 800); setTimeout(() => { currentBGM.pause(); bgmShop.play(); bgmShop.fade(0, 0.15, 800); currentBGM = bgmShop; }, 800); }
-    } else {
-      if (currentBGM !== bgmMain) { currentBGM.fade(0.15, 0, 800); setTimeout(() => { currentBGM.pause(); bgmMain.play(); bgmMain.fade(0, 0.15, 800); currentBGM = bgmMain; }, 800); }
-    }
+    
+    
     setActiveTab(tabId);
   };
 
   const openNotificationCenter = () => { playSound('click'); setShowNotifications(true); setNotifications(prev => prev.map(n => ({ ...n, read: true }))); };
-  const toggleMute = () => { playSound('click'); setIsMusicMuted(!isMusicMuted); };
+
+  const gearBonuses = React.useMemo(() => {
+     let bonusGold = 0; let bonusHp = 0; let bonusMaxHp = 0; let healOnLevelUp = false;
+     if (!player) return { bonusGold, bonusHp, bonusMaxHp, healOnLevelUp };
+     const equipped = player.equipped_gear;
+     if (!equipped) return { bonusGold, bonusHp, bonusMaxHp, healOnLevelUp };
+     const parseStat = (statStr: string) => {
+       if (!statStr) return;
+       if (statStr.includes('+5 Gold')) bonusGold += 5;
+       if (statStr.includes('+10 Gold')) bonusGold += 10;
+       if (statStr.includes('+15 Gold')) bonusGold += 15;
+       if (statStr.includes('+20 Gold')) bonusGold += 20;
+       if (statStr.includes('+30 Gold')) bonusGold += 30;
+       if (statStr.includes('+2 HP')) bonusHp += 2;
+       if (statStr.includes('+10 Max HP')) bonusMaxHp += 10;
+       if (statStr.includes('+25 Max HP')) bonusMaxHp += 25;
+       if (statStr.includes('+40 Max HP')) bonusMaxHp += 40;
+       if (statStr.includes('+50 Max HP')) bonusMaxHp += 50;
+       if (statStr.includes('Heal 100% on Level Up')) healOnLevelUp = true;
+       if (statStr.includes('+10 HP & +5G')) { bonusMaxHp += 10; bonusGold += 5; }
+     };
+     if (equipped.weapon) parseStat(equipped.weapon.stat);
+     if (equipped.armor) parseStat(equipped.armor.stat);
+     if (equipped.artifact) parseStat(equipped.artifact.stat);
+     return { bonusGold, bonusHp, bonusMaxHp, healOnLevelUp };
+  }, [player?.equipped_gear]);
 
   if (!player) return <AwakeningScreen onAwaken={handleAwaken} />;
 
@@ -371,7 +396,10 @@ const App = () => {
   const xpNeededForNextLevel = levelData.expNeededForNextLevel;
   const progressPercent = Math.min(100, (currentVisualXp / xpNeededForNextLevel) * 100);
 
+  const MAX_HP = 100 + gearBonuses.bonusMaxHp;
   const hp = player.hp ?? 100;
+  const hpPercent = Math.min(100, (hp / MAX_HP) * 100);
+
   const auraColor = getIconColor(player);
   const currentStreak = player.streak || 0;
   const streakColor = getStreakColor(currentStreak);
@@ -407,9 +435,7 @@ const App = () => {
 
       <StatusBar>
         <TopRightControls>
-          <IconButton onClick={toggleMute} title={isMusicMuted ? "Unmute Music" : "Mute Music"}>
-            {isMusicMuted ? <VolumeX size={16} color="#ef4444" /> : <Volume2 size={16} color="#10b981" />}
-          </IconButton>
+          
           <IconButton onClick={openNotificationCenter} $hasUnread={unreadCount > 0} title="Notifications" style={{ display: 'none' }}>
             <Bell size={16} />
             {unreadCount > 0 && <UnreadDot>{unreadCount}</UnreadDot>}
@@ -420,9 +446,9 @@ const App = () => {
         <HPBarContainer>
           <HeartIcon size={14} color={hp > 50 ? '#10b981' : hp > 20 ? '#eab308' : '#ef4444'} />
           <HPBarWrapper>
-            <HPBarFill $hp={hp} initial={{ width: 0 }} animate={{ width: `${hp}%` }} transition={{ duration: 1.5, type: 'spring' }} />
+            <HPBarFill $hpPercent={hpPercent} $hp={hp} initial={{ width: 0 }} animate={{ width: `${hpPercent}%` }} transition={{ duration: 1.5, type: 'spring' }} />
           </HPBarWrapper>
-          <HPText $hp={hp}>{hp} HP</HPText>
+          <HPText $hp={hp}>{hp} / {MAX_HP} HP</HPText>
         </HPBarContainer>
 
         <PlayerInfoRow>
@@ -443,7 +469,7 @@ const App = () => {
               <PlayerNameRow>
                  <PlayerTitleText>{`[ ${player.titles?.[0] || 'Athlete'} ]`}</PlayerTitleText>
                  {currentStreak >= 3 && (
-                  <StreakBadge $color={streakColor} title={`${currentStreak} Days Streak!`} initial={{ scale: 0.8 }} animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+                  <StreakBadge $color={streakColor} title={`${currentStreak} Days Streak!`} whileHover={{ scale: 1.05 }}>
                     <Flame size={10} color={streakColor} fill={streakColor} style={{ marginRight: '4px', filter: `drop-shadow(0 0 5px ${streakColor})` }} />
                     <span style={{ color: streakColor, fontWeight: '900' }}>{currentStreak}</span>
                   </StreakBadge>
@@ -484,7 +510,7 @@ const App = () => {
                   )}
               </AnimatePresence>
               
-              <motion.div style={{ width: '22px', height: '22px', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1, filter: activeTab === tab.id ? `drop-shadow(0 0 5px ${tab.color})` : 'none' }} animate={activeTab === tab.id ? { y: [-2, 2, -2] } : {}} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
+              <motion.div style={{ width: '22px', height: '22px', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1, filter: activeTab === tab.id ? `drop-shadow(0 0 5px ${tab.color})` : 'none' }}>
                 <IconComponent />
               </motion.div>
 

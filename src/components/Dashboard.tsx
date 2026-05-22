@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled, { keyframes } from 'styled-components';
 import { Toaster, toast } from 'sonner';
-import confetti from 'canvas-confetti';
 import {
   CheckCircle, Circle, AlertTriangle, ShieldAlert, Camera, X, Activity, Flame, Droplet,
   Dumbbell, Zap, Star, Clock, Users, Wind, Loader, Footprints, StretchHorizontal,
@@ -113,6 +112,13 @@ const calculateLevelData = (totalXp: number) => {
   return { level, xpInCurrentLevel: currentXp, expNeededForNextLevel };
 };
 
+const getStreakTier = (s: number) => {
+  if (s >= 30) return { name: 'VOID QUANTUM 🌌', multiplier: 1.5, nextMilestone: 60, prevMilestone: 30, color: '#a855f7' };
+  if (s >= 14) return { name: 'CYBER TITAN ⚡', multiplier: 1.2, nextMilestone: 30, prevMilestone: 14, color: '#00f2ff' };
+  if (s >= 7) return { name: 'EMERALD SENTINEL 💚', multiplier: 1.1, nextMilestone: 14, prevMilestone: 7, color: '#10b981' };
+  return { name: 'EMBER INITIATE 🔥', multiplier: 1.0, nextMilestone: 7, prevMilestone: 0, color: '#f97316' };
+};
+
 const getSystemDateStr = (date: Date) => { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; };
 
 // ==========================================
@@ -138,6 +144,155 @@ const AnimatedExpStar = React.memo(() => (
   </motion.div>
 ));
 
+interface QuestCardComponentProps {
+  quest: any;
+  status: 'completed' | 'pending' | 'idle';
+  isLocked: boolean;
+  bloodMoonMultiplier: number;
+  bonusGold: number;
+  dynamicDesc: string;
+  onClick: (quest: any) => void;
+}
+
+const QuestCardComponent = React.memo<QuestCardComponentProps>(({
+  quest,
+  status,
+  isLocked,
+  bloodMoonMultiplier,
+  bonusGold,
+  dynamicDesc,
+  onClick
+}) => {
+  const IconComponent = quest.icon;
+  const isPenalty = !!quest.isPenalty;
+
+  const renderRightActionIcon = () => {
+    if (status === 'completed') return <CheckCircle size={22} color="#10b981" />;
+    if (status === 'pending') return <Clock size={22} color="#facc15" />;
+    if (isLocked) return <Lock size={20} color="#334155" />;
+    if (quest.type === 'mobilityRoutine' || quest.type === 'nutrition') {
+      return <PlusCircle size={22} color={quest.type === 'nutrition' ? '#f97316' : '#10b981'} />;
+    }
+    if (quest.type === 'request') return <Camera size={20} color="#64748b" />;
+    return <Circle size={22} color="#334155" />;
+  };
+
+  return (
+    <QuestCard
+      $status={status}
+      $isPenalty={isPenalty}
+      $isLocked={isLocked}
+      $glowColor={isPenalty ? '#ef4444' : quest.color}
+      onClick={() => onClick(quest)}
+      whileTap={{ scale: isLocked && status === 'idle' ? 1 : 0.98 }}
+    >
+      <LeftContent>
+        <IconWrapper $color={isPenalty ? '#ef4444' : quest.color}>
+          <IconComponent size={20} color={isPenalty ? '#ef4444' : quest.color} />
+        </IconWrapper>
+        <TextContent>
+          <QuestTitle $status={status} $isPenalty={isPenalty}>
+            {quest.title}
+          </QuestTitle>
+          <QuestDesc>{dynamicDesc}</QuestDesc>
+          {!isPenalty && (
+            <Rewards>
+              <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}>
+                <AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP
+              </span>
+              <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
+                <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)}
+                {quest.gold > 0 && bonusGold > 0 && (
+                  <span style={{ color: '#facc15', fontSize: '9px', marginLeft: '4px' }}>
+                    (+{bonusGold} Gear)
+                  </span>
+                )} GOLD
+              </span>
+            </Rewards>
+          )}
+        </TextContent>
+      </LeftContent>
+      <RightAction $type={quest.type} $status={status}>
+        {renderRightActionIcon()}
+      </RightAction>
+    </QuestCard>
+  );
+});
+
+interface UrgentQuestCardComponentProps {
+  quest: any;
+  status: 'completed' | 'pending' | 'idle';
+  isLocked: boolean;
+  bloodMoonMultiplier: number;
+  bonusGold: number;
+  onClick: (quest: any) => void;
+}
+
+const UrgentQuestCardComponent = React.memo<UrgentQuestCardComponentProps>(({
+  quest,
+  status,
+  isLocked,
+  bloodMoonMultiplier,
+  bonusGold,
+  onClick
+}) => {
+  const IconComponent = quest.icon;
+
+  const renderRightActionIcon = () => {
+    if (status === 'completed') return <CheckCircle size={22} color="#10b981" />;
+    if (status === 'pending') return <Clock size={22} color="#facc15" />;
+    if (isLocked) return <Lock size={20} color="#334155" />;
+    if (quest.type === 'mobilityRoutine' || quest.type === 'nutrition') {
+      return <PlusCircle size={22} color={quest.type === 'nutrition' ? '#f97316' : '#10b981'} />;
+    }
+    if (quest.type === 'request') return <Camera size={20} color="#64748b" />;
+    return <Circle size={22} color="#334155" />;
+  };
+
+  return (
+    <UrgentCard
+      $status={status}
+      $isLocked={isLocked}
+      $glowColor="#ef4444"
+      onClick={() => onClick(quest)}
+      whileTap={{ scale: isLocked && status === 'idle' ? 1 : 0.98 }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%' }}>
+        <IconWrapper
+          $color={quest.color}
+          style={{ background: status === 'completed' ? '#10b98120' : 'rgba(239, 68, 68, 0.15)' }}
+        >
+          <IconComponent size={24} color={status === 'completed' ? '#10b981' : quest.color} />
+        </IconWrapper>
+        <TextContent style={{ flex: 1 }}>
+          <QuestTitle $status={status} style={{ color: status === 'completed' ? '#10b981' : '#fff' }}>
+            {quest.title}
+          </QuestTitle>
+          <QuestDesc style={{ color: status === 'completed' ? '#10b981' : '#fca5a5' }}>
+            {quest.desc}
+          </QuestDesc>
+          <Rewards>
+            <span style={{ color: status === 'completed' ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center' }}>
+              <AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP
+            </span>
+            <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
+              <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)}
+              {quest.gold > 0 && bonusGold > 0 && (
+                <span style={{ color: '#facc15', fontSize: '9px', marginLeft: '4px' }}>
+                  (+{bonusGold} Gear)
+                </span>
+              )} GOLD
+            </span>
+          </Rewards>
+        </TextContent>
+        <RightAction $type={quest.type} $status={status}>
+          {renderRightActionIcon()}
+        </RightAction>
+      </div>
+    </UrgentCard>
+  );
+});
+
 // ==========================================
 // 4. Styled Components (Optimized for Mobile)
 // ==========================================
@@ -148,22 +303,157 @@ const TickerIcon = styled.div` background: #0ea5e920; color: #0ea5e9; padding: 6
 const marquee = keyframes` 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } `;
 const TickerText = styled.div` display: flex; gap: 40px; white-space: nowrap; animation: ${marquee} 9s linear infinite; will-change: transform; font-size: 13px; font-weight: bold; color: #94a3b8; direction: rtl; span { color: #fff; } strong { color: #eab308; } @media (max-width: 480px) { font-size: 11px; }`;
 
-const DynamicHeader = styled.div<{ $color: string; $shadow: string }>` display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #0f172a 0%, #020617 100%); border: 1px solid ${(props) => props.$color}; padding: 20px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 0 15px ${(props) => props.$shadow}; transition: all 0.5s ease; @media (max-width: 480px) { padding: 15px; border-radius: 14px; margin-bottom: 15px; }`;
-const HeaderTitle = styled.h1<{ $color: string }>` margin: 0; font-size: 20px; color: ${(props) => props.$color}; display: flex; align-items: center; gap: 10px; @media (max-width: 480px) { font-size: 16px; gap: 6px; svg { width: 18px; height: 18px; } }`;
-const HeaderStats = styled.div` text-align: right; div { font-size: 10px; color: #94a3b8; font-weight: bold; margin-bottom: 2px; @media (max-width: 480px) { font-size: 9px; } } span { color: #fff; }`;
 
-const DateNav = styled.div` display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 10px 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); @media (max-width: 480px) { padding: 8px 12px; }`;
+
+const DateNav = styled.div` display: flex; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 15px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); @media (max-width: 480px) { padding: 8px 12px; }`;
 const NavBtn = styled.button` background: none; border: none; color: #00f2ff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; transition: 0.3s; &:disabled { color: #334155; cursor: not-allowed; } &:hover:not(:disabled) { filter: brightness(1.2); transform: scale(1.1); } @media (max-width: 480px) { svg { width: 18px; height: 18px; } }`;
 const DateDisplay = styled.div` text-align: center; .day { font-size: 14px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; @media (max-width: 480px) { font-size: 12px; } } .full-date { font-size: 9px; color: #ef4444; margin-top: 2px; font-weight: bold; } `;
 
-const SeasonCard = styled.div` background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 20px; position: relative; overflow: hidden; box-shadow: 0 5px 15px rgba(56, 189, 248, 0.1); `;
-const SeasonHeader = styled.div` display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; `;
-const SeasonTitleText = styled.h2` margin: 0; font-size: 13px; color: #38bdf8; display: flex; align-items: center; gap: 5px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; svg { width: 14px; height: 14px; } `;
-const CountdownBadge = styled.div` background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 3px 8px; border-radius: 6px; font-size: 9px; font-weight: 900; display: flex; align-items: center; gap: 4px; svg { width: 10px; height: 10px; } `;
+// 🚨 STREAK PROGRESSION WIDGET STYLE (replaces Battle Pass) 🚨
+const StreakTrackerCard = styled.div<{ $streakColor: string }>`
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(2, 6, 23, 0.8) 100%);
+  border: 1px solid ${props => props.$streakColor}40;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px ${props => props.$streakColor}05;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, ${props => props.$streakColor}, transparent);
+  }
+`;
 
-const BpTrack = styled.div` display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; direction: ltr; &::-webkit-scrollbar { height: 3px; } &::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 4px; } `;
-const BpCard = styled(motion.div)<{ $unlocked: boolean, $claimed: boolean, $color: string }>` min-width: 90px; background: ${p => p.$claimed ? '#10b98120' : p.$unlocked ? 'rgba(15, 23, 42, 0.8)' : '#020617'}; border: 1px solid ${p => p.$claimed ? '#10b981' : p.$unlocked ? p.$color : '#1e293b'}; border-radius: 10px; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 4px; opacity: ${p => p.$unlocked ? 1 : 0.5}; transition: 0.3s; `;
-const ClaimBtn = styled.button<{ $claimed: boolean, $color: string }>` width: 100%; background: ${p => p.$claimed ? '#10b981' : p.$color}; color: #000; border: none; padding: 4px; border-radius: 4px; font-size: 10px; font-family: 'Oxanium'; font-weight: 900; cursor: ${p => p.$claimed ? 'default' : 'pointer'}; opacity: ${p => p.$claimed ? 0.5 : 1}; transition: 0.3s; &:hover { filter: brightness(1.2); }`;
+const StreakHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+`;
+
+const StreakTitle = styled.h3<{ $color: string }>`
+  margin: 0;
+  font-size: 12px;
+  font-weight: 900;
+  color: ${props => props.$color};
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px ${props => props.$color}30;
+`;
+
+const StreakMultiplierBadge = styled.div<{ $color: string }>`
+  background: ${props => props.$color}15;
+  border: 1px solid ${props => props.$color}40;
+  color: ${props => props.$color};
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+`;
+
+const StreakCounterContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+`;
+
+const FireFlameIcon = styled.div<{ $color: string }>`
+  background: ${props => props.$color}10;
+  border: 2px solid ${props => props.$color};
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px ${props => props.$color}30, inset 0 0 8px ${props => props.$color}10;
+`;
+
+const StreakValueText = styled.div`
+  display: flex;
+  flex-direction: column;
+  
+  .number {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    
+    span {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+  }
+  
+  .level-desc {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-top: 3px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+`;
+
+const StreakProgressBar = styled.div`
+  height: 6px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 3px;
+  position: relative;
+  margin: 22px 10px 12px 10px;
+`;
+
+const StreakProgressBarFill = styled.div<{ $progress: number; $color: string }>`
+  height: 100%;
+  width: ${props => props.$progress}%;
+  background: ${props => props.$color};
+  box-shadow: 0 0 15px ${props => props.$color};
+  border-radius: 3px;
+  transition: width 0.5s ease-in-out;
+`;
+
+const StreakMilestoneNode = styled.div<{ $active: boolean; $color: string; $left: number }>`
+  position: absolute;
+  top: 50%;
+  left: ${props => props.$left}%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: ${props => props.$active ? props.$color : '#0f172a'};
+  border: 2px solid ${props => props.$active ? '#fff' : '#475569'};
+  box-shadow: ${props => props.$active ? `0 0 12px ${props.$color}` : 'none'};
+  transition: all 0.3s ease;
+  z-index: 10;
+  
+  &::after {
+    content: attr(data-milestone);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    font-weight: 900;
+    color: ${props => props.$active ? '#fff' : '#64748b'};
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+`;
 
 const PenaltyBanner = styled(motion.div)<{ $isPending: boolean }>` background: ${(props) => (props.$isPending ? '#b45309' : '#2a0808')}; border: 1px dashed ${(props) => (props.$isPending ? '#fcd34d' : '#ef4444')}; color: ${(props) => (props.$isPending ? '#fef3c7' : '#fca5a5')}; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; font-weight: 900; letter-spacing: 1px; margin-bottom: 20px; @media (max-width: 480px) { font-size: 10px; padding: 10px; margin-bottom: 15px; text-align: center; }`;
 
@@ -366,6 +656,18 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const [showMobilityModal, setShowMobilityModal] = useState(false);
   const [hasFile, setHasFile] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleFileUpload = (e: any) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setHasFile(true);
+      playDashSound('complete');
+    }
+  };
+
+  const completeMobilityRoutine = () => {
+    setShowMobilityModal(false);
+    completeQuest(SHARED_MOBILITY);
+  };
   const [isLoadingSync, setIsLoadingSync] = useState(true);
   const [systemLogs, setSystemLogs] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
@@ -509,7 +811,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
     };
     fetchRadarNews();
 
-    const newsSub = supabase.channel('dashboard_news_channel').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_news' }, payload => {
+    const dashboardNewsChannelName = `dashboard_news_${Date.now()}`;
+    const newsSub = supabase.channel(dashboardNewsChannelName).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_news' }, payload => {
         setSystemLogs(prev => [`🌍 ${payload.new.title}: ${payload.new.content}`, ...prev.slice(0, 4)]);
         toast.info(payload.new.title, { description: payload.new.content, style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' } });
       }).subscribe();
@@ -529,7 +832,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
             playDashSound('levelUp');
             const newRankInfo = getRankInfo(fetchedLvl);
             setLevelUpData({ show: true, newLevel: fetchedLvl, bonusGold: 0, color: newRankInfo.color });
-            confetti({ particleCount: 300, spread: 150, startVelocity: 40, origin: { y: 0.6 }, colors: [newRankInfo.color, '#ffffff', '#eab308'] });
             setTimeout(() => setLevelUpData(null), 5000);
           }
           prevLevelRef.current = fetchedLvl;
@@ -558,6 +860,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
           const yesterdayObj = new Date(realNow); yesterdayObj.setDate(yesterdayObj.getDate() - 1);
           
           let applyPenalty = false; let daysMissedCount = 0; let hpPenaltyAmount = 0;
+          const hasGolem = currentPlayer.active_pet === 'Iron Golem Matrix';
+          const hasEmeraldScale = currentPlayer.active_pet === 'Emerald Dragon Scale';
+          const penaltyHpPerTask = hasEmeraldScale ? 7 : 15;
 
           while (checkDate <= yesterdayObj) {
             const checkStr = getSystemDateStr(checkDate);
@@ -568,8 +873,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
             const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
             const completedMandatory = dayReqs ? dayReqs.filter(r => mandatoryTasks.includes(r.task_name) && r.status === 'approved').map(r => r.task_name) : [];
             const missedTasksCount = mandatoryTasks.length - completedMandatory.length;
-            if (missedTasksCount > 0) hpPenaltyAmount += (missedTasksCount * 15);
-            if (completedMandatory.length < 3) { fetchedStreak = 0; applyPenalty = true; daysMissedCount++; }
+            if (missedTasksCount > 0) hpPenaltyAmount += (missedTasksCount * penaltyHpPerTask);
+            if (completedMandatory.length < 3) { 
+              if (!hasGolem) {
+                fetchedStreak = 0; 
+              }
+              applyPenalty = true; 
+              daysMissedCount++; 
+            }
             lastPenaltyCheck = checkStr; checkDate.setDate(checkDate.getDate() + 1);
           }
 
@@ -578,8 +889,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
             const goldLost = applyPenalty ? (daysMissedCount * penaltyStats.gold) : 0;
             fetchedHp = Math.max(0, fetchedHp - hpPenaltyAmount); fetchedGold = Math.max(0, fetchedGold - goldLost);
             await supabase.from('elite_players').update({ hp: fetchedHp, gold: fetchedGold, streak: fetchedStreak, last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
-            if (hpPenaltyAmount > 0) toast.error(`🩸 تم خصم ${hpPenaltyAmount} HP لعدم استكمال مهام الأيام السابقة.`, { duration: 6000, style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444'} });
-            if (applyPenalty) toast.error(`💔 تم كسر الـ Streak وخصم ${goldLost} Gold بسبب التقصير!`, { duration: 6000, style: { background: '#450a0a', color: '#fca5a5', border: '1px solid #ef4444'} });
+            if (hpPenaltyAmount > 0) toast.error(`🩸 تم خصم ${hpPenaltyAmount} HP لعدم استكمال مهام الأيام السابقة. ${hasEmeraldScale ? '(خصم مخفض بنسبة 50% 🛡️)' : ''}`, { duration: 6000, style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444'} });
+            if (applyPenalty) {
+              if (hasGolem) {
+                toast.success(`🛡️ حماية الـ Iron Golem منعت انكسار الـ Streak! لم يتم تصفير أيامك النشطة.`, { duration: 8000, style: { background: '#020617', color: '#0ea5e9', border: '1px solid #0ea5e9'} });
+              } else {
+                toast.error(`💔 تم كسر الـ Streak وخصم ${goldLost} Gold بسبب التقصير!`, { duration: 6000, style: { background: '#450a0a', color: '#fca5a5', border: '1px solid #ef4444'} });
+              }
+            }
           } else if (lastPenaltyCheck !== userData.last_penalty_check) {
             await supabase.from('elite_players').update({ last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
           }
@@ -603,7 +920,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       setIsLoadingSync(false);
     };
     syncData();
-  }, [selStr, timeOffset, MAX_HP]);
+  }, [selStr, timeOffset, MAX_HP, currentPlayer.name]);
 
   const fetchGameLeaderboards = async () => {
     try {
@@ -632,6 +949,22 @@ const Dashboard = ({ player, setPlayer }: any) => {
             if (!existing) toast.success(`New Average: ${avg}ms!`, { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' }});
             else toast.success(`New Personal Best! Beat previous by ${existing.best_time - avg}ms!`, { style: { background: '#020617', border: '1px solid #00f2ff', color: '#00f2ff' }});
           }
+
+          let gameGold = 15;
+          if (avg < 200) gameGold = 50;
+          else if (avg < 250) gameGold = 40;
+          else if (avg < 300) gameGold = 30;
+
+          const hasWolf = currentPlayer.active_pet === 'Frost Wolf Soul';
+          const finalGameGold = Math.round(gameGold * (hasWolf ? 1.2 : 1.0));
+
+          const { data: playerGoldData } = await supabase.from('elite_players').select('gold').eq('name', currentPlayer.name).single();
+          const currentGold = playerGoldData?.gold || 0;
+          const newGold = currentGold + finalGameGold;
+          await supabase.from('elite_players').update({ gold: newGold }).eq('name', currentPlayer.name);
+          setPlayer((prev: any) => ({ ...prev, gold: newGold }));
+          
+          toast.success(`🎮 Game complete! Reward: +${finalGameGold} Gold ${hasWolf ? '(Frost Wolf +20% 🐺)' : ''}`, { style: { background: '#1e1b4b', border: '1px solid #38bdf8', color: '#38bdf8' } });
         } catch (e) {}
       }
     }
@@ -652,6 +985,19 @@ const Dashboard = ({ player, setPlayer }: any) => {
         await supabase.from('finger_sprint_scores').upsert({ hunter_name: currentPlayer.name, best_score: sprintScore }, { onConflict: 'hunter_name' });
         if (!existing) toast.success(`New Score: ${sprintScore} Taps!`, { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' }});
         else toast.success(`New Personal Best! Beat previous by ${sprintScore - existing.best_score} taps!`, { style: { background: '#020617', border: '1px solid #00f2ff', color: '#00f2ff' }});
+      }
+
+      const gameGold = Math.round(sprintScore * 0.5);
+      const hasWolf = currentPlayer.active_pet === 'Frost Wolf Soul';
+      const finalGameGold = Math.round(gameGold * (hasWolf ? 1.2 : 1.0));
+
+      if (finalGameGold > 0) {
+        const { data: playerGoldData } = await supabase.from('elite_players').select('gold').eq('name', currentPlayer.name).single();
+        const currentGold = playerGoldData?.gold || 0;
+        const newGold = currentGold + finalGameGold;
+        await supabase.from('elite_players').update({ gold: newGold }).eq('name', currentPlayer.name);
+        setPlayer((prev: any) => ({ ...prev, gold: newGold }));
+        toast.success(`🎮 Game complete! Reward: +${finalGameGold} Gold ${hasWolf ? '(Frost Wolf +20% 🐺)' : ''}`, { style: { background: '#1e1b4b', border: '1px solid #38bdf8', color: '#38bdf8' } });
       }
     } catch (e) {}
   };
@@ -741,14 +1087,24 @@ const Dashboard = ({ player, setPlayer }: any) => {
     setCompletedQuests(prev => [...prev, quest.title]);
     
     try {
-      const { error: questError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: quest.title, evidence: 'Honor System', type: 'quest', status: 'approved', created_at: getLogDate() }]);
-      if (questError) throw new Error("السيرفر مشغول، يرجى المحاولة مرة أخرى!");
+      const logDate = getLogDate();
+      const { error: questError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: quest.title, evidence: 'Honor System', type: 'quest', status: 'approved', created_at: logDate }]);
+      if (questError) {
+        console.error("Quest Insert Error:", questError);
+        throw new Error("فشلت عملية حفظ المهمة في قاعدة البيانات! " + questError.message);
+      }
       
       const earnedExp = quest.exp * bloodMoonMultiplier;
       let newXp = (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) + earnedExp;
       
+      const currentStreak = currentPlayer.streak || 0;
+      const streakTier = getStreakTier(currentStreak);
+      const streakMultiplier = streakTier.multiplier;
+      const hasWyvern = currentPlayer.active_pet === 'Golden Wyvern Core';
+      const wyvernMultiplier = hasWyvern ? 1.1 : 1.0;
+
       const baseGold = quest.gold || 0;
-      const earnedGold = (baseGold * bloodMoonMultiplier) + (baseGold > 0 ? gearBonuses.bonusGold : 0);
+      const earnedGold = Math.round(((baseGold * bloodMoonMultiplier) + (baseGold > 0 ? gearBonuses.goldBonus || gearBonuses.bonusGold || 0 : 0)) * streakMultiplier * wyvernMultiplier);
       let newGold = (currentPlayer.gold || 0) + earnedGold;
       
       const oldLevelData = calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0);
@@ -764,7 +1120,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
       newGold += levelGoldBonus;
       const isRecoveryTask = [SHARED_HYDRATION.title, SHARED_NUTRITION.title, SHARED_MOBILITY.title, 'Recovery Cooldown'].includes(quest.title);
       
-      const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0);
+      const hasPhoenix = currentPlayer.active_pet === 'Healing Phoenix Ember';
+      const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0) + (hasPhoenix ? 10 : 0);
       let newHp = Math.min(MAX_HP, (currentPlayer.hp || 100) + earnedHp);
 
       const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
@@ -785,7 +1142,15 @@ const Dashboard = ({ player, setPlayer }: any) => {
       }
 
       const dbUpdates = { cumulative_xp: newXp, monthly_xp: (currentPlayer.monthly_xp || 0) + earnedExp, gold: newGold, hp: newHp, streak: newStreak };
-      await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
+      
+      const { error: playerUpdateError } = await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
+      if (playerUpdateError) {
+        console.error("Player Update Error:", playerUpdateError);
+        // Rollback quest insertion to keep integrity
+        await supabase.from('elite_quests').delete().eq('player_name', currentPlayer.name).eq('task_name', quest.title).gte('created_at', logDate);
+        throw new Error("فشلت عملية تحديث بيانات اللاعب! " + playerUpdateError.message);
+      }
+
       await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: earnedExp, currency: 'xp', operation: 'increase', reason: quest.title }]);
       if (levelGoldBonus > 0) await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: levelGoldBonus, currency: 'gold', operation: 'increase', reason: 'Level Up Bonus' }]);
       
@@ -795,12 +1160,10 @@ const Dashboard = ({ player, setPlayer }: any) => {
         playDashSound('levelUp');
         const newRankInfo = getRankInfo(newLevelData.level);
         setLevelUpData({ show: true, newLevel: newLevelData.level, bonusGold: levelGoldBonus, color: newRankInfo.color });
-        confetti({ particleCount: 300, spread: 150, startVelocity: 40, origin: { y: 0.6 }, colors: [newRankInfo.color, '#ffffff', '#eab308'] });
         setTimeout(() => setLevelUpData(null), 5000); 
       } else {
         if (streakJustIncreased) {
            playDashSound('streak');
-           confetti({ particleCount: 100, spread: 90, origin: { y: 0.5 }, colors: ['#ef4444', '#f97316', '#eab308'] });
            toast.success(`🔥 STREAK INCREASED: ${newStreak} DAYS!`, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444', fontWeight: 'bold' } });
         } else {
            playDashSound('complete'); 
@@ -822,11 +1185,16 @@ const Dashboard = ({ player, setPlayer }: any) => {
     setPendingQuests(prev => [...prev, selectedQuest.title]); 
 
     try {
-      const { error: reqError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: selectedQuest.title, evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence', type: selectedQuest.isPenalty ? 'penalty' : 'quest', status: 'pending', created_at: getLogDate() }]);
+      const logDate = getLogDate();
+      const { error: reqError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: selectedQuest.title, evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence', type: selectedQuest.isPenalty ? 'penalty' : 'quest', status: 'pending', created_at: logDate }]);
       if (reqError) throw new Error("تعذر إرسال الطلب، السيرفر مشغول.");
       
       let newHp = Math.min(MAX_HP, (currentPlayer.hp || 100) + (selectedQuest.id === 'wq1' ? 20 : 0));
-      await supabase.from('elite_players').update({ hp: newHp }).eq('name', currentPlayer.name);
+      const { error: playerHpError } = await supabase.from('elite_players').update({ hp: newHp }).eq('name', currentPlayer.name);
+      if (playerHpError) {
+         await supabase.from('elite_quests').delete().eq('player_name', currentPlayer.name).eq('task_name', selectedQuest.title).eq('status', 'pending').gte('created_at', logDate);
+         throw new Error("فشلت عملية حفظ التعديلات!");
+      }
       
       setPlayer((prev: any) => ({ ...prev, hp: newHp }));
       playDashSound('request'); toast.success(`Request Sent to Coach Radar!`);
@@ -859,15 +1227,23 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
       if (status === 'completed') {
         const earnedExp = quest.exp * bloodMoonMultiplier;
+        
+        const currentStreak = currentPlayer.streak || 0;
+        const streakTier = getStreakTier(currentStreak);
+        const streakMultiplier = streakTier.multiplier;
+        const hasWyvern = currentPlayer.active_pet === 'Golden Wyvern Core';
+        const wyvernMultiplier = hasWyvern ? 1.1 : 1.0;
+
         const baseGold = quest.gold || 0;
-        const earnedGold = (baseGold * bloodMoonMultiplier) + (baseGold > 0 ? gearBonuses.bonusGold : 0);
+        const earnedGold = Math.round(((baseGold * bloodMoonMultiplier) + (baseGold > 0 ? gearBonuses.goldBonus || gearBonuses.bonusGold || 0 : 0)) * streakMultiplier * wyvernMultiplier);
 
         let newXp = Math.max(0, (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) - earnedExp);
         let newMonthlyXp = Math.max(0, (currentPlayer.monthly_xp || 0) - earnedExp);
         let newGold = Math.max(0, (currentPlayer.gold || 0) - earnedGold);
         
         const isRecoveryTask = [SHARED_HYDRATION.title, SHARED_NUTRITION.title, SHARED_MOBILITY.title, 'Recovery Cooldown'].includes(quest.title);
-        const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0);
+        const hasPhoenix = currentPlayer.active_pet === 'Healing Phoenix Ember';
+        const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0) + (hasPhoenix ? 10 : 0);
         let newHp = Math.max(0, (currentPlayer.hp || 100) - earnedHp);
 
         const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
@@ -906,51 +1282,44 @@ const Dashboard = ({ player, setPlayer }: any) => {
         newGems += tier.rewardAmount;
       }
 
-      const updates = { claimed_rewards: newClaimed, gold: newGold, gems: newGems };
-      await supabase.from('elite_players').update(updates).eq('name', currentPlayer.name);
+      await supabase
+        .from('elite_players')
+        .update({ claimed_rewards: newClaimed, gold: newGold, gems: newGems })
+        .eq('name', currentPlayer.name);
 
       setClaimedRewards(newClaimed);
-      const updatedPlayer = { ...currentPlayer, ...updates };
-      setPlayer(updatedPlayer);
-      localStorage.setItem('elite_system_active_session', JSON.stringify(updatedPlayer));
+      setPlayer((prev: any) => ({ ...prev, claimed_rewards: newClaimed, gold: newGold, gems: newGems }));
 
-      playDashSound('streak');
-      confetti({ particleCount: 200, spread: 100, colors: [tier.color, '#fff'] });
-      toast.success(`Claimed: ${tier.title}!`, { style: { color: tier.color }});
-
-    } catch(e) {
-      toast.error('Failed to claim.');
+      playDashSound('complete');
+      toast.success(`تم استلام مكافأة: ${tier.title}`);
+    } catch (err: any) {
+      toast.error('حدث خطأ أثناء استلام المكافأة: ' + err.message);
+    } finally {
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
-  };
-
-  const handleFileUpload = (e: any) => { if (e.target.files && e.target.files.length > 0) { setHasFile(true); playDashSound('complete'); } };
-  const completeMobilityRoutine = () => { const mobilityQuest = DAILY_QUESTS.find((q) => q.type === 'mobilityRoutine'); if (mobilityQuest) { setShowMobilityModal(false); setTimeout(() => setHonorQuestToConfirm(mobilityQuest), 200); } };
-
-  const renderRightAction = (status: string, type: string) => {
-    if (status === 'completed') return <CheckCircle size={22} color="#10b981" />;
-    if (status === 'pending') return <Clock size={22} color="#facc15" />;
-    if (isLocked()) return <Lock size={20} color="#334155" />;
-    if (type === 'mobilityRoutine' || type === 'nutrition') return <PlusCircle size={22} color={type === 'nutrition' ? '#f97316' : '#10b981'} />;
-    if (type === 'request') return <Camera size={20} color="#64748b" />;
-    return <Circle size={22} color="#334155" />;
   };
 
   const isPenaltyPending = pendingQuests.includes(PENALTY_QUEST.title);
-  const currentMonthName = new Date().toLocaleString('en-US', { month: 'long' }).toUpperCase();
-  const seasonName = `SEASON: ${currentMonthName} WARFARE`; 
-  
-  const actualMonthlyXp = currentPlayer.monthly_xp || 0;
-  const xpInCurrentLevel = actualMonthlyXp % 500;
-  const progressPercent = (xpInCurrentLevel / 500) * 100;
 
-  const targetProtein = Math.round((currentPlayer.weight || 75) * 1.7);
-  const maxProtein = Math.round((currentPlayer.weight || 75) * 2.2);
-  const isProteinMet = dailyMacros.protein >= targetProtein;
-  const proteinProgress = Math.min(100, (dailyMacros.protein / targetProtein) * 100);
+  const targetProtein = Math.round((currentPlayer.weight || 75) * 1.7) || 127;
+  const maxProtein = Math.round((currentPlayer.weight || 75) * 2.2) || 165;
+  const isProteinMet = (dailyMacros?.protein || 0) >= targetProtein;
+  const proteinProgress = Math.min(100, (((dailyMacros?.protein || 0) / targetProtein) * 100) || 0);
 
   const allSearchableFoods = useMemo(() => [...customFoods, ...LOCAL_FOOD_DB], [customFoods]);
   const consumedLog = dailyMacros.log || [];
+
+  const streak = currentPlayer.streak || 0;
+  const streakTier = getStreakTier(streak);
+
+  const getStreakProgress = () => {
+    if (streak >= 30) return 100;
+    if (streak >= 14) return 46 + ((streak - 14) / 16) * 54;
+    if (streak >= 7) return 23 + ((streak - 7) / 7) * 23;
+    return (streak / 7) * 23;
+  };
+
+  const streakProgress = getStreakProgress();
 
   return (
     <Container initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
@@ -963,16 +1332,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         </TickerText>
       </NewsTickerWrapper>
 
-      <DynamicHeader $color={rankInfo.color} $shadow={rankInfo.glow}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: '20px', color: rankInfo.color, display: 'flex', alignItems: 'center', gap: 10 }}><Activity color={rankInfo.color} /> PERFORMANCE HUB</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5, fontSize: '11px', color: '#94a3b8', fontWeight: 'bold' }}>RANK: <span style={{ color: rankInfo.color, fontWeight: '900' }}>{rankInfo.name}</span></div>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-           <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 'bold' }}>🔥 STREAK: <span style={{ color: '#fff' }}>{currentPlayer.streak}</span></div>
-           <div style={{ fontSize: '10px', color: '#ef4444', fontWeight: 'bold' }}>❤️ HP: <span style={{ color: '#fff' }}>{currentPlayer.hp}/{MAX_HP}</span></div>
-        </div>
-      </DynamicHeader>
+
 
       {isBloodMoon && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ background: '#450a0a', border: '1px solid #ef4444', borderRadius: 12, padding: 10, marginBottom: 20, textAlign: 'center', boxShadow: '0 0 20px rgba(239, 68, 68, 0.4)' }}>
@@ -1003,261 +1363,223 @@ const Dashboard = ({ player, setPlayer }: any) => {
         </PenaltyBanner>
       )}
 
-      <SeasonCard>
-        <SeasonHeader>
-          <SeasonTitleText><Trophy size={16} color="#38bdf8" /> BATTLE PASS</SeasonTitleText>
-          <div style={{ fontSize: 11, color: '#0ea5e9', fontWeight: 'bold' }}>{currentPlayer.monthly_xp || 0} XP</div>
-        </SeasonHeader>
+      <StreakTrackerCard $streakColor={streakTier.color}>
+        <StreakHeader>
+          <StreakTitle $color={streakTier.color}>
+            <Flame size={16} /> STREAK TRANSMISSION & MULTIPLIER
+          </StreakTitle>
+          <StreakMultiplierBadge $color={streakTier.color}>
+            Multiplier: x{streakTier.multiplier.toFixed(1)}
+          </StreakMultiplierBadge>
+        </StreakHeader>
 
-        <BpTrack>
-          {BATTLE_PASS_TIERS.map(tier => {
-            const isUnlocked = (currentPlayer.monthly_xp || 0) >= tier.xpReq;
-            const isClaimed = claimedRewards.includes(tier.id) || currentPlayer?.claimed_rewards?.includes(tier.id);
-            return (
-              <BpCard key={tier.id} $unlocked={isUnlocked} $claimed={isClaimed} $color={tier.color}>
-                <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 'bold' }}>{tier.xpReq} XP</div>
-                <tier.icon size={18} color={isClaimed ? '#10b981' : tier.color} />
-                <div style={{ fontSize: 10, fontWeight: '900', color: '#fff', textAlign: 'center' }}>{tier.title}</div>
-                {isUnlocked ? (
-                   <ClaimBtn $claimed={isClaimed} $color={tier.color} disabled={isClaimed || isProcessing} onClick={() => handleClaimBP(tier)}>
-                     {isClaimed ? 'CLAIMED' : 'CLAIM'}
-                   </ClaimBtn>
-                ) : (
-                   <div style={{ fontSize: 9, color: '#64748b' }}><Lock size={10} style={{verticalAlign: 'middle', marginBottom: 2}}/> LOCKED</div>
-                )}
-              </BpCard>
-            );
-          })}
-        </BpTrack>
-      </SeasonCard>
+        <StreakCounterContainer>
+          <FireFlameIcon $color={streakTier.color}>
+            <Flame size={28} color={streakTier.color} style={{ filter: `drop-shadow(0 0 10px ${streakTier.color})` }} />
+          </FireFlameIcon>
+          <StreakValueText>
+            <div className="number">
+              {streak} <span>DAYS ACTIVE</span>
+            </div>
+            <div className="level-desc" style={{ color: streakTier.color }}>
+              LEVEL: {streakTier.name}
+            </div>
+          </StreakValueText>
+        </StreakCounterContainer>
+
+        <StreakProgressBar>
+          <StreakProgressBarFill $progress={streakProgress} $color={streakTier.color} />
+          <StreakMilestoneNode $active={true} $color="#f97316" $left={0} data-milestone="Ember (0d)" />
+          <StreakMilestoneNode $active={streak >= 7} $color="#10b981" $left={23} data-milestone="Emerald (7d)" />
+          <StreakMilestoneNode $active={streak >= 14} $color="#00f2ff" $left={46} data-milestone="Cyber (14d)" />
+          <StreakMilestoneNode $active={streak >= 30} $color="#a855f7" $left={100} data-milestone="Void (30d)" />
+        </StreakProgressBar>
+        
+        <div style={{ fontSize: '10px', color: '#94a3b8', textAlign: 'center', marginTop: '24px', fontWeight: 'bold', letterSpacing: '0.5px' }}>
+          {streak >= 30 
+            ? '🌌 MAX MULTIPLIER UNLOCKED! You are in the ultimate state of discipline.' 
+            : `🎯 Reach the next milestone to unlock higher multipliers and bigger bonuses!`}
+        </div>
+      </StreakTrackerCard>
 
       {currentPlayer.active_penalty && (
         <>
           <SectionTitle $color="#ef4444"><ShieldAlert size={18} /> DISCIPLINARY QUEST</SectionTitle>
-          <QuestCard $status={getStatus(PENALTY_QUEST.title)} $isPenalty={true} $isLocked={isLocked()} $glowColor="#ef4444" onClick={() => handleQuestClick(PENALTY_QUEST)} whileTap={{ scale: isLocked() ? 1 : 0.98 }}>
-            <LeftContent>
-              <IconWrapper $color={PENALTY_QUEST.color}><PENALTY_QUEST.icon size={24} color={PENALTY_QUEST.color} /></IconWrapper>
-              <TextContent>
-                <QuestTitle $status={getStatus(PENALTY_QUEST.title)} $isPenalty={true}>{PENALTY_QUEST.title}</QuestTitle>
-                <QuestDesc>{PENALTY_QUEST.desc}</QuestDesc>
-              </TextContent>
-            </LeftContent>
-            <RightAction $type={PENALTY_QUEST.type} $status={getStatus(PENALTY_QUEST.title)}>
-              {renderRightAction(getStatus(PENALTY_QUEST.title), PENALTY_QUEST.type)}
-            </RightAction>
-          </QuestCard>
+          <QuestCardComponent
+            quest={PENALTY_QUEST}
+            status={getStatus(PENALTY_QUEST.title)}
+            isLocked={isLocked()}
+            bloodMoonMultiplier={bloodMoonMultiplier}
+            bonusGold={gearBonuses.bonusGold}
+            dynamicDesc={PENALTY_QUEST.desc}
+            onClick={handleQuestClick}
+          />
         </>
       )}
 
       <SectionTitle $color={rankInfo.color}><Zap size={16} /> DAILY DIRECTIVES</SectionTitle>
-      {DAILY_QUESTS.map((quest) => {
-        const status = getStatus(quest.title); 
-        return (
-          <QuestCard key={quest.id} $status={status} $isLocked={isLocked()} $glowColor={quest.color} onClick={() => !isLocked() && handleQuestClick(quest)}>
-            <LeftContent>
-              <IconWrapper $color={quest.color}><quest.icon size={20} color={quest.color} /></IconWrapper>
-              <TextContent>
-                <QuestTitle $status={status}>{quest.title}</QuestTitle>
-                <QuestDesc>{getDynamicDesc(quest)}</QuestDesc>
-                <Rewards>
-                   <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP</span> 
-                   <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
-                     <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)} 
-                     {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
-                   </span>
-                </Rewards>
-              </TextContent>
-            </LeftContent>
-            <RightAction $type={quest.type} $status={status}>
-               {renderRightAction(status, quest.type)}
-            </RightAction>
-          </QuestCard>
-        );
-      })}
+      {DAILY_QUESTS.map((quest) => (
+        <QuestCardComponent
+          key={quest.id}
+          quest={quest}
+          status={getStatus(quest.title)}
+          isLocked={isLocked()}
+          bloodMoonMultiplier={bloodMoonMultiplier}
+          bonusGold={gearBonuses.bonusGold}
+          dynamicDesc={getDynamicDesc(quest)}
+          onClick={handleQuestClick}
+        />
+      ))}
 
       {isFriday && (
         <>
           <SectionTitle $color="#ef4444"><AlertTriangle size={18} /> FRIDAY CRITICAL DIRECTIVES</SectionTitle>
-          {FRIDAY_DIRECTIVES.map((quest) => {
-            const status = getStatus(quest.title);
-            return (
-              <UrgentCard key={quest.id} $status={status} $isLocked={isLocked()} $glowColor="#ef4444" onClick={() => handleQuestClick(quest)} whileTap={{ scale: isLocked() ? 1 : 0.98 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <IconWrapper $color={quest.color} style={{ background: status === 'completed' ? '#10b98120' : 'rgba(239, 68, 68, 0.15)' }}>
-                    <quest.icon size={24} color={status === 'completed' ? '#10b981' : quest.color} />
-                  </IconWrapper>
-                  <TextContent style={{ flex: 1 }}>
-                    <QuestTitle $status={status} style={{ color: status === 'completed' ? '#10b981' : '#fff' }}>{quest.title}</QuestTitle>
-                    <QuestDesc style={{ color: status === 'completed' ? '#10b981' : '#fca5a5' }}>{quest.desc}</QuestDesc>
-                    <Rewards>
-                      <span style={{ color: status === 'completed' ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP</span>
-                      <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
-                         <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)} 
-                         {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
-                      </span>
-                    </Rewards>
-                  </TextContent>
-                  <RightAction $type={quest.type} $status={status}>{renderRightAction(status, quest.type)}</RightAction>
-                </div>
-              </UrgentCard>
-            );
-          })}
+          {FRIDAY_DIRECTIVES.map((quest) => (
+            <UrgentQuestCardComponent
+              key={quest.id}
+              quest={quest}
+              status={getStatus(quest.title)}
+              isLocked={isLocked()}
+              bloodMoonMultiplier={bloodMoonMultiplier}
+              bonusGold={gearBonuses.bonusGold}
+              onClick={handleQuestClick}
+            />
+          ))}
         </>
       )}
 
       <SectionTitle $color="#eab308"><Star size={18} /> BI-WEEKLY LOGISTICS (14 DAYS)</SectionTitle>
-      {BIWEEKLY_QUESTS.map((quest) => {
-        const status = getStatus(quest.title);
-        return (
-          <QuestCard key={quest.id} $status={status} $isLocked={isLocked()} $glowColor={quest.color} onClick={() => !isLocked() && handleQuestClick(quest)}>
-            <LeftContent>
-              <IconWrapper $color={quest.color}><quest.icon size={20} color={quest.color} /></IconWrapper>
-              <TextContent>
-                <QuestTitle $status={status}>{quest.title}</QuestTitle>
-                <QuestDesc>{quest.desc}</QuestDesc>
-                <Rewards>
-                   <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP</span> 
-                   <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
-                     <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)} 
-                     {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
-                   </span>
-                </Rewards>
-              </TextContent>
-            </LeftContent>
-            <RightAction $type={quest.type} $status={status}>
-               {renderRightAction(status, quest.type)}
-            </RightAction>
-          </QuestCard>
-        );
-      })}
+      {BIWEEKLY_QUESTS.map((quest) => (
+        <QuestCardComponent
+          key={quest.id}
+          quest={quest}
+          status={getStatus(quest.title)}
+          isLocked={isLocked()}
+          bloodMoonMultiplier={bloodMoonMultiplier}
+          bonusGold={gearBonuses.bonusGold}
+          dynamicDesc={quest.desc}
+          onClick={handleQuestClick}
+        />
+      ))}
 
       <SectionTitle $color="#06b6d4"><Database size={18} /> MONTHLY CYCLE</SectionTitle>
-      {MONTHLY_QUESTS.map((quest) => {
-        const status = getStatus(quest.title);
-        return (
-          <QuestCard key={quest.id} $status={status} $isLocked={isLocked()} $glowColor={quest.color} onClick={() => handleQuestClick(quest)}>
-            <LeftContent>
-              <IconWrapper $color={quest.color}><quest.icon size={20} color={quest.color} /></IconWrapper>
-              <TextContent>
-                <QuestTitle $status={status}>{quest.title}</QuestTitle>
-                <QuestDesc>{quest.desc}</QuestDesc>
-                <Rewards>
-                   <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}><AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP</span> 
-                   <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
-                     <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)} 
-                     {quest.gold > 0 && gearBonuses.bonusGold > 0 && <span style={{color: '#facc15', fontSize: '9px', marginLeft: '4px'}}>(+{gearBonuses.bonusGold} Gear)</span>} GOLD
-                   </span>
-                </Rewards>
-              </TextContent>
-            </LeftContent>
-            <RightAction $type={quest.type} $status={status}>
-               {renderRightAction(status, quest.type)}
-            </RightAction>
-          </QuestCard>
-        );
-      })}
+      {MONTHLY_QUESTS.map((quest) => (
+        <QuestCardComponent
+          key={quest.id}
+          quest={quest}
+          status={getStatus(quest.title)}
+          isLocked={isLocked()}
+          bloodMoonMultiplier={bloodMoonMultiplier}
+          bonusGold={gearBonuses.bonusGold}
+          dynamicDesc={quest.desc}
+          onClick={handleQuestClick}
+        />
+      ))}
 
-      <AnimatePresence>
-        {showGameModal && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
-            <ModalContent $color={activeGame === 'reaction' ? '#a855f7' : '#0ea5e9'} initial={{ scale: 0.9 }}>
-              <button 
-                onClick={() => { setShowGameModal(false); if (gameTimeoutId) clearTimeout(gameTimeoutId); }} 
-                style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
-                <X size={24} />
-              </button>
-              <h2 style={{ color: activeGame === 'reaction' ? '#a855f7' : '#0ea5e9', fontSize: '18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: 8 }}><Gamepad2 size={20} /> ELITE ARCADE</h2>
-              
-              <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-                <GameSelectorBtn $active={activeGame === 'reaction'} $color="#a855f7" onClick={() => { setActiveGame('reaction'); setGameTab('play'); }}><Zap size={14} /> Reflex</GameSelectorBtn>
-                <GameSelectorBtn $active={activeGame === 'sprint'} $color="#0ea5e9" onClick={() => { setActiveGame('sprint'); setGameTab('play'); }}><MousePointerClick size={14} /> Sprint</GameSelectorBtn>
-              </div>
+      {createPortal(
+        <AnimatePresence>
+          {showGameModal && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
+              <ModalContent $color={activeGame === 'reaction' ? '#a855f7' : '#0ea5e9'} initial={{ scale: 0.9 }}>
+                <button 
+                  onClick={() => { setShowGameModal(false); if (gameTimeoutId) clearTimeout(gameTimeoutId); }} 
+                  style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+                  <X size={24} />
+                </button>
+                <h2 style={{ color: activeGame === 'reaction' ? '#a855f7' : '#0ea5e9', fontSize: '18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: 8 }}><Gamepad2 size={20} /> ELITE ARCADE</h2>
+                
+                <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+                  <GameSelectorBtn $active={activeGame === 'reaction'} $color="#a855f7" onClick={() => { setActiveGame('reaction'); setGameTab('play'); }}><Zap size={14} /> Reflex</GameSelectorBtn>
+                  <GameSelectorBtn $active={activeGame === 'sprint'} $color="#0ea5e9" onClick={() => { setActiveGame('sprint'); setGameTab('play'); }}><MousePointerClick size={14} /> Sprint</GameSelectorBtn>
+                </div>
 
-              <NutriTabs style={{ marginBottom: 20 }}>
-                <NutriTab type="button" $active={gameTab === 'play'} onClick={(e) => { e.preventDefault(); playHoverSound(); setGameTab('play'); }}>Play <Gamepad2 size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
-                <NutriTab type="button" $active={gameTab === 'leaderboard'} onClick={(e) => { e.preventDefault(); playHoverSound(); fetchGameLeaderboards(); setGameTab('leaderboard'); }}>Leaderboard <Trophy size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
-              </NutriTabs>
+                <NutriTabs style={{ marginBottom: 20 }}>
+                  <NutriTab type="button" $active={gameTab === 'play'} onClick={(e) => { e.preventDefault(); playHoverSound(); setGameTab('play'); }}>Play <Gamepad2 size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
+                  <NutriTab type="button" $active={gameTab === 'leaderboard'} onClick={(e) => { e.preventDefault(); playHoverSound(); fetchGameLeaderboards(); setGameTab('leaderboard'); }}>Leaderboard <Trophy size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
+                </NutriTabs>
 
-              {activeGame === 'reaction' && gameTab === 'play' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <div style={{ textAlign: 'center', marginBottom: 10, fontSize: 12, color: '#a855f7', fontWeight: 'bold' }}>
-                    {reactionAttempt < 4 ? `Attempt: ${reactionAttempt + 1} / 4` : `Perfect!`}
-                  </div>
-                  <GameArea $state={gameState} onClick={handleReactionClick}>
-                    {gameState === 'idle' && <GameText>CLICK TO START</GameText>}
-                    {gameState === 'waiting' && <GameText>WAIT...</GameText>}
-                    {gameState === 'ready' && <GameText style={{ color: '#000' }}>CLICK NOW!</GameText>}
-                    {gameState === 'result' && <GameText>{reactionTime} ms</GameText>}
-                    {gameState === 'result_final' && (
+                {activeGame === 'reaction' && gameTab === 'play' && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <div style={{ textAlign: 'center', marginBottom: 10, fontSize: 12, color: '#a855f7', fontWeight: 'bold' }}>
+                      {reactionAttempt < 4 ? `Attempt: ${reactionAttempt + 1} / 4` : `Perfect!`}
+                    </div>
+                    <GameArea $state={gameState} onClick={handleReactionClick}>
+                      {gameState === 'idle' && <GameText>CLICK TO START</GameText>}
+                      {gameState === 'waiting' && <GameText>WAIT...</GameText>}
+                      {gameState === 'ready' && <GameText style={{ color: '#000' }}>CLICK NOW!</GameText>}
+                      {gameState === 'result' && <GameText>{reactionTime} ms</GameText>}
+                      {gameState === 'result_final' && (
+                        <>
+                          <GameText style={{ color: '#eab308' }}>{reactionTime} ms</GameText>
+                          <GameSubText style={{ color: '#eab308' }}>AVERAGE SCORE!</GameSubText>
+                          <button onClick={resetReaction} style={{ marginTop: 15, background: '#a855f7', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', cursor: 'pointer', zIndex: 10 }}>TRY AGAIN</button>
+                        </>
+                      )}
+                      {gameState === 'early' && <GameText>TOO EARLY!</GameText>}
+                    </GameArea>
+                  </motion.div>
+                )}
+
+                {activeGame === 'sprint' && gameTab === 'play' && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <GameArea $state={sprintState === 'playing' ? 'ready' : sprintState === 'result' ? 'result' : 'idle'} onClick={handleSprintClick}>
+                      {sprintState === 'idle' && <GameText>CLICK TO START</GameText>}
+                      {sprintState === 'playing' && <GameText style={{ fontSize: 40, color: '#000' }}>{sprintScore}</GameText>}
+                      {sprintState === 'result' && <GameText style={{ fontSize: 36 }}>{sprintScore} Taps</GameText>}
+                    </GameArea>
+                  </motion.div>
+                )}
+
+                {gameTab === 'leaderboard' && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    {activeGame === 'reaction' && (
                       <>
-                        <GameText style={{ color: '#eab308' }}>{reactionTime} ms</GameText>
-                        <GameSubText style={{ color: '#eab308' }}>AVERAGE SCORE!</GameSubText>
-                        <button onClick={resetReaction} style={{ marginTop: 15, background: '#a855f7', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', cursor: 'pointer', zIndex: 10 }}>TRY AGAIN</button>
+                        <div style={{ textAlign: 'center', marginBottom: 10, color: '#a855f7', fontWeight: 'bold', fontSize: 12 }}>Top 10 Fastest Reflexes</div>
+                        {reactionLeaderboard.length === 0 ? (
+                           <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1e293b50', borderRadius: '12px' }}>No scores yet. Be the first!</div>
+                        ) : (
+                          <FoodList style={{ maxHeight: '250px' }}>
+                            {reactionLeaderboard.map((score, idx) => (
+                              <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#a855f7' : '#334155', background: idx === 0 ? 'rgba(168, 85, 247, 0.1)' : '#1e293b50' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                  <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#a855f7' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
+                                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#a855f7' : '#fff' }}>{score.hunter_name}</div>
+                                </div>
+                                <div style={{ fontSize: '16px', fontWeight: '900', color: '#00f2ff', display: 'flex', alignItems: 'center', gap: 5 }}><Zap size={14} color="#00f2ff" /> {score.best_time} ms</div>
+                              </FoodItem>
+                            ))}
+                          </FoodList>
+                        )}
                       </>
                     )}
-                    {gameState === 'early' && <GameText>TOO EARLY!</GameText>}
-                  </GameArea>
-                </motion.div>
-              )}
-
-              {activeGame === 'sprint' && gameTab === 'play' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <GameArea $state={sprintState === 'playing' ? 'ready' : sprintState === 'result' ? 'result' : 'idle'} onClick={handleSprintClick}>
-                    {sprintState === 'idle' && <GameText>CLICK TO START</GameText>}
-                    {sprintState === 'playing' && <GameText style={{ fontSize: 40, color: '#000' }}>{sprintScore}</GameText>}
-                    {sprintState === 'result' && <GameText style={{ fontSize: 36 }}>{sprintScore} Taps</GameText>}
-                  </GameArea>
-                </motion.div>
-              )}
-
-              {gameTab === 'leaderboard' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  {activeGame === 'reaction' && (
-                    <>
-                      <div style={{ textAlign: 'center', marginBottom: 10, color: '#a855f7', fontWeight: 'bold', fontSize: 12 }}>Top 10 Fastest Reflexes</div>
-                      {reactionLeaderboard.length === 0 ? (
-                         <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1e293b50', borderRadius: '12px' }}>No scores yet. Be the first!</div>
-                      ) : (
-                        <FoodList style={{ maxHeight: '250px' }}>
-                          {reactionLeaderboard.map((score, idx) => (
-                            <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#a855f7' : '#334155', background: idx === 0 ? 'rgba(168, 85, 247, 0.1)' : '#1e293b50' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#a855f7' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
-                                <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#a855f7' : '#fff' }}>{score.hunter_name}</div>
-                              </div>
-                              <div style={{ fontSize: '16px', fontWeight: '900', color: '#00f2ff', display: 'flex', alignItems: 'center', gap: 5 }}><Zap size={14} color="#00f2ff" /> {score.best_time} ms</div>
-                            </FoodItem>
-                          ))}
-                        </FoodList>
-                      )}
-                    </>
-                  )}
-                  {activeGame === 'sprint' && (
-                    <>
-                      <div style={{ textAlign: 'center', marginBottom: 10, color: '#0ea5e9', fontWeight: 'bold', fontSize: 12 }}>Top 10 Fastest Fingers (10s)</div>
-                      {sprintLeaderboard.length === 0 ? (
-                         <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1e293b50', borderRadius: '12px' }}>No scores yet. Be the first!</div>
-                      ) : (
-                        <FoodList style={{ maxHeight: '250px' }}>
-                          {sprintLeaderboard.map((score, idx) => (
-                            <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#0ea5e9' : '#334155', background: idx === 0 ? 'rgba(14, 165, 233, 0.1)' : '#1e293b50' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#0ea5e9' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
-                                <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#0ea5e9' : '#fff' }}>{score.hunter_name}</div>
-                              </div>
-                              <div style={{ fontSize: '16px', fontWeight: '900', color: '#10b981', display: 'flex', alignItems: 'center', gap: 5 }}><Target size={14} color="#10b981" /> {score.best_score} Taps</div>
-                            </FoodItem>
-                          ))}
-                        </FoodList>
-                      )}
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>
+                    {activeGame === 'sprint' && (
+                      <>
+                        <div style={{ textAlign: 'center', marginBottom: 10, color: '#0ea5e9', fontWeight: 'bold', fontSize: 12 }}>Top 10 Fastest Fingers (10s)</div>
+                        {sprintLeaderboard.length === 0 ? (
+                           <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1e293b50', borderRadius: '12px' }}>No scores yet. Be the first!</div>
+                        ) : (
+                          <FoodList style={{ maxHeight: '250px' }}>
+                            {sprintLeaderboard.map((score, idx) => (
+                              <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#0ea5e9' : '#334155', background: idx === 0 ? 'rgba(14, 165, 233, 0.1)' : '#1e293b50' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                  <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#0ea5e9' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
+                                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#0ea5e9' : '#fff' }}>{score.hunter_name}</div>
+                                </div>
+                                <div style={{ fontSize: '16px', fontWeight: '900', color: '#10b981', display: 'flex', alignItems: 'center', gap: 5 }}><Target size={14} color="#10b981" /> {score.best_score} Taps</div>
+                              </FoodItem>
+                            ))}
+                          </FoodList>
+                        )}
+                      </>
+                    )}
+                  </motion.div>
+                )}
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <GameFAB 
         onClick={() => { playHoverSound(); setShowGameModal(true); }}
@@ -1267,202 +1589,148 @@ const Dashboard = ({ player, setPlayer }: any) => {
         <Gamepad2 size={28} />
       </GameFAB>
 
-      <AnimatePresence>
-        {showNutritionModal && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ModalContent $color="#f97316" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
-              <button onClick={() => setShowNutritionModal(false)} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={24} /></button>
-              
-              <h2 style={{ color: '#f97316', margin: '0 0 20px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase' }}>
-                <PieChart size={20} /> LIVE NUTRITION TRACKER
-              </h2>
-
-              <MacroGrid>
-                <MacroBox style={{ borderColor: isProteinMet ? '#10b981' : '#38bdf8', boxShadow: isProteinMet ? '0 0 10px rgba(16,185,129,0.2)' : 'none' }}>
-                  <MacroLabel $color={isProteinMet ? '#10b981' : '#38bdf8'}>PROTEIN</MacroLabel>
-                  <MacroValue>{dailyMacros.protein}g</MacroValue>
-                </MacroBox>
-                <MacroBox>
-                  <MacroLabel $color="#eab308">CARBS</MacroLabel>
-                  <MacroValue>{dailyMacros.carbs}g</MacroValue>
-                </MacroBox>
-                <MacroBox>
-                  <MacroLabel $color="#ef4444">Fats</MacroLabel>
-                  <MacroValue>{dailyMacros.fats}g</MacroValue>
-                </MacroBox>
-                <MacroBox>
-                  <MacroLabel $color="#a855f7">KCAL</MacroLabel>
-                  <MacroValue>{dailyMacros.calories}</MacroValue>
-                </MacroBox>
-              </MacroGrid>
-
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '5px', fontWeight: 'bold' }}>
-                  <span>PROTEIN GOAL: {targetProtein}g - {maxProtein}g</span>
-                  <span style={{ color: isProteinMet ? '#10b981' : '#38bdf8' }}>{Math.round(proteinProgress)}%</span>
+      {createPortal(
+        <AnimatePresence>
+          {honorQuestToConfirm && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
+              <HonorModalContent $color={honorQuestToConfirm.color} initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
+                <div style={{ textAlign: 'center' }}>
+                  <ShieldAlert size={60} color="#ef4444" style={{ margin: '0 auto 15px auto', filter: 'drop-shadow(0 0 10px rgba(239,68,68,0.8))' }} />
+                  <h2 style={{ color: '#ef4444', margin: '0 0 10px 0', fontSize: '28px', fontWeight: '900', letterSpacing: '2px' }}>"مَنْ غَشَّنَا فَلَيْسَ مِنَّا"</h2>
+                  <p style={{ color: '#cbd5e1', fontSize: '15px', lineHeight: '1.6', margin: '20px 0', fontWeight: 'bold' }}>
+                    أنت على وشك تأكيد إتمام مهمة <strong style={{ color: honorQuestToConfirm.color, fontSize: '18px' }}>{honorQuestToConfirm.title}</strong>.<br /><br />
+                    بصفتك رياضي (Elite)، هل أنت متأكد أنك أتممتها بصدق تام؟
+                  </p>
+                  <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
+                    <ActionBtn type="button" $color="#334155" onClick={() => setHonorQuestToConfirm(null)} style={{ flex: 1 }}><X size={18} /> تراجع</ActionBtn>
+                    <ActionBtn type="button" $color={honorQuestToConfirm.color} disabled={isProcessing} onClick={() => { completeQuest(honorQuestToConfirm); setHonorQuestToConfirm(null); }} style={{ flex: 1, background: honorQuestToConfirm.color, color: '#000' }}>
+                      {isProcessing ? <LoadingSpinner size={18} /> : <><CheckCircle size={18} /> أؤكد ذلك</>}
+                    </ActionBtn>
+                  </div>
                 </div>
-                <ProgressBarBG>
-                  <ProgressBarFill $progress={proteinProgress} style={{ background: isProteinMet ? '#10b981' : '#38bdf8', boxShadow: `0 0 10px ${isProteinMet ? '#10b981' : '#38bdf8'}` }} />
-                </ProgressBarBG>
-              </div>
+              </HonorModalContent>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
-              <ResetMacrosBtn type="button" onClick={handleResetMacros}>
-                <RotateCcw size={14} /> تصفير عداد الماكروز بالكامل
-              </ResetMacrosBtn>
+      {createPortal(
+        <AnimatePresence>
+          {showNutritionModal && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ModalContent $color="#f97316" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
+                <button onClick={() => setShowNutritionModal(false)} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={24} /></button>
+                
+                <h2 style={{ color: '#f97316', margin: '0 0 20px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase' }}>
+                  <PieChart size={20} /> LIVE NUTRITION TRACKER
+                </h2>
 
-              <NutriTabs>
-                <NutriTab type="button" $active={activeNutriTab === 'search'} onClick={(e) => { e.preventDefault(); playHoverSound(); setActiveNutriTab('search'); }}>البحث <Search size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
-                <NutriTab type="button" $active={activeNutriTab === 'manual'} onClick={(e) => { e.preventDefault(); playHoverSound(); setActiveNutriTab('manual'); }}>إضافة <Plus size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
-                <NutriTab type="button" $active={activeNutriTab === 'log'} onClick={(e) => { e.preventDefault(); playHoverSound(); setActiveNutriTab('log'); }}>وجبات اليوم <List size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
-              </NutriTabs>
+                <MacroGrid>
+                  <MacroBox style={{ borderColor: isProteinMet ? '#10b981' : '#38bdf8', boxShadow: isProteinMet ? '0 0 10px rgba(16,185,129,0.2)' : 'none' }}>
+                    <MacroLabel $color={isProteinMet ? '#10b981' : '#38bdf8'}>PROTEIN</MacroLabel>
+                    <MacroValue>{dailyMacros?.protein || 0}g</MacroValue>
+                  </MacroBox>
+                  <MacroBox>
+                    <MacroLabel $color="#eab308">CARBS</MacroLabel>
+                    <MacroValue>{dailyMacros?.carbs || 0}g</MacroValue>
+                  </MacroBox>
+                  <MacroBox>
+                    <MacroLabel $color="#ef4444">Fats</MacroLabel>
+                    <MacroValue>{dailyMacros?.fats || 0}g</MacroValue>
+                  </MacroBox>
+                  <MacroBox>
+                    <MacroLabel $color="#a855f7">KCAL</MacroLabel>
+                    <MacroValue>{dailyMacros?.calories || 0}</MacroValue>
+                  </MacroBox>
+                </MacroGrid>
 
-              {activeNutriTab === 'search' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <FoodSearchInput type="text" placeholder="ابحث عن وجبتك..." value={foodSearchQuery} onChange={(e) => setFoodSearchQuery(e.target.value)} />
-                  <FoodList>
-                    {allSearchableFoods.filter(f => f.name.includes(foodSearchQuery)).map((food, idx) => (
-                      <FoodItem key={idx}>
-                        <div>
-                          <div style={{ fontSize: '13px', fontWeight: 'bold', color: food.isCustom ? '#00f2ff' : '#fff' }}>
-                            {food.name} {food.isCustom && <span style={{fontSize: 10, background: '#00f2ff20', padding: '2px 6px', borderRadius: 4, marginRight: 5}}>وجبتي</span>}
-                          </div>
-                          <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>P:{food.protein} | C:{food.carbs} | f:{food.fats} | {food.calories}kcal</div>
-                        </div>
-                        <button type="button" onClick={() => handleAddMacros(food)} style={{ background: '#f97316', border: 'none', padding: '6px 12px', borderRadius: '6px', color: '#000', fontWeight: 'bold', cursor: 'pointer' }}><Plus size={14} /></button>
-                      </FoodItem>
-                    ))}
-                    {allSearchableFoods.filter(f => f.name.includes(foodSearchQuery)).length === 0 && (
-                      <div style={{ textAlign: 'center', padding: '20px', color: '#64748b', fontSize: '12px' }}>لم يتم العثور على الوجبة. استخدم الإضافة اليدوية.</div>
-                    )}
-                  </FoodList>
-                </motion.div>
-              )}
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '5px', fontWeight: 'bold' }}>
+                    <span>PROTEIN GOAL: {targetProtein}g - {maxProtein}g</span>
+                    <span style={{ color: isProteinMet ? '#10b981' : '#38bdf8' }}>{Math.round(proteinProgress)}%</span>
+                  </div>
+                  <ProgressBarBG>
+                    <ProgressBarFill $progress={proteinProgress} style={{ background: isProteinMet ? '#10b981' : '#38bdf8', boxShadow: `0 0 10px ${isProteinMet ? '#10b981' : '#38bdf8'}` }} />
+                  </ProgressBarBG>
+                </div>
 
-              {activeNutriTab === 'manual' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <FoodSearchInput type="text" placeholder="اسم الوجبة (مثال: وجبة بعد التمرين)..." value={manualFood.name} onChange={(e) => setManualFood({...manualFood, name: e.target.value})} />
-                  <ManualInputGrid>
-                    <FoodSearchInput type="number" placeholder="Protein (g)" value={manualFood.protein} onChange={(e) => setManualFood({...manualFood, protein: e.target.value})} style={{ marginBottom: 0 }} />
-                    <FoodSearchInput type="number" placeholder="Carbs (g)" value={manualFood.carbs} onChange={(e) => setManualFood({...manualFood, carbs: e.target.value})} style={{ marginBottom: 0 }} />
-                    <FoodSearchInput type="number" placeholder="Fats (g)" value={manualFood.fats} onChange={(e) => setManualFood({...manualFood, fats: e.target.value})} style={{ marginBottom: 0 }} />
-                    <FoodSearchInput type="number" placeholder="Calories" value={manualFood.calories} onChange={(e) => setManualFood({...manualFood, calories: e.target.value})} style={{ marginBottom: 0 }} />
-                  </ManualInputGrid>
-                  <ActionBtn type="button" $color="#f97316" onClick={(e) => { e.preventDefault(); handleAddCustomFood(); }}>إضافة وحفظ الوجبة <Plus size={16} /></ActionBtn>
-                </motion.div>
-              )}
+                <ResetMacrosBtn type="button" onClick={handleResetMacros}>
+                  <RotateCcw size={14} /> تصفير عداد الماكروز بالكامل
+                </ResetMacrosBtn>
 
-              {activeNutriTab === 'log' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  {consumedLog.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1e293b50', borderRadius: '12px' }}>لم تقم بإضافة أي وجبات اليوم بعد.</div>
-                  ) : (
+                <NutriTabs>
+                  <NutriTab type="button" $active={activeNutriTab === 'search'} onClick={(e) => { e.preventDefault(); playHoverSound(); setActiveNutriTab('search'); }}>البحث <Search size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
+                  <NutriTab type="button" $active={activeNutriTab === 'manual'} onClick={(e) => { e.preventDefault(); playHoverSound(); setActiveNutriTab('manual'); }}>إضافة <Plus size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
+                  <NutriTab type="button" $active={activeNutriTab === 'log'} onClick={(e) => { e.preventDefault(); playHoverSound(); setActiveNutriTab('log'); }}>وجبات اليوم <List size={14} style={{ verticalAlign: 'middle' }} /></NutriTab>
+                </NutriTabs>
+
+                {activeNutriTab === 'search' && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <FoodSearchInput type="text" placeholder="ابحث عن وجبتك..." value={foodSearchQuery} onChange={(e) => setFoodSearchQuery(e.target.value)} />
                     <FoodList>
-                      {consumedLog.map((item: any, idx: number) => (
-                        <FoodItem key={idx} style={{ borderColor: '#ef444450' }}>
+                      {allSearchableFoods.filter(f => f && f.name && f.name.toLowerCase().includes((foodSearchQuery || '').toLowerCase())).map((food, idx) => (
+                        <FoodItem key={idx}>
                           <div>
-                            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>{item.name}</div>
-                            <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>P:{item.protein} | C:{item.carbs} | f:{item.fats} | {item.calories}kcal</div>
+                            <div style={{ fontSize: '13px', fontWeight: 'bold', color: food.isCustom ? '#00f2ff' : '#fff' }}>
+                              {food.name} {food.isCustom && <span style={{fontSize: 10, background: '#00f2ff20', padding: '2px 6px', borderRadius: 4, marginRight: 5}}>وجبتي</span>}
+                            </div>
+                            <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>P:{food.protein} | C:{food.carbs} | f:{food.fats} | {food.calories}kcal</div>
                           </div>
-                          <button type="button" onClick={() => handleRemoveConsumedFood(item)} style={{ background: '#2a0808', border: '1px solid #ef4444', padding: '6px', borderRadius: '6px', color: '#ef4444', cursor: 'pointer' }} title="مسح الوجبة"><Trash2 size={16} /></button>
+                          <button type="button" onClick={() => handleAddMacros(food)} style={{ background: '#f97316', border: 'none', padding: '6px 12px', borderRadius: '6px', color: '#000', fontWeight: 'bold', cursor: 'pointer' }}><Plus size={14} /></button>
                         </FoodItem>
                       ))}
+                      {allSearchableFoods.filter(f => f && f.name && f.name.toLowerCase().includes((foodSearchQuery || '').toLowerCase())).length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '20px', color: '#64748b', fontSize: '12px' }}>لم يتم العثور على الوجبة. استخدم الإضافة اليدوية.</div>
+                      )}
                     </FoodList>
-                  )}
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
 
-              <div style={{ borderTop: '1px dashed #334155', marginTop: '20px', paddingTop: '20px' }}>
-                <ActionBtn type="button" $color="#10b981" disabled={!isProteinMet || isProcessing} onClick={(e) => { e.preventDefault(); setShowNutritionModal(false); completeQuest(SHARED_NUTRITION); }}>
-                  {isProcessing ? <LoadingSpinner size={18} /> : !isProteinMet ? <><Lock size={18} /> MISSION LOCKED (REACH PROTEIN GOAL)</> : <><CheckCircle size={18} /> CLAIM MISSION (+30 EXP)</>}
-                </ActionBtn>
-              </div>
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>
+                {activeNutriTab === 'manual' && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <FoodSearchInput type="text" placeholder="اسم الوجبة (مثال: وجبة بعد التمرين)..." value={manualFood.name} onChange={(e) => setManualFood({...manualFood, name: e.target.value})} />
+                    <ManualInputGrid>
+                      <FoodSearchInput type="number" placeholder="Protein (g)" value={manualFood.protein} onChange={(e) => setManualFood({...manualFood, protein: e.target.value})} style={{ marginBottom: 0 }} />
+                      <FoodSearchInput type="number" placeholder="Carbs (g)" value={manualFood.carbs} onChange={(e) => setManualFood({...manualFood, carbs: e.target.value})} style={{ marginBottom: 0 }} />
+                      <FoodSearchInput type="number" placeholder="Fats (g)" value={manualFood.fats} onChange={(e) => setManualFood({...manualFood, fats: e.target.value})} style={{ marginBottom: 0 }} />
+                      <FoodSearchInput type="number" placeholder="Calories" value={manualFood.calories} onChange={(e) => setManualFood({...manualFood, calories: e.target.value})} style={{ marginBottom: 0 }} />
+                    </ManualInputGrid>
+                    <ActionBtn type="button" $color="#f97316" onClick={(e) => { e.preventDefault(); handleAddCustomFood(); }}>إضافة وحفظ الوجبة <Plus size={16} /></ActionBtn>
+                  </motion.div>
+                )}
 
-      <AnimatePresence>
-        {honorQuestToConfirm && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <HonorModalContent $color={honorQuestToConfirm.color} initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
-              <div style={{ textAlign: 'center' }}>
-                <ShieldAlert size={60} color="#ef4444" style={{ margin: '0 auto 15px auto', filter: 'drop-shadow(0 0 10px rgba(239,68,68,0.8))' }} />
-                <h2 style={{ color: '#ef4444', margin: '0 0 10px 0', fontSize: '28px', fontWeight: '900', letterSpacing: '2px' }}>"مَنْ غَشَّنَا فَلَيْسَ مِنَّا"</h2>
-                <p style={{ color: '#cbd5e1', fontSize: '15px', lineHeight: '1.6', margin: '20px 0', fontWeight: 'bold' }}>
-                  أنت على وشك تأكيد إتمام مهمة <strong style={{ color: honorQuestToConfirm.color, fontSize: '18px' }}>{honorQuestToConfirm.title}</strong>.<br /><br />
-                  بصفتك رياضي (Elite)، هل أنت متأكد أنك أتممتها بصدق تام؟
-                </p>
-                <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
-                  <ActionBtn type="button" $color="#334155" onClick={() => setHonorQuestToConfirm(null)} style={{ flex: 1 }}><X size={18} /> تراجع</ActionBtn>
-                  <ActionBtn type="button" $color={honorQuestToConfirm.color} disabled={isProcessing} onClick={() => { completeQuest(honorQuestToConfirm); setHonorQuestToConfirm(null); }} style={{ flex: 1, background: honorQuestToConfirm.color, color: '#000' }}>
-                    {isProcessing ? <LoadingSpinner size={18} /> : <><CheckCircle size={18} /> أؤكد ذلك</>}
+                {activeNutriTab === 'log' && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    {consumedLog.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1e293b50', borderRadius: '12px' }}>لم تقم بإضافة أي وجبات اليوم بعد.</div>
+                    ) : (
+                      <FoodList>
+                        {consumedLog.map((item: any, idx: number) => (
+                          <FoodItem key={idx} style={{ borderColor: '#ef444450' }}>
+                            <div>
+                              <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>{item.name}</div>
+                              <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>P:{item.protein} | C:{item.carbs} | f:{item.fats} | {item.calories}kcal</div>
+                            </div>
+                            <button type="button" onClick={() => handleRemoveConsumedFood(item)} style={{ background: '#2a0808', border: '1px solid #ef4444', padding: '6px', borderRadius: '6px', color: '#ef4444', cursor: 'pointer' }} title="مسح الوجبة"><Trash2 size={16} /></button>
+                          </FoodItem>
+                        ))}
+                      </FoodList>
+                    )}
+                  </motion.div>
+                )}
+
+                <div style={{ borderTop: '1px dashed #334155', marginTop: '20px', paddingTop: '20px' }}>
+                  <ActionBtn type="button" $color="#10b981" disabled={!isProteinMet || isProcessing} onClick={(e) => { e.preventDefault(); setShowNutritionModal(false); completeQuest(SHARED_NUTRITION); }}>
+                    {isProcessing ? <LoadingSpinner size={18} /> : !isProteinMet ? <><Lock size={18} /> MISSION LOCKED (REACH PROTEIN GOAL)</> : <><CheckCircle size={18} /> CLAIM MISSION (+30 EXP)</>}
                   </ActionBtn>
                 </div>
-              </div>
-            </HonorModalContent>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {selectedQuest && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ModalContent $color={selectedQuest.color} initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, opacity: 0 }}>
-              <button type="button" onClick={() => setSelectedQuest(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={24} /></button>
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <div style={{ display: 'inline-flex', background: `${selectedQuest.color}20`, padding: '15px', borderRadius: '50%', color: selectedQuest.color, marginBottom: '10px', boxShadow: `0 0 20px ${selectedQuest.color}40` }}>
-                  <selectedQuest.icon size={40} />
-                </div>
-                <h2 style={{ margin: '0', fontSize: '20px', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>{selectedQuest.title}</h2>
-                <p style={{ margin: '10px 0 0 0', fontSize: '13px', color: '#94a3b8', lineHeight: '1.5' }}>
-                  {selectedQuest.noImage ? 'هذه المهمة تتطلب مراجعة من المشرف الرياضي (Coach) لتأكيد الحضور.' : 'يرجى إرفاق دليل إتمام المهمة لمراجعته.'}
-                </p>
-              </div>
-
-              {!selectedQuest.noImage && (
-                <div>
-                  <input type="file" id="quest-evidence" accept="image/*,video/*" capture="environment" style={{ display: 'none' }} onChange={handleFileUpload} />
-                  <UploadBtn htmlFor="quest-evidence" $hasFile={hasFile} $color={selectedQuest.color}>
-                    {hasFile ? <CheckCircle size={32} /> : <Camera size={32} />}
-                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{hasFile ? 'EVIDENCE ATTACHED' : 'UPLOAD PROOF'}</span>
-                  </UploadBtn>
-                </div>
-              )}
-
-              <ActionBtn type="button" $color={selectedQuest.color} onClick={submitRequest} disabled={isProcessing}>
-                {isProcessing ? <LoadingSpinner size={20} /> : selectedQuest.noImage ? 'SUBMIT TO COACH' : hasFile ? 'SUBMIT WITH EVIDENCE' : 'SUBMIT REQUEST'}
-              </ActionBtn>
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showMobilityModal && (
-          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ModalContent $color="#10b981" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
-              <button type="button" onClick={() => setShowMobilityModal(false)} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={24} /></button>
-              <h3 style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: 10, textTransform: 'uppercase', marginTop: 0 }}>
-                <Activity /> بروتوكول المرونة الوظيفية
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: '400px', overflowY: 'auto', paddingRight: 5, direction: 'rtl' }}>
-                {MOBILITY_ROUTINE.map((ex) => (
-                  <div key={ex.id} style={{ background: '#020617', border: `1px solid ${ex.color}30`, padding: 12, borderRadius: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ background: `${ex.color}15`, color: ex.color, padding: 8, borderRadius: 8, flexShrink: 0 }}><ex.icon size={18} /></div>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 'bold', color: '#fff' }}>{ex.title}</div>
-                      <div style={{ fontSize: 12, color: '#10b981', marginTop: 4 }}>{ex.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <ActionBtn type="button" $color="#10b981" onClick={completeMobilityRoutine} disabled={isProcessing} style={{ marginTop: 20 }}>
-                {isProcessing ? <LoadingSpinner size={18} /> : <><CheckCircle size={18} /> إتمام الجلسة وتوثيق الأداء</>}
-              </ActionBtn>
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* 🚨 شاشة Level Up الفخمة (3D Shield & Confetti) 🚨 */}
       <AnimatePresence>
@@ -1494,6 +1762,64 @@ const Dashboard = ({ player, setPlayer }: any) => {
           </LevelUpOverlay>
         )}
       </AnimatePresence>
+
+      {createPortal(
+        <AnimatePresence>
+          {showMobilityModal && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
+              <ModalContent $color="#10b981" initial={{ scale: 0.9 }}>
+                <button onClick={() => setShowMobilityModal(false)} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={24} /></button>
+                <h3 style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: 10, textTransform: 'uppercase', marginTop: 0 }}><Activity /> بروتوكول المرونة الوظيفية</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: '400px', overflowY: 'auto', paddingRight: 5, direction: 'rtl' }}>
+                  {MOBILITY_ROUTINE.map((ex) => (
+                    <div key={ex.id} style={{ background: '#020617', border: `1px solid ${ex.color}30`, padding: 12, borderRadius: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ background: `${ex.color}15`, color: ex.color, padding: 8, borderRadius: 8, flexShrink: 0 }}><ex.icon size={18} /></div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 'bold', color: '#fff' }}>{ex.title}</div>
+                        <div style={{ fontSize: 12, color: '#10b981', marginTop: 4 }}>{ex.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <ActionBtn $color="#10b981" onClick={completeMobilityRoutine} disabled={isProcessing} style={{ marginTop: 20 }}>
+                  {isProcessing ? <LoadingSpinner size={18} /> : <><CheckCircle size={18} /> إتمام الجلسة وتوثيق الأداء</>}
+                </ActionBtn>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {createPortal(
+        <AnimatePresence>
+          {selectedQuest && (
+            <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
+              <ModalContent $color={selectedQuest.color} initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, opacity: 0 }}>
+                <button onClick={() => setSelectedQuest(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={24} /></button>
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                  <div style={{ display: 'inline-flex', background: `${selectedQuest.color}20`, padding: '15px', borderRadius: '50%', color: selectedQuest.color, marginBottom: '10px', boxShadow: `0 0 20px ${selectedQuest.color}40` }}><selectedQuest.icon size={40} /></div>
+                  <h2 style={{ margin: '0', fontSize: '20px', color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>{selectedQuest.title}</h2>
+                  <p style={{ margin: '10px 0 0 0', fontSize: '13px', color: '#94a3b8', lineHeight: '1.5' }}>{selectedQuest.noImage ? 'هذه المهمة تتطلب مراجعة من المشرف الرياضي (Coach) لتأكيد الحضور.' : 'يرجى إرفاق دليل إتمام المهمة لمراجعته.'}</p>
+                </div>
+
+                {!selectedQuest.noImage && (
+                  <div>
+                    <input type="file" id="quest-evidence" accept="image/*,video/*" capture="environment" style={{ display: 'none' }} onChange={handleFileUpload} />
+                    <UploadBtn htmlFor="quest-evidence" $hasFile={hasFile} $color={selectedQuest.color}>
+                      {hasFile ? <CheckCircle size={32} /> : <Camera size={32} />}
+                      <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{hasFile ? 'EVIDENCE ATTACHED' : 'OPTIONAL: UPLOAD PROOF'}</span>
+                    </UploadBtn>
+                  </div>
+                )}
+
+                <ActionBtn $color={selectedQuest.color} onClick={submitRequest} disabled={isProcessing}>{isProcessing ? <LoadingSpinner size={20} /> : selectedQuest.noImage ? 'SUBMIT TO COACH' : hasFile ? 'SUBMIT WITH EVIDENCE' : 'SUBMIT REQUEST'}</ActionBtn>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {isLoadingSync && <SyncOverlay><Loader size={40} className="animate-spin" /></SyncOverlay>}
     </Container>

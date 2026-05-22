@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Dev builds and scratch scripts
+dev-dist
+scratch_db_test.*
+
