@@ -872,7 +872,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
             const { data: dayReqs } = await supabase.from('elite_quests').select('task_name, status').eq('player_name', currentPlayer.name).gte('created_at', dayStart.toISOString()).lte('created_at', dayEnd.toISOString());
             const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
             const completedMandatory = dayReqs ? dayReqs.filter(r => mandatoryTasks.includes(r.task_name) && r.status === 'approved').map(r => r.task_name) : [];
-            const missedTasksCount = mandatoryTasks.length - completedMandatory.length;
+            const missedTasksCount = Math.max(0, 4 - completedMandatory.length);
             if (missedTasksCount > 0) hpPenaltyAmount += (missedTasksCount * penaltyHpPerTask);
             if (completedMandatory.length < 3) { 
               if (!hasGolem) {
@@ -1129,9 +1129,12 @@ const Dashboard = ({ player, setPlayer }: any) => {
       let streakJustIncreased = false;
 
       if (mandatoryTasks.includes(quest.title)) {
-        const completedMandatoryToday = completedQuests.filter(q => mandatoryTasks.includes(q)).length;
-        if (completedMandatoryToday === 2) { 
-          newStreak += 1;
+        const uniqueMandatoryCompleted = new Set([
+          ...completedQuests.filter(q => mandatoryTasks.includes(q)),
+          quest.title
+        ]);
+        if (uniqueMandatoryCompleted.size === 3) {
+          newStreak = (currentPlayer.streak || 0) + 1;
           streakJustIncreased = true;
         }
       }
@@ -1249,10 +1252,13 @@ const Dashboard = ({ player, setPlayer }: any) => {
         const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
         let newStreak = currentPlayer.streak || 0;
         if (mandatoryTasks.includes(quest.title)) {
-           const completedMandatoryToday = completedQuests.filter(q => mandatoryTasks.includes(q)).length;
-           if (completedMandatoryToday === 3) { 
-              newStreak = Math.max(0, newStreak - 1);
-           }
+          const uniqueMandatoryCompleted = new Set(
+            completedQuests.filter(q => mandatoryTasks.includes(q) && q !== quest.title)
+          );
+          const previousCount = new Set(completedQuests.filter(q => mandatoryTasks.includes(q))).size;
+          if (previousCount >= 3 && uniqueMandatoryCompleted.size < 3) {
+            newStreak = Math.max(0, (currentPlayer.streak || 0) - 1);
+          }
         }
 
         await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp, streak: newStreak }).eq('name', currentPlayer.name);

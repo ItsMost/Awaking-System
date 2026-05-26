@@ -260,7 +260,34 @@ const ProgressBarFill = styled(motion.div)<{ $progress: number; $color: string }
 // 🚨 Heatmap 🚨
 const HeatmapHeader = styled.div` display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; @media (max-width: 480px) { margin-bottom: 10px; flex-direction: column; gap: 6px; align-items: flex-start; }`;
 const HeatmapGrid = styled.div` display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-columns: 1fr; grid-auto-flow: column; gap: 3px; width: 100%; margin-bottom: 20px; background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 12px; border: 1px solid #1e293b; overflow-x: auto; @media (max-width: 480px) { padding: 8px; gap: 2px; border-radius: 8px; margin-bottom: 15px; }`;
-const HeatmapCell = styled.div<{ $intensity: number; $baseColor: string }>` width: 100%; min-width: 12px; aspect-ratio: 1; border-radius: 2px; background: ${(props) => props.$intensity === 0 ? '#1e293b' : props.$intensity === 1 ? `${props.$baseColor}40` : props.$intensity === 2 ? `${props.$baseColor}80` : props.$baseColor}; box-shadow: ${(props) => props.$intensity > 1 ? `0 0 ${props.$intensity * 2}px ${props.$baseColor}` : 'none'}; transition: 0.2s; cursor: pointer; &:hover { transform: scale(1.4); z-index: 10; box-shadow: 0 0 8px ${(props) => props.$baseColor}; } @media (max-width: 480px) { min-width: 10px; border-radius: 1px; }`;
+const HeatmapCell = styled.div<{ $intensity: number; $baseColor: string; $isFuture?: boolean }>`
+  width: 100%;
+  min-width: 12px;
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: ${(props) => 
+    props.$isFuture ? 'rgba(30, 41, 59, 0.15)' : 
+    props.$intensity === 0 ? '#1e293b' : 
+    props.$intensity === 1 ? `${props.$baseColor}40` : 
+    props.$intensity === 2 ? `${props.$baseColor}80` : 
+    props.$baseColor
+  };
+  border: ${(props) => props.$isFuture ? '1px dashed rgba(255, 255, 255, 0.05)' : 'none'};
+  box-shadow: ${(props) => !props.$isFuture && props.$intensity > 1 ? `0 0 ${props.$intensity * 2}px ${props.$baseColor}` : 'none'};
+  transition: 0.2s;
+  cursor: ${(props) => props.$isFuture ? 'default' : 'pointer'};
+  
+  &:hover {
+    transform: ${(props) => props.$isFuture ? 'none' : 'scale(1.4)'};
+    z-index: 10;
+    box-shadow: ${(props) => props.$isFuture ? 'none' : `0 0 8px ${props.$baseColor}`};
+  }
+  
+  @media (max-width: 480px) {
+    min-width: 10px;
+    border-radius: 1.5px;
+  }
+`;
 const LegendGrid = styled.div` display: flex; justify-content: space-between; width: 100%; padding: 0 5px; `;
 const LegendItem = styled.div` display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 9px; color: #94a3b8; font-weight: bold; text-transform: uppercase; @media (max-width: 480px) { font-size: 8px; svg { width: 14px; height: 14px; } }`;
 
@@ -416,7 +443,11 @@ const Profile = ({ player, setPlayer }: any) => {
       }
 
       // 🚨 جلب مهام الـ 90 يوم للـ Heatmap 🚨
-      const fetchStart = new Date(); fetchStart.setDate(fetchStart.getDate() - 90);
+      const fetchStart = new Date(); 
+      fetchStart.setDate(fetchStart.getDate() - 90);
+      const startDayOfWeek = fetchStart.getDay();
+      fetchStart.setDate(fetchStart.getDate() - startDayOfWeek); // Backtrack to Sunday of that week
+      
       const { data: requests } = await supabase.from('elite_quests')
          .select('created_at, status, task_name')
          .eq('player_name', player.name)
@@ -440,18 +471,33 @@ const Profile = ({ player, setPlayer }: any) => {
       setAttendanceStats({ attended: uniqueActiveDays.size, total: Math.max(Math.ceil(diffTime / (1000 * 60 * 60 * 24)), 1) });
 
       const mapArray = [];
-      for (let i = 0; i < 91; i++) {
-        const d = new Date(); d.setDate(d.getDate() - (90 - i)); 
-        const dateStr = getSystemDateStr(d); 
+      const today = new Date();
+      const endDayOfWeek = today.getDay();
+      const tempDate = new Date(fetchStart);
+      const endDate = new Date(today);
+      endDate.setDate(endDate.getDate() + (6 - endDayOfWeek)); // Pad to Saturday of current week
+      
+      while (tempDate <= endDate) {
+        const dateStr = getSystemDateStr(tempDate);
         const dayQuests = dailyTasksMap[dateStr] || [];
         const count = dayQuests.length;
         
-        let intensity = 0; 
-        if (count === 1 || count === 2) intensity = 1; 
-        else if (count === 3) intensity = 2; 
-        else if (count >= 4) intensity = 3; 
+        let intensity = 0;
+        if (count > 0) {
+          if (count === 1 || count === 2) intensity = 1;
+          else if (count === 3) intensity = 2;
+          else if (count >= 4) intensity = 3;
+        }
         
-        mapArray.push({ date: dateStr, intensity, count, quests: dayQuests });
+        mapArray.push({ 
+          date: dateStr, 
+          intensity, 
+          count, 
+          quests: dayQuests,
+          isFuture: tempDate > today
+        });
+        
+        tempDate.setDate(tempDate.getDate() + 1);
       }
       setHeatmapData(mapArray);
 
@@ -462,6 +508,7 @@ const Profile = ({ player, setPlayer }: any) => {
   }, [player.name]);
 
   const handleHeatmapClick = (dayData: any) => {
+     if (dayData.isFuture) return;
      if (dayData.count === 0) {
         toast.info(`لم تقم بأي مهام في يوم ${dayData.date}`, { style: { background: '#020617', border: '1px solid #334155', color: '#94a3b8' }});
         return;
@@ -680,7 +727,7 @@ const Profile = ({ player, setPlayer }: any) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', fontWeight: '900', letterSpacing: '1px', color: '#fff' }}><AuraIcon size={14} color={auraInfo.color} /> {auraInfo.name} LOG</div>
           <div style={{ fontSize: '11px', fontWeight: '900', color: auraInfo.color, display: 'flex', alignItems: 'center', gap: '4px' }}>STREAK: {liveStreak} <Flame size={12} color="#ef4444" fill="#ef4444" /></div>
         </HeatmapHeader>
-        <HeatmapGrid>{heatmapData.map((d, i) => (<HeatmapCell key={i} $intensity={d.intensity} $baseColor={auraInfo.color} onClick={() => handleHeatmapClick(d)} title={`${d.date}: ${d.count} Tasks`} />))}</HeatmapGrid>
+        <HeatmapGrid>{heatmapData.map((d, i) => (<HeatmapCell key={i} $intensity={d.intensity} $baseColor={auraInfo.color} $isFuture={d.isFuture} onClick={() => handleHeatmapClick(d)} title={d.isFuture ? 'Future Day' : `${d.date}: ${d.count} Tasks`} />))}</HeatmapGrid>
         <LegendGrid>
           <LegendItem>7 STREAK<Activity size={16} color="#10b981" fill="#10b981" style={{ filter: 'drop-shadow(0 0 5px #10b981)' }} /></LegendItem>
           <LegendItem>15 STREAK<Zap size={16} color="#0ea5e9" fill="#0ea5e9" style={{ filter: 'drop-shadow(0 0 5px #0ea5e9)' }} /></LegendItem>
