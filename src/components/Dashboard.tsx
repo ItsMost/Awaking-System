@@ -701,6 +701,146 @@ const Dashboard = ({ player, setPlayer }: any) => {
   // 🚨 ستيت لمعرفة الهدايا المستلمة 🚨
   const [claimedRewards, setClaimedRewards] = useState<string[]>([]);
 
+  const [isSyncingOffline, setIsSyncingOffline] = useState(false);
+
+  const getOfflineQueue = useCallback((): any[] => {
+    try {
+      const q = localStorage.getItem(`elite_offline_queue_${currentPlayer.name}`);
+      return q ? JSON.parse(q) : [];
+    } catch (e) { return []; }
+  }, [currentPlayer.name]);
+
+  const addToOfflineQueue = useCallback((type: string, payload: any) => {
+    try {
+      const queue = getOfflineQueue();
+      const transaction = {
+        id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        type,
+        payload,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(`elite_offline_queue_${currentPlayer.name}`, JSON.stringify([...queue, transaction]));
+    } catch (e) { console.error('Error adding to offline queue', e); }
+  }, [currentPlayer.name, getOfflineQueue]);
+
+  const syncOfflineQueue = useCallback(async () => {
+    if (!navigator.onLine || isSyncingOffline) return;
+    const queue = getOfflineQueue();
+    if (queue.length === 0) return;
+
+    setIsSyncingOffline(true);
+    const toastId = toast.loading('⚡ جاري مزامنة مهامك الأوفلاين مع السيرفر...', {
+      style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' }
+    });
+
+    let successCount = 0;
+    try {
+      for (const tx of queue) {
+        try {
+          if (tx.type === 'complete_quest') {
+            await supabase.from('elite_quests').insert([{
+              player_name: currentPlayer.name,
+              task_name: tx.payload.questTitle,
+              evidence: 'Honor System',
+              type: 'quest',
+              status: 'approved',
+              created_at: tx.payload.logDate
+            }]);
+            
+            await supabase.from('elite_economy').insert([{
+              player_name: currentPlayer.name,
+              amount: tx.payload.earnedExp,
+              currency: 'xp',
+              operation: 'increase',
+              reason: tx.payload.questTitle
+            }]);
+            
+            if (tx.payload.levelGoldBonus > 0) {
+              await supabase.from('elite_economy').insert([{
+                player_name: currentPlayer.name,
+                amount: tx.payload.levelGoldBonus,
+                currency: 'gold',
+                operation: 'increase',
+                reason: 'Level Up Bonus'
+              }]);
+            }
+          } else if (tx.type === 'undo_quest') {
+            const startOfDay = new Date(tx.payload.logDate); startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(tx.payload.logDate); endOfDay.setHours(23, 59, 59, 999);
+            
+            const { data: existing } = await supabase.from('elite_quests')
+              .select('id')
+              .eq('player_name', currentPlayer.name)
+              .eq('task_name', tx.payload.questTitle)
+              .gte('created_at', startOfDay.toISOString())
+              .lte('created_at', endOfDay.toISOString());
+              
+            if (existing && existing.length > 0) {
+              await supabase.from('elite_quests').delete().eq('id', existing[0].id);
+            }
+            
+            await supabase.from('elite_economy').insert([{
+              player_name: currentPlayer.name,
+              amount: tx.payload.earnedExp,
+              currency: 'xp',
+              operation: 'decrease',
+              reason: `Player Reverted: ${tx.payload.questTitle}`
+            }]);
+          } else if (tx.type === 'submit_request') {
+            await supabase.from('elite_quests').insert([{
+              player_name: currentPlayer.name,
+              task_name: tx.payload.questTitle,
+              evidence: tx.payload.evidence,
+              type: tx.payload.isPenalty ? 'penalty' : 'quest',
+              status: 'pending',
+              created_at: tx.payload.logDate
+            }]);
+          }
+          successCount++;
+        } catch (err) {
+          console.error(`Failed to sync tx ${tx.id}`, err);
+        }
+      }
+      
+      const { data: latestServerUser } = await supabase.from('elite_players').select('*').eq('name', currentPlayer.name).single();
+      if (latestServerUser) {
+        await supabase.from('elite_players').update({
+          cumulative_xp: currentPlayer.cumulative_xp,
+          monthly_xp: currentPlayer.monthly_xp,
+          gold: currentPlayer.gold,
+          hp: currentPlayer.hp,
+          streak: currentPlayer.streak
+        }).eq('name', currentPlayer.name);
+      }
+      
+      localStorage.removeItem(`elite_offline_queue_${currentPlayer.name}`);
+      toast.dismiss(toastId);
+      toast.success(`⚡ تم دمج ومزامنة ${successCount} عملية أوفلاين بنجاح!`, {
+        style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' }
+      });
+    } catch (e) {
+      toast.dismiss(toastId);
+      toast.error('حدث خطأ أثناء مزامنة البيانات الأوفلاين.', {
+        style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444' }
+      });
+    } finally {
+      setIsSyncingOffline(false);
+    }
+  }, [currentPlayer, getOfflineQueue, isSyncingOffline]);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      syncOfflineQueue();
+    };
+    window.addEventListener('online', handleOnline);
+    if (navigator.onLine) {
+      syncOfflineQueue();
+    }
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [syncOfflineQueue]);
+
   const levelData = useMemo(() => calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0), [currentPlayer.cumulative_xp, currentPlayer.xp]);
   const currentVisualLvl = levelData.level;
   const rankInfo = useMemo(() => getRankInfo(currentVisualLvl), [currentVisualLvl]);
@@ -871,7 +1011,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
             const { data: dayReqs } = await supabase.from('elite_quests').select('task_name, status').eq('player_name', currentPlayer.name).gte('created_at', dayStart.toISOString()).lte('created_at', dayEnd.toISOString());
             const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
-            const completedMandatory = dayReqs ? dayReqs.filter(r => mandatoryTasks.includes(r.task_name) && r.status === 'approved').map(r => r.task_name) : [];
+            const completedMandatory = dayReqs ? dayReqs.filter(r => mandatoryTasks.includes(r.task_name) && (r.status === 'approved' || r.status === 'pending')).map(r => r.task_name) : [];
             const missedTasksCount = Math.max(0, 4 - completedMandatory.length);
             if (missedTasksCount > 0) hpPenaltyAmount += (missedTasksCount * penaltyHpPerTask);
             if (completedMandatory.length < 3) { 
@@ -1088,11 +1228,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     
     try {
       const logDate = getLogDate();
-      const { error: questError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: quest.title, evidence: 'Honor System', type: 'quest', status: 'approved', created_at: logDate }]);
-      if (questError) {
-        console.error("Quest Insert Error:", questError);
-        throw new Error("فشلت عملية حفظ المهمة في قاعدة البيانات! " + questError.message);
-      }
+      const isOffline = !navigator.onLine;
       
       const earnedExp = quest.exp * bloodMoonMultiplier;
       let newXp = (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) + earnedExp;
@@ -1146,16 +1282,37 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
       const dbUpdates = { cumulative_xp: newXp, monthly_xp: (currentPlayer.monthly_xp || 0) + earnedExp, gold: newGold, hp: newHp, streak: newStreak };
       
-      const { error: playerUpdateError } = await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
-      if (playerUpdateError) {
-        console.error("Player Update Error:", playerUpdateError);
-        // Rollback quest insertion to keep integrity
-        await supabase.from('elite_quests').delete().eq('player_name', currentPlayer.name).eq('task_name', quest.title).gte('created_at', logDate);
-        throw new Error("فشلت عملية تحديث بيانات اللاعب! " + playerUpdateError.message);
-      }
+      if (isOffline) {
+        addToOfflineQueue('complete_quest', {
+          questTitle: quest.title,
+          logDate,
+          earnedExp,
+          earnedGold,
+          earnedHp,
+          newStreak,
+          levelGoldBonus
+        });
+        toast.info('💡 أنت أوفلاين حالياً! تم حفظ تقدمك محلياً وسيتم رفعه تلقائياً فور عودة الاتصال.', {
+          style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' }
+        });
+      } else {
+        const { error: questError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: quest.title, evidence: 'Honor System', type: 'quest', status: 'approved', created_at: logDate }]);
+        if (questError) {
+          console.error("Quest Insert Error:", questError);
+          throw new Error("فشلت عملية حفظ المهمة في قاعدة البيانات! " + questError.message);
+        }
+        
+        const { error: playerUpdateError } = await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
+        if (playerUpdateError) {
+          console.error("Player Update Error:", playerUpdateError);
+          // Rollback quest insertion to keep integrity
+          await supabase.from('elite_quests').delete().eq('player_name', currentPlayer.name).eq('task_name', quest.title).gte('created_at', logDate);
+          throw new Error("فشلت عملية تحديث بيانات اللاعب! " + playerUpdateError.message);
+        }
 
-      await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: earnedExp, currency: 'xp', operation: 'increase', reason: quest.title }]);
-      if (levelGoldBonus > 0) await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: levelGoldBonus, currency: 'gold', operation: 'increase', reason: 'Level Up Bonus' }]);
+        await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: earnedExp, currency: 'xp', operation: 'increase', reason: quest.title }]);
+        if (levelGoldBonus > 0) await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: levelGoldBonus, currency: 'gold', operation: 'increase', reason: 'Level Up Bonus' }]);
+      }
       
       setPlayer((prev: any) => ({ ...prev, ...dbUpdates })); 
       
@@ -1189,17 +1346,33 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
     try {
       const logDate = getLogDate();
-      const { error: reqError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: selectedQuest.title, evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence', type: selectedQuest.isPenalty ? 'penalty' : 'quest', status: 'pending', created_at: logDate }]);
-      if (reqError) throw new Error("تعذر إرسال الطلب، السيرفر مشغول.");
+      const isOffline = !navigator.onLine;
       
       let newHp = Math.min(MAX_HP, (currentPlayer.hp || 100) + (selectedQuest.id === 'wq1' ? 20 : 0));
-      const { error: playerHpError } = await supabase.from('elite_players').update({ hp: newHp }).eq('name', currentPlayer.name);
-      if (playerHpError) {
-         await supabase.from('elite_quests').delete().eq('player_name', currentPlayer.name).eq('task_name', selectedQuest.title).eq('status', 'pending').gte('created_at', logDate);
-         throw new Error("فشلت عملية حفظ التعديلات!");
+      const dbUpdates = { hp: newHp };
+
+      if (isOffline) {
+        addToOfflineQueue('submit_request', {
+          questTitle: selectedQuest.title,
+          logDate,
+          evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence',
+          isPenalty: selectedQuest.isPenalty
+        });
+        toast.info('💡 أنت أوفلاين حالياً! تم تسجيل طلبك محلياً وسيتم إرساله تلقائياً فور عودة الاتصال.', {
+          style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' }
+        });
+      } else {
+        const { error: reqError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: selectedQuest.title, evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence', type: selectedQuest.isPenalty ? 'penalty' : 'quest', status: 'pending', created_at: logDate }]);
+        if (reqError) throw new Error("تعذر إرسال الطلب، السيرفر مشغول.");
+        
+        const { error: playerHpError } = await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
+        if (playerHpError) {
+           await supabase.from('elite_quests').delete().eq('player_name', currentPlayer.name).eq('task_name', selectedQuest.title).eq('status', 'pending').gte('created_at', logDate);
+           throw new Error("فشلت عملية حفظ التعديلات!");
+        }
       }
       
-      setPlayer((prev: any) => ({ ...prev, hp: newHp }));
+      setPlayer((prev: any) => ({ ...prev, ...dbUpdates }));
       playDashSound('request'); toast.success(`Request Sent to Coach Radar!`);
     } catch (err: any) { 
       playDashSound('error');
@@ -1217,16 +1390,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
     else setPendingQuests(prev => prev.filter(t => t !== quest.title));
 
     try {
-      const startOfDay = new Date(selectedDate); startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(selectedDate); endOfDay.setHours(23, 59, 59, 999);
-
-      const { data: existingReqs } = await supabase.from('elite_quests').select('id').eq('player_name', currentPlayer.name).eq('task_name', quest.title).gte('created_at', startOfDay.toISOString()).lte('created_at', endOfDay.toISOString());
-
-      if (!existingReqs || existingReqs.length === 0) {
-        toast.error('المهمة دي ملغية بالفعل!'); setIsProcessing(false); return;
-      }
-
-      await supabase.from('elite_quests').delete().eq('id', existingReqs[0].id);
+      const logDate = getLogDate();
+      const isOffline = !navigator.onLine;
 
       if (status === 'completed') {
         const earnedExp = quest.exp * bloodMoonMultiplier;
@@ -1261,10 +1426,52 @@ const Dashboard = ({ player, setPlayer }: any) => {
           }
         }
 
-        await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp, streak: newStreak }).eq('name', currentPlayer.name);
-        await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: earnedExp, currency: 'xp', operation: 'decrease', reason: `Player Reverted: ${quest.title}` }]);
+        const dbUpdates = { cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp, streak: newStreak };
 
-        setPlayer((prev: any) => ({ ...prev, cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold, hp: newHp, streak: newStreak }));
+        if (isOffline) {
+          addToOfflineQueue('undo_quest', {
+            questTitle: quest.title,
+            logDate,
+            earnedExp,
+            newStreak
+          });
+          toast.info('💡 تم التراجع محلياً! سيتم تحديث قاعدة البيانات فور عودة الاتصال.', {
+            style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' }
+          });
+        } else {
+          const startOfDay = new Date(selectedDate); startOfDay.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(selectedDate); endOfDay.setHours(23, 59, 59, 999);
+
+          const { data: existingReqs } = await supabase.from('elite_quests').select('id').eq('player_name', currentPlayer.name).eq('task_name', quest.title).gte('created_at', startOfDay.toISOString()).lte('created_at', endOfDay.toISOString());
+
+          if (!existingReqs || existingReqs.length === 0) {
+            toast.error('المهمة دي ملغية بالفعل!'); setIsProcessing(false); return;
+          }
+
+          await supabase.from('elite_quests').delete().eq('id', existingReqs[0].id);
+          await supabase.from('elite_players').update(dbUpdates).eq('name', currentPlayer.name);
+          await supabase.from('elite_economy').insert([{ player_name: currentPlayer.name, amount: earnedExp, currency: 'xp', operation: 'decrease', reason: `Player Reverted: ${quest.title}` }]);
+        }
+
+        setPlayer((prev: any) => ({ ...prev, ...dbUpdates }));
+      } else {
+        if (isOffline) {
+          addToOfflineQueue('undo_quest', {
+            questTitle: quest.title,
+            logDate
+          });
+          toast.info('💡 تم إلغاء الطلب محلياً! سيتم تحديث السيرفر فور عودة الاتصال.', {
+            style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' }
+          });
+        } else {
+          const startOfDay = new Date(selectedDate); startOfDay.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(selectedDate); endOfDay.setHours(23, 59, 59, 999);
+
+          const { data: existingReqs } = await supabase.from('elite_quests').select('id').eq('player_name', currentPlayer.name).eq('task_name', quest.title).gte('created_at', startOfDay.toISOString()).lte('created_at', endOfDay.toISOString());
+          if (existingReqs && existingReqs.length > 0) {
+            await supabase.from('elite_quests').delete().eq('id', existingReqs[0].id);
+          }
+        }
       }
       playDashSound('error'); toast.error('Reverted.');
     } catch (err: any) { toast.error(err.message); }
