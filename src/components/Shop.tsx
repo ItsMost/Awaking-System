@@ -157,7 +157,8 @@ const initializeDefaultItems = async () => {
     { name: 'Iron Golem Matrix', description: 'جوهر مدافع: يحمي الستريك من الكسر.', price: 3000, category: 'pet', color: '#0ea5e9', icon: 'spirit_golem', required_rank: 1 },
     { name: 'Frost Wolf Soul', description: 'صياد الألعاب: يزيد ذهب الألعاب بنسبة 20%.', price: 3000, category: 'pet', color: '#38bdf8', icon: 'spirit_wolf', required_rank: 1 },
     { name: 'Emerald Dragon Scale', description: 'مخفف الألم: يقلل خسارة الـ HP عند الغياب.', price: 3000, category: 'pet', color: '#10b981', icon: 'spirit_emerald', required_rank: 1 },
-    { name: 'Essence Crystal', description: 'يشحن طاقة مرافقك السحري بنسبة 50%.', price: 500, category: 'consumable', color: '#0ea5e9', icon: 'BatteryCharging', required_rank: 1 }
+    { name: 'Essence Crystal', description: 'يشحن طاقة مرافقك السحري بنسبة 50%.', price: 500, category: 'consumable', color: '#0ea5e9', icon: 'BatteryCharging', required_rank: 1 },
+    { name: 'Streak Protection Shield', description: 'درع حماية الستريك: يحميك من كسر أيامك النشطة وتصفير الستريك لمرة واحدة عند الغياب!', price: 1500, category: 'consumable', color: '#0ea5e9', icon: 'Shield', required_rank: 1 }
   ];
   
   const { data } = await supabase.from('shop_items').select('name');
@@ -353,10 +354,10 @@ const Shop = ({ player, setPlayer }: any) => {
   const fetchShopData = async () => {
     setLoading(true);
     try {
-      const { data: hunterData } = await supabase.from('elite_players').select('gold, pets, active_pet, pet_hunger, titles').eq('name', player.name).single();
+      const { data: hunterData } = await supabase.from('elite_players').select('gold, pets, active_pet, pet_hunger, titles, claimed_rewards').eq('name', player.name).single();
       if (hunterData) {
         setGold(hunterData.gold);
-        setPlayer((prev: any) => ({ ...prev, gold: hunterData.gold, pets: hunterData.pets, active_pet: hunterData.active_pet, pet_hunger: hunterData.pet_hunger, titles: hunterData.titles }));
+        setPlayer((prev: any) => ({ ...prev, gold: hunterData.gold, pets: hunterData.pets, active_pet: hunterData.active_pet, pet_hunger: hunterData.pet_hunger, titles: hunterData.titles, claimed_rewards: hunterData.claimed_rewards }));
       }
 
       const { data: items } = await supabase.from('shop_items').select('*').order('created_at', { ascending: true });
@@ -380,6 +381,15 @@ const Shop = ({ player, setPlayer }: any) => {
   const executePurchase = async () => {
     const { item } = confirmModal;
     setConfirmModal({ show: false, item: null });
+    
+    if (item.name === 'Streak Protection Shield') {
+      const currentClaimed = player.claimed_rewards || [];
+      if (currentClaimed.includes('streak_shield')) {
+        playError();
+        toast.error('أنت تمتلك درع حماية نشط بالفعل! لا يمكنك شراء أكثر من درع واحد في نفس الوقت.');
+        return;
+      }
+    }
     
     const discountedPrice = getDiscountedPrice(item.price);
     if (gold < discountedPrice) { playError(); toast.error('NOT ENOUGH GOLD!'); return; }
@@ -428,8 +438,13 @@ const Shop = ({ player, setPlayer }: any) => {
       }
 
       if (item.category === 'consumable') {
-        const currentHunger = player.pet_hunger || 0;
-        updatePayload.pet_hunger = Math.min(100, currentHunger + 50); 
+        if (item.name === 'Streak Protection Shield') {
+          const currentClaimed = player.claimed_rewards || [];
+          updatePayload.claimed_rewards = [...new Set([...currentClaimed, 'streak_shield'])];
+        } else {
+          const currentHunger = player.pet_hunger || 0;
+          updatePayload.pet_hunger = Math.min(100, currentHunger + 50); 
+        }
       }
 
       const { error: updateError } = await supabase.from('elite_players').update(updatePayload).eq('name', player.name);
@@ -542,6 +557,10 @@ const Shop = ({ player, setPlayer }: any) => {
               const currentPets = Array.isArray(player?.pets) ? player.pets : [];
               playerHasIt = currentPets.includes(item.name);
             }
+            if (item.name === 'Streak Protection Shield') {
+              const currentClaimed = player?.claimed_rewards || [];
+              playerHasIt = currentClaimed.includes('streak_shield');
+            }
 
             const reqRank = item.required_rank || 1;
             const isRankLocked = currentPlayerLevel < reqRank;
@@ -581,7 +600,9 @@ const Shop = ({ player, setPlayer }: any) => {
                        <SoldOutText>ALREADY OWNED</SoldOutText>
                     </SoldOutOverlay>
                   ) : playerHasIt ? (
-                    <BuyBtn $affordable={false} $color={item.color} disabled={true}>ALREADY OWNED</BuyBtn>
+                    <BuyBtn $affordable={false} $color={item.color} disabled={true}>
+                      {item.name === 'Streak Protection Shield' ? 'درع حماية نشط 🛡️' : 'ALREADY OWNED'}
+                    </BuyBtn>
                   ) : (
                     (() => {
                       const discountedPrice = getDiscountedPrice(item.price);

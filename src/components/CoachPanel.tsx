@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert, CheckCircle, XCircle, Globe, Send, Loader, User, Clock, Target, Database, Trash2 } from 'lucide-react';
+import { ShieldAlert, CheckCircle, XCircle, Globe, Send, Loader, User, Clock, Target, Database, Trash2, Sliders, Calendar, Activity, Save } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 
@@ -23,6 +23,13 @@ const QUEST_REWARDS: Record<string, { exp: number, gold: number }> = {
 
 const getReward = (taskName: string) => {
   return QUEST_REWARDS[taskName] || { exp: 50, gold: 20 }; 
+};
+
+const getStreakTier = (s: number) => {
+  if (s >= 30) return { name: 'VOID QUANTUM 🌌', multiplier: 1.5, nextMilestone: 60, prevMilestone: 30, color: '#a855f7' };
+  if (s >= 14) return { name: 'CYBER TITAN ⚡', multiplier: 1.2, nextMilestone: 30, prevMilestone: 14, color: '#00f2ff' };
+  if (s >= 7) return { name: 'EMERALD SENTINEL 💚', multiplier: 1.1, nextMilestone: 14, prevMilestone: 7, color: '#10b981' };
+  return { name: 'EMBER INITIATE 🔥', multiplier: 1.0, nextMilestone: 7, prevMilestone: 0, color: '#f97316' };
 };
 
 const calculateLevelData = (totalXp: number) => {
@@ -67,6 +74,131 @@ const RejectBtn = styled.button` flex: 1; background: rgba(239, 68, 68, 0.1); bo
 const spin = keyframes` 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } `;
 const Spinner = styled(Loader)` animation: ${spin} 1s linear infinite; `;
 
+const SettingsBox = styled.div`
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid #10b981;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+`;
+
+const SwitchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #020617;
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: 1px solid #1e293b;
+`;
+
+const SwitchLabel = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  direction: rtl;
+  text-align: right;
+`;
+
+const LabelText = styled.span`
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff;
+`;
+
+const LabelSub = styled.span`
+  font-size: 10px;
+  color: #94a3b8;
+`;
+
+const SwitchEl = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+`;
+
+const SwitchInput = styled.input`
+  opacity: 0;
+  width: 0;
+  height: 0;
+  &:checked + span {
+    background-color: #10b981;
+    &:before {
+      transform: translateX(24px);
+    }
+  }
+`;
+
+const SwitchSlider = styled.span`
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #334155;
+  transition: .4s;
+  border-radius: 34px;
+  &:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+`;
+
+const DateInput = styled.input`
+  width: 100%;
+  background: #020617;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  font-family: 'Oxanium';
+  font-size: 14px;
+  outline: none;
+  &:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+  }
+`;
+
+const SaveBtn = styled.button`
+  background: #10b981;
+  color: #000;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 12px;
+  font-family: 'Oxanium';
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: 0.3s;
+  width: 100%;
+  &:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 // ==========================================
 // 3. المكون الرئيسي
 // ==========================================
@@ -81,6 +213,11 @@ const CoachPanel = () => {
   
   // 🚨 State جديد للأخبار الحالية 🚨
   const [activeNews, setActiveNews] = useState<any[]>([]);
+
+  const [doubleExpEndDate, setDoubleExpEndDate] = useState('');
+  const [isDoubleExpEnabled, setIsDoubleExpEnabled] = useState(false);
+  const [isStreakExpEnabled, setIsStreakExpEnabled] = useState(true);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   // جلب الطلبات المعلقة
   const fetchPending = async () => {
@@ -102,14 +239,27 @@ const CoachPanel = () => {
   // 🚨 دالة جلب الأخبار الحالية 🚨
   const fetchActiveNews = async () => {
     try {
-      const { data } = await supabase.from('global_news').select('*').order('created_at', { ascending: false }).limit(10);
+      const { data } = await supabase.from('global_news').select('*').neq('type', 'system_settings').order('created_at', { ascending: false }).limit(10);
       if (data) setActiveNews(data);
+    } catch (e) {}
+  };
+
+  const fetchSystemSettings = async () => {
+    try {
+      const { data, error } = await supabase.from('global_news').select('*').eq('type', 'system_settings').maybeSingle();
+      if (data && data.content) {
+        const parsed = JSON.parse(data.content);
+        if (parsed.double_exp_end_date) setDoubleExpEndDate(parsed.double_exp_end_date);
+        if (parsed.is_double_exp_enabled !== undefined) setIsDoubleExpEnabled(parsed.is_double_exp_enabled);
+        if (parsed.is_streak_exp_enabled !== undefined) setIsStreakExpEnabled(parsed.is_streak_exp_enabled);
+      }
     } catch (e) {}
   };
 
   useEffect(() => {
     fetchPending();
     fetchActiveNews(); // جلب الأخبار أول ما الصفحة تفتح
+    fetchSystemSettings();
   }, []);
 
   // بث رسالة على الرادار
@@ -139,6 +289,38 @@ const CoachPanel = () => {
     setSendingBroadcast(false);
   };
 
+  const handleSaveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      const { data: existing } = await supabase.from('global_news').select('id').eq('type', 'system_settings').maybeSingle();
+      const payload = {
+        title: 'System Settings',
+        content: JSON.stringify({
+          double_exp_end_date: doubleExpEndDate,
+          is_double_exp_enabled: isDoubleExpEnabled,
+          is_streak_exp_enabled: isStreakExpEnabled
+        }),
+        type: 'system_settings',
+        priority: 0
+      };
+
+      let error = null;
+      if (existing) {
+        const { error: err } = await supabase.from('global_news').update(payload).eq('id', existing.id);
+        error = err;
+      } else {
+        const { error: err } = await supabase.from('global_news').insert([payload]);
+        error = err;
+      }
+
+      if (error) throw error;
+      toast.success('تم حفظ إعدادات النظام بنجاح!', { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
+    } catch (e: any) {
+      toast.error(`فشل الحفظ: ${e.message}`);
+    }
+    setSavingSettings(false);
+  };
+
   // 🚨 دالة مسح خبر من الرادار 🚨
   const handleDeleteNews = async (id: string) => {
     if (!window.confirm('هل أنت متأكد من مسح هذا البث من الرادار؟')) return;
@@ -156,13 +338,66 @@ const CoachPanel = () => {
     setProcessingId(req.id);
     try {
       // 1. جلب بيانات اللاعب الحالية
-      const { data: playerData, error: playerErr } = await supabase.from('elite_players').select('cumulative_xp, gold, hp').eq('name', req.player_name).single();
+      const { data: playerData, error: playerErr } = await supabase.from('elite_players').select('cumulative_xp, gold, hp, streak, active_pet, equipped_gear').eq('name', req.player_name).single();
       if (playerErr || !playerData) throw new Error('تعذر إيجاد اللاعب');
+
+      // Fetch system settings
+      const { data: settingsRow } = await supabase.from('global_news').select('*').eq('type', 'system_settings').maybeSingle();
+      let settings = null;
+      if (settingsRow && settingsRow.content) {
+        try {
+          settings = JSON.parse(settingsRow.content);
+        } catch (e) {}
+      }
+
+      // Check if double exp is active
+      const now = new Date();
+      let isDoubleExp = false;
+      if (settings) {
+        if (settings.is_double_exp_enabled) isDoubleExp = true;
+        else if (settings.double_exp_end_date) {
+          const endDate = new Date(settings.double_exp_end_date);
+          endDate.setHours(23, 59, 59, 999);
+          if (now <= endDate) isDoubleExp = true;
+        }
+      }
 
       // 2. حساب المكافآت
       const reward = getReward(req.task_name);
-      let newXp = (playerData.cumulative_xp || 0) + reward.exp;
-      let newGold = (playerData.gold || 0) + reward.gold;
+      const isExcluded = ['Recovery Logistics', 'Supplement Inventory', 'InBody Assessment'].includes(req.task_name);
+      
+      const expMult = isExcluded ? 1 : (isDoubleExp ? 2 : 1);
+      const goldMult = isExcluded ? 1 : (isDoubleExp ? 2 : 1);
+
+      const streakTier = getStreakTier(playerData.streak || 0);
+      const streakMultiplier = streakTier.multiplier;
+      const hasWyvern = playerData.active_pet === 'Golden Wyvern Core';
+      const wyvernMultiplier = hasWyvern ? 1.1 : 1.0;
+
+      let bonusGoldFromGear = 0;
+      const parseStat = (statStr: string) => {
+        if (!statStr) return;
+        if (statStr.includes('+5 Gold')) bonusGoldFromGear += 5;
+        if (statStr.includes('+10 Gold')) bonusGoldFromGear += 10;
+        if (statStr.includes('+15 Gold')) bonusGoldFromGear += 15;
+        if (statStr.includes('+20 Gold')) bonusGoldFromGear += 20;
+        if (statStr.includes('+30 Gold')) bonusGoldFromGear += 30;
+      };
+      if (playerData.equipped_gear) {
+        const gear = playerData.equipped_gear as any;
+        if (gear.weapon) parseStat(gear.weapon.stat);
+        if (gear.armor) parseStat(gear.armor.stat);
+        if (gear.artifact) parseStat(gear.artifact.stat);
+      }
+
+      const isStreakExpEnabled = settings ? settings.is_streak_exp_enabled : true;
+      const expStreakMult = isStreakExpEnabled ? streakMultiplier : 1.0;
+
+      const finalExp = Math.round(reward.exp * expMult * expStreakMult);
+      const finalGold = Math.round(((reward.gold * goldMult) + (reward.gold > 0 ? bonusGoldFromGear : 0)) * streakMultiplier * wyvernMultiplier);
+
+      let newXp = (playerData.cumulative_xp || 0) + finalExp;
+      let newGold = (playerData.gold || 0) + finalGold;
 
       // 3. حساب لو اللاعب هيلفل عشان نديله بونس
       const oldLvl = calculateLevelData(playerData.cumulative_xp || 0).level;
@@ -185,15 +420,15 @@ const CoachPanel = () => {
       await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newXp, gold: newGold }).eq('name', req.player_name);
 
       // 6. تسجيل في الاقتصاد
-      await supabase.from('elite_economy').insert([{ player_name: req.player_name, amount: reward.exp, currency: 'xp', operation: 'increase', reason: `Coach Approved: ${req.task_name}` }]);
-      if (reward.gold > 0) {
-        await supabase.from('elite_economy').insert([{ player_name: req.player_name, amount: reward.gold, currency: 'gold', operation: 'increase', reason: `Coach Approved: ${req.task_name}` }]);
+      await supabase.from('elite_economy').insert([{ player_name: req.player_name, amount: finalExp, currency: 'xp', operation: 'increase', reason: `Coach Approved: ${req.task_name}` }]);
+      if (finalGold > 0) {
+        await supabase.from('elite_economy').insert([{ player_name: req.player_name, amount: finalGold, currency: 'gold', operation: 'increase', reason: `Coach Approved: ${req.task_name}` }]);
       }
       if (bonusGold > 0) {
         await supabase.from('elite_economy').insert([{ player_name: req.player_name, amount: bonusGold, currency: 'gold', operation: 'increase', reason: `Level Up Bonus` }]);
       }
 
-      toast.success(`تمت الموافقة وتم منح ${req.player_name} ${reward.exp} XP!`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
+      toast.success(`تمت الموافقة وتم منح ${req.player_name} ${finalExp} XP!`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
       setPendingReqs(prev => prev.filter(p => p.id !== req.id));
 
     } catch (e: any) {
@@ -260,6 +495,56 @@ const CoachPanel = () => {
           </div>
         )}
       </BroadcastBox>
+
+      {/* أدوات التحكم وإدارة النظام */}
+      <SettingsBox>
+        <SectionTitle $color="#10b981"><Sliders size={18} /> SYSTEM CONTROLS & OVERRIDES</SectionTitle>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ fontSize: '12px', color: '#10b981', fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'right' }}>
+            <Calendar size={12} style={{ marginLeft: '4px' }} /> تاريخ انتهاء حدث الـ Double EXP (المزامنة التلقائية)
+          </div>
+          <DateInput 
+            type="date" 
+            value={doubleExpEndDate} 
+            onChange={(e) => setDoubleExpEndDate(e.target.value)} 
+          />
+        </div>
+
+        <SwitchContainer>
+          <SwitchEl>
+            <SwitchInput 
+              type="checkbox" 
+              checked={isDoubleExpEnabled} 
+              onChange={(e) => setIsDoubleExpEnabled(e.target.checked)} 
+            />
+            <SwitchSlider />
+          </SwitchEl>
+          <SwitchLabel>
+            <LabelText>تفعيل حدث الـ Double EXP الأسبوعي ⚡</LabelText>
+            <LabelSub>عند التفعيل يدوياً، يحصل جميع اللاعبين على مضاعفة خبرة وذهب فورية</LabelSub>
+          </SwitchLabel>
+        </SwitchContainer>
+
+        <SwitchContainer>
+          <SwitchEl>
+            <SwitchInput 
+              type="checkbox" 
+              checked={isStreakExpEnabled} 
+              onChange={(e) => setIsStreakExpEnabled(e.target.checked)} 
+            />
+            <SwitchSlider />
+          </SwitchEl>
+          <SwitchLabel>
+            <LabelText>تطبيق مضاعف الستريك على الخبرة (Streak Multiplier for EXP) 🔥</LabelText>
+            <LabelSub>عند التشغيل، يتضاعف حافز نقاط الخبرة المكتسبة بناءً على عدد أيام النشاط المتتالية للاعب</LabelSub>
+          </SwitchLabel>
+        </SwitchContainer>
+
+        <SaveBtn disabled={savingSettings} onClick={handleSaveSettings}>
+          {savingSettings ? <Spinner size={18} /> : <><Save size={18} /> حفظ إعدادات النظام</>}
+        </SaveBtn>
+      </SettingsBox>
 
       {/* الطلبات المعلقة */}
       <SectionTitle $color="#facc15"><Database size={18} /> PENDING REQUESTS ({pendingReqs.length})</SectionTitle>

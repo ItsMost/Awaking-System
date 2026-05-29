@@ -148,7 +148,8 @@ interface QuestCardComponentProps {
   quest: any;
   status: 'completed' | 'pending' | 'idle';
   isLocked: boolean;
-  bloodMoonMultiplier: number;
+  expMultiplier: number;
+  goldMultiplier: number;
   bonusGold: number;
   dynamicDesc: string;
   onClick: (quest: any) => void;
@@ -158,7 +159,8 @@ const QuestCardComponent = React.memo<QuestCardComponentProps>(({
   quest,
   status,
   isLocked,
-  bloodMoonMultiplier,
+  expMultiplier,
+  goldMultiplier,
   bonusGold,
   dynamicDesc,
   onClick
@@ -198,10 +200,10 @@ const QuestCardComponent = React.memo<QuestCardComponentProps>(({
           {!isPenalty && (
             <Rewards>
               <span style={{ color: '#00f2ff', display: 'flex', alignItems: 'center' }}>
-                <AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP
+                <AnimatedExpStar /> +{quest.exp * (status === 'idle' ? expMultiplier : 1)} XP
               </span>
               <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
-                <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)}
+                <AnimatedCoin /> +{quest.gold * (status === 'idle' ? goldMultiplier : 1)}
                 {quest.gold > 0 && bonusGold > 0 && (
                   <span style={{ color: '#facc15', fontSize: '9px', marginLeft: '4px' }}>
                     (+{bonusGold} Gear)
@@ -223,7 +225,8 @@ interface UrgentQuestCardComponentProps {
   quest: any;
   status: 'completed' | 'pending' | 'idle';
   isLocked: boolean;
-  bloodMoonMultiplier: number;
+  expMultiplier: number;
+  goldMultiplier: number;
   bonusGold: number;
   onClick: (quest: any) => void;
 }
@@ -232,7 +235,8 @@ const UrgentQuestCardComponent = React.memo<UrgentQuestCardComponentProps>(({
   quest,
   status,
   isLocked,
-  bloodMoonMultiplier,
+  expMultiplier,
+  goldMultiplier,
   bonusGold,
   onClick
 }) => {
@@ -273,10 +277,10 @@ const UrgentQuestCardComponent = React.memo<UrgentQuestCardComponentProps>(({
           </QuestDesc>
           <Rewards>
             <span style={{ color: status === 'completed' ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center' }}>
-              <AnimatedExpStar /> +{quest.exp * (status === 'idle' ? bloodMoonMultiplier : 1)} XP
+              <AnimatedExpStar /> +{quest.exp * (status === 'idle' ? expMultiplier : 1)} XP
             </span>
             <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
-              <AnimatedCoin /> +{quest.gold * (status === 'idle' ? bloodMoonMultiplier : 1)}
+              <AnimatedCoin /> +{quest.gold * (status === 'idle' ? goldMultiplier : 1)}
               {quest.gold > 0 && bonusGold > 0 && (
                 <span style={{ color: '#facc15', fontSize: '9px', marginLeft: '4px' }}>
                   (+{bonusGold} Gear)
@@ -700,6 +704,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
   // 🚨 ستيت لمعرفة الهدايا المستلمة 🚨
   const [claimedRewards, setClaimedRewards] = useState<string[]>([]);
+  const [systemSettings, setSystemSettings] = useState<any>(null);
 
   const [isSyncingOffline, setIsSyncingOffline] = useState(false);
 
@@ -896,8 +901,19 @@ const Dashboard = ({ player, setPlayer }: any) => {
   const isToday = selStr === todayStr;
   const isLocked = useCallback(() => !isToday, [isToday]);
 
-  const isBloodMoon = timeLeft.days <= 3;
-  const bloodMoonMultiplier = isBloodMoon ? 2 : 1;
+  const isDoubleExp = (() => {
+    if (!systemSettings) return timeLeft.days <= 3;
+    if (systemSettings.is_double_exp_enabled) return true;
+    if (systemSettings.double_exp_end_date) {
+      const endDate = new Date(systemSettings.double_exp_end_date);
+      endDate.setHours(23, 59, 59, 999);
+      if (realNow <= endDate) return true;
+    }
+    return timeLeft.days <= 3;
+  })();
+  const doubleExpMultiplier = isDoubleExp ? 2 : 1;
+  const isBloodMoon = isDoubleExp;
+  const bloodMoonMultiplier = doubleExpMultiplier;
 
   const changeDate = useCallback((offset: number) => {
     playHoverSound();
@@ -967,6 +983,15 @@ const Dashboard = ({ player, setPlayer }: any) => {
         const { data: userData } = await supabase.from('elite_players').select('*').eq('name', currentPlayer.name).single();
 
         if (userData && setPlayer) {
+          const { data: settingsRow } = await supabase.from('global_news').select('*').eq('type', 'system_settings').maybeSingle();
+          let settings = null;
+          if (settingsRow && settingsRow.content) {
+            try {
+              settings = JSON.parse(settingsRow.content);
+              setSystemSettings(settings);
+            } catch (e) {}
+          }
+
           const fetchedLvl = calculateLevelData(userData.cumulative_xp || userData.xp || 0).level;
           if (prevLevelRef.current !== null && fetchedLvl > prevLevelRef.current) {
             playDashSound('levelUp');
@@ -996,6 +1021,9 @@ const Dashboard = ({ player, setPlayer }: any) => {
           }
           setDailyMacros(fetchedMacros);
 
+          let claimedRewardsList = [...(userData.claimed_rewards || [])];
+          let shieldConsumedThisSync = false;
+
           let checkDate = new Date(lastPenaltyCheck); checkDate.setDate(checkDate.getDate() + 1);
           const yesterdayObj = new Date(realNow); yesterdayObj.setDate(yesterdayObj.getDate() - 1);
           
@@ -1016,7 +1044,12 @@ const Dashboard = ({ player, setPlayer }: any) => {
             if (missedTasksCount > 0) hpPenaltyAmount += (missedTasksCount * penaltyHpPerTask);
             if (completedMandatory.length < 3) { 
               if (!hasGolem) {
-                fetchedStreak = 0; 
+                if (claimedRewardsList.includes('streak_shield')) {
+                  claimedRewardsList = claimedRewardsList.filter(item => item !== 'streak_shield');
+                  shieldConsumedThisSync = true;
+                } else {
+                  fetchedStreak = 0; 
+                }
               }
               applyPenalty = true; 
               daysMissedCount++; 
@@ -1024,13 +1057,15 @@ const Dashboard = ({ player, setPlayer }: any) => {
             lastPenaltyCheck = checkStr; checkDate.setDate(checkDate.getDate() + 1);
           }
 
-          if (applyPenalty || hpPenaltyAmount > 0) {
+          if (applyPenalty || hpPenaltyAmount > 0 || shieldConsumedThisSync) {
             const penaltyStats = getPenaltyStats(calculateLevelData(userData.cumulative_xp || userData.xp || 0).level);
             const goldLost = applyPenalty ? (daysMissedCount * penaltyStats.gold) : 0;
             fetchedHp = Math.max(0, fetchedHp - hpPenaltyAmount); fetchedGold = Math.max(0, fetchedGold - goldLost);
-            await supabase.from('elite_players').update({ hp: fetchedHp, gold: fetchedGold, streak: fetchedStreak, last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
+            await supabase.from('elite_players').update({ hp: fetchedHp, gold: fetchedGold, streak: fetchedStreak, last_penalty_check: lastPenaltyCheck, claimed_rewards: claimedRewardsList }).eq('name', currentPlayer.name);
             if (hpPenaltyAmount > 0) toast.error(`🩸 تم خصم ${hpPenaltyAmount} HP لعدم استكمال مهام الأيام السابقة. ${hasEmeraldScale ? '(خصم مخفض بنسبة 50% 🛡️)' : ''}`, { duration: 6000, style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444'} });
-            if (applyPenalty) {
+            if (shieldConsumedThisSync) {
+              toast.success(`🛡️ تم استهلاك "درع حماية الستريك" بنجاح لحماية أيامك النشطة من الانكسار! لا يزال الستريك الخاص بك قائماً! ✨`, { duration: 10000, style: { background: '#020617', color: '#0ea5e9', border: '1px solid #0ea5e9'} });
+            } else if (applyPenalty) {
               if (hasGolem) {
                 toast.success(`🛡️ حماية الـ Iron Golem منعت انكسار الـ Streak! لم يتم تصفير أيامك النشطة.`, { duration: 8000, style: { background: '#020617', color: '#0ea5e9', border: '1px solid #0ea5e9'} });
               } else {
@@ -1041,7 +1076,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
             await supabase.from('elite_players').update({ last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
           }
 
-          setPlayer({ ...currentPlayer, ...userData, hp: fetchedHp, gold: fetchedGold, streak: fetchedStreak, custom_foods: fetchedCustomFoods });
+          setClaimedRewards(claimedRewardsList);
+          setPlayer({ ...currentPlayer, ...userData, hp: fetchedHp, gold: fetchedGold, streak: fetchedStreak, custom_foods: fetchedCustomFoods, claimed_rewards: claimedRewardsList });
         }
 
         const fetchStart = new Date(selectedDate); fetchStart.setDate(fetchStart.getDate() - 30); 
@@ -1230,17 +1266,25 @@ const Dashboard = ({ player, setPlayer }: any) => {
       const logDate = getLogDate();
       const isOffline = !navigator.onLine;
       
-      const earnedExp = quest.exp * bloodMoonMultiplier;
-      let newXp = (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) + earnedExp;
-      
+      const isExcluded = ['Recovery Logistics', 'Supplement Inventory', 'InBody Assessment'].includes(quest.title);
+      const expMult = isExcluded ? 1 : doubleExpMultiplier;
+      const goldMult = isExcluded ? 1 : doubleExpMultiplier;
+
       const currentStreak = currentPlayer.streak || 0;
       const streakTier = getStreakTier(currentStreak);
       const streakMultiplier = streakTier.multiplier;
+      
+      const isStreakExpEnabled = systemSettings ? systemSettings.is_streak_exp_enabled : true;
+      const expStreakMult = isStreakExpEnabled ? streakMultiplier : 1.0;
+
+      const earnedExp = Math.round(quest.exp * expMult * expStreakMult);
+      let newXp = (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) + earnedExp;
+      
       const hasWyvern = currentPlayer.active_pet === 'Golden Wyvern Core';
       const wyvernMultiplier = hasWyvern ? 1.1 : 1.0;
 
       const baseGold = quest.gold || 0;
-      const earnedGold = Math.round(((baseGold * bloodMoonMultiplier) + (baseGold > 0 ? gearBonuses.goldBonus || gearBonuses.bonusGold || 0 : 0)) * streakMultiplier * wyvernMultiplier);
+      const earnedGold = Math.round(((baseGold * goldMult) + (baseGold > 0 ? gearBonuses.goldBonus || gearBonuses.bonusGold || 0 : 0)) * streakMultiplier * wyvernMultiplier);
       let newGold = (currentPlayer.gold || 0) + earnedGold;
       
       const oldLevelData = calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0);
@@ -1327,7 +1371,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
            toast.success(`🔥 STREAK INCREASED: ${newStreak} DAYS!`, { style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444', fontWeight: 'bold' } });
         } else {
            playDashSound('complete'); 
-           toast.success(`Completed! +${earnedExp} EXP ${isBloodMoon ? '(2X BLOOD MOON 🩸)' : ''}`);
+           toast.success(`Completed! +${earnedExp} EXP ${isDoubleExp && !isExcluded ? '(2X EVENT 🔥)' : ''}`);
            if (earnedHp > 0) toast.success(`+${earnedHp} HP Restored 🩸`, { style: { background: '#022c22', color: '#10b981', border: '1px solid #10b981' } });
         }
       }
@@ -1394,16 +1438,24 @@ const Dashboard = ({ player, setPlayer }: any) => {
       const isOffline = !navigator.onLine;
 
       if (status === 'completed') {
-        const earnedExp = quest.exp * bloodMoonMultiplier;
-        
+        const isExcluded = ['Recovery Logistics', 'Supplement Inventory', 'InBody Assessment'].includes(quest.title);
+        const expMult = isExcluded ? 1 : doubleExpMultiplier;
+        const goldMult = isExcluded ? 1 : doubleExpMultiplier;
+
         const currentStreak = currentPlayer.streak || 0;
         const streakTier = getStreakTier(currentStreak);
         const streakMultiplier = streakTier.multiplier;
+        
+        const isStreakExpEnabled = systemSettings ? systemSettings.is_streak_exp_enabled : true;
+        const expStreakMult = isStreakExpEnabled ? streakMultiplier : 1.0;
+
+        const earnedExp = Math.round(quest.exp * expMult * expStreakMult);
+        
         const hasWyvern = currentPlayer.active_pet === 'Golden Wyvern Core';
         const wyvernMultiplier = hasWyvern ? 1.1 : 1.0;
 
         const baseGold = quest.gold || 0;
-        const earnedGold = Math.round(((baseGold * bloodMoonMultiplier) + (baseGold > 0 ? gearBonuses.goldBonus || gearBonuses.bonusGold || 0 : 0)) * streakMultiplier * wyvernMultiplier);
+        const earnedGold = Math.round(((baseGold * goldMult) + (baseGold > 0 ? gearBonuses.goldBonus || gearBonuses.bonusGold || 0 : 0)) * streakMultiplier * wyvernMultiplier);
 
         let newXp = Math.max(0, (currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0) - earnedExp);
         let newMonthlyXp = Math.max(0, (currentPlayer.monthly_xp || 0) - earnedExp);
@@ -1534,6 +1586,14 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
   const streakProgress = getStreakProgress();
 
+  const getQuestCardMultipliers = (questTitle: string) => {
+    const isExcluded = ['Recovery Logistics', 'Supplement Inventory', 'InBody Assessment'].includes(questTitle);
+    return {
+      expM: isExcluded ? 1 : doubleExpMultiplier,
+      goldM: isExcluded ? 1 : doubleExpMultiplier
+    };
+  };
+
   return (
     <Container initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
       <Toaster position="top-center" theme="dark" />
@@ -1622,7 +1682,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
             quest={PENALTY_QUEST}
             status={getStatus(PENALTY_QUEST.title)}
             isLocked={isLocked()}
-            bloodMoonMultiplier={bloodMoonMultiplier}
+            expMultiplier={getQuestCardMultipliers(PENALTY_QUEST.title).expM}
+            goldMultiplier={getQuestCardMultipliers(PENALTY_QUEST.title).goldM}
             bonusGold={gearBonuses.bonusGold}
             dynamicDesc={PENALTY_QUEST.desc}
             onClick={handleQuestClick}
@@ -1637,7 +1698,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
           quest={quest}
           status={getStatus(quest.title)}
           isLocked={isLocked()}
-          bloodMoonMultiplier={bloodMoonMultiplier}
+          expMultiplier={getQuestCardMultipliers(quest.title).expM}
+          goldMultiplier={getQuestCardMultipliers(quest.title).goldM}
           bonusGold={gearBonuses.bonusGold}
           dynamicDesc={getDynamicDesc(quest)}
           onClick={handleQuestClick}
@@ -1653,7 +1715,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
               quest={quest}
               status={getStatus(quest.title)}
               isLocked={isLocked()}
-              bloodMoonMultiplier={bloodMoonMultiplier}
+              expMultiplier={getQuestCardMultipliers(quest.title).expM}
+              goldMultiplier={getQuestCardMultipliers(quest.title).goldM}
               bonusGold={gearBonuses.bonusGold}
               onClick={handleQuestClick}
             />
@@ -1668,7 +1731,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
           quest={quest}
           status={getStatus(quest.title)}
           isLocked={isLocked()}
-          bloodMoonMultiplier={bloodMoonMultiplier}
+          expMultiplier={getQuestCardMultipliers(quest.title).expM}
+          goldMultiplier={getQuestCardMultipliers(quest.title).goldM}
           bonusGold={gearBonuses.bonusGold}
           dynamicDesc={quest.desc}
           onClick={handleQuestClick}
@@ -1682,7 +1746,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
           quest={quest}
           status={getStatus(quest.title)}
           isLocked={isLocked()}
-          bloodMoonMultiplier={bloodMoonMultiplier}
+          expMultiplier={getQuestCardMultipliers(quest.title).expM}
+          goldMultiplier={getQuestCardMultipliers(quest.title).goldM}
           bonusGold={gearBonuses.bonusGold}
           dynamicDesc={quest.desc}
           onClick={handleQuestClick}
