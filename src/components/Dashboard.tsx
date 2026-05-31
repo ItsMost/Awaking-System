@@ -87,13 +87,22 @@ const playHoverSound = () => {
 // 2. Rank System & Utils
 // ==========================================
 const getRankInfo = (level: number) => {
-  if (level >= 30) return { name: 'ELITE', color: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)' };
-  if (level >= 25) return { name: 'MASTER', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.4)' };
-  if (level >= 20) return { name: 'DIAMOND', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
-  if (level >= 15) return { name: 'PLATINUM', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.4)' };
-  if (level >= 10) return { name: 'GOLD', color: '#eab308', glow: 'rgba(234, 179, 8, 0.4)' };
-  if (level >= 5)  return { name: 'SILVER', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.4)' };
-  return { name: 'BRONZE', color: '#b45309', glow: 'rgba(180, 83, 9, 0.4)' };
+  if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.6)' };
+  if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' };
+  if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' };
+  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)' };
+  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)' };
+  if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
+  if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
+  if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
+  if (level >= 14) return { name: 'PLATINUM RACER 👟', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)' };
+  if (level >= 12) return { name: 'PLATINUM RELAY ⏱️', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)' };
+  if (level >= 10) return { name: 'GOLD PACER 🌟', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' };
+  if (level >= 8)  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' };
+  if (level >= 6)  return { name: 'SILVER SPRINTER 🥈', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)' };
+  if (level >= 4)  return { name: 'SILVER RUNNER 🎽', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)' };
+  if (level >= 2)  return { name: 'BRONZE STRIDER 🪵', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)' };
+  return { name: 'BRONZE ATHLETE 🥉', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)' };
 };
 
 const getPenaltyStats = (level: number) => {
@@ -610,7 +619,7 @@ const FRIDAY_DIRECTIVES = [
 ];
 
 const SHARED_PRACTICE_ID = 'shared_practice';
-const SHARED_HYDRATION = { id: 'shared_1', title: 'Hydration Target (3L)', desc: 'تحقيق معدل استهلاك المياه لضمان ترطيب العضلات وطرد السموم.', exp: 30, gold: 10, type: 'honor', icon: Droplet, color: '#38bdf8' };
+const SHARED_HYDRATION = { id: 'shared_1', title: 'Hydration Target (4L)', desc: 'تحقيق معدل استهلاك المياه لضمان ترطيب العضلات وطرد السموم (٤ لتر).', exp: 30, gold: 10, type: 'honor', icon: Droplet, color: '#38bdf8' };
 const SHARED_NUTRITION = { id: 'shared_2', title: 'Nutritional Compliance', desc: 'تتبع السعرات والماكروز لتحقيق هدف البروتين الصافي لبناء العضلات.', exp: 30, gold: 10, type: 'nutrition', icon: Flame, color: '#f97316' };
 const SHARED_MOBILITY = { id: 'shared_3', title: 'Functional Mobility', desc: 'أداء روتين المرونة الوظيفية لضمان صحة وكفاءة المفاصل.', exp: 35, gold: 15, type: 'mobilityRoutine', icon: Activity, color: '#10b981' };
 
@@ -1038,7 +1047,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
             const dayEnd = new Date(checkDate); dayEnd.setHours(23, 59, 59, 999);
 
             const { data: dayReqs } = await supabase.from('elite_quests').select('task_name, status').eq('player_name', currentPlayer.name).gte('created_at', dayStart.toISOString()).lte('created_at', dayEnd.toISOString());
-            const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
+            const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility'];
             const completedMandatory = dayReqs ? dayReqs.filter(r => mandatoryTasks.includes(r.task_name) && (r.status === 'approved' || r.status === 'pending')).map(r => r.task_name) : [];
             const missedTasksCount = Math.max(0, 4 - completedMandatory.length);
             if (missedTasksCount > 0) hpPenaltyAmount += (missedTasksCount * penaltyHpPerTask);
@@ -1304,7 +1313,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0) + (hasPhoenix ? 10 : 0);
       let newHp = Math.min(MAX_HP, (currentPlayer.hp || 100) + earnedHp);
 
-      const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
+      const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility'];
       let newStreak = currentPlayer.streak || 0;
       let streakJustIncreased = false;
 
@@ -1466,7 +1475,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0) + (hasPhoenix ? 10 : 0);
         let newHp = Math.max(0, (currentPlayer.hp || 100) - earnedHp);
 
-        const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility'];
+        const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility'];
         let newStreak = currentPlayer.streak || 0;
         if (mandatoryTasks.includes(quest.title)) {
           const uniqueMandatoryCompleted = new Set(

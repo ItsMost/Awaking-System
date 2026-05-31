@@ -90,15 +90,15 @@ const calculateLevelData = (totalXp: number) => {
   return { level, xpInCurrentLevel: currentXp, expNeededForNextLevel };
 };
 
-const NORMAL_DAILY_QUESTS = ['Practice', 'Hydration Target (3L)', 'Nutritional Compliance', 'Functional Mobility', 'Recovery Cooldown'];
-const INJURED_DAILY_QUESTS = ['Practice (Rehab)', 'Hydration Target (3L)', 'Tissue Repair Nutrition', 'Rehab Mobility Protocol', 'Thermal / Cryotherapy'];
+const NORMAL_DAILY_QUESTS = ['Practice', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility', 'Recovery Cooldown'];
+const INJURED_DAILY_QUESTS = ['Practice (Rehab)', 'Hydration Target (4L)', 'Tissue Repair Nutrition', 'Rehab Mobility Protocol', 'Thermal / Cryotherapy'];
 const FRIDAY_DIRECTIVES = ['Weekly Volume Compliance', 'Perfect Microcycle Streak'];
 const BIWEEKLY_QUESTS = ['Recovery Logistics'];
 const MONTHLY_QUESTS = ['Supplement Inventory', 'InBody Assessment'];
 
 const QUEST_REWARDS: Record<string, { exp: number; gold: number }> = {
   'Practice': { exp: 100, gold: 30 }, 'Practice (Rehab)': { exp: 90, gold: 30 },
-  'Hydration Target (3L)': { exp: 30, gold: 10 }, 'Nutritional Compliance': { exp: 30, gold: 10 },
+  'Hydration Target (4L)': { exp: 30, gold: 10 }, 'Nutritional Compliance': { exp: 30, gold: 10 },
   'Functional Mobility': { exp: 35, gold: 15 }, 'Recovery Cooldown': { exp: 20, gold: 10 },
   'Rehab Mobility Protocol': { exp: 35, gold: 15 }, 'Thermal / Cryotherapy': { exp: 20, gold: 10 },
   'Weekly Volume Compliance': { exp: 150, gold: 100 }, 'Perfect Microcycle Streak': { exp: 150, gold: 100 },
@@ -107,13 +107,22 @@ const QUEST_REWARDS: Record<string, { exp: number; gold: number }> = {
 };
 
 const getRankInfo = (level: number) => {
-  if (level >= 30) return { name: 'ELITE', color: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)' };
-  if (level >= 25) return { name: 'MASTER', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.4)' };
-  if (level >= 20) return { name: 'DIAMOND', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.3)' };
-  if (level >= 15) return { name: 'PLATINUM', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.2)' };
-  if (level >= 10) return { name: 'GOLD', color: '#eab308', glow: 'none' };
-  if (level >= 5)  return { name: 'SILVER', color: '#94a3b8', glow: 'none' };
-  return { name: 'BRONZE', color: '#b45309', glow: 'none' };
+  if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.6)' };
+  if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' };
+  if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' };
+  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)' };
+  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)' };
+  if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
+  if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
+  if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
+  if (level >= 14) return { name: 'PLATINUM RACER 👟', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)' };
+  if (level >= 12) return { name: 'PLATINUM RELAY ⏱️', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)' };
+  if (level >= 10) return { name: 'GOLD PACER 🌟', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' };
+  if (level >= 8)  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' };
+  if (level >= 6)  return { name: 'SILVER SPRINTER 🥈', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)' };
+  if (level >= 4)  return { name: 'SILVER RUNNER 🎽', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)' };
+  if (level >= 2)  return { name: 'BRONZE STRIDER 🪵', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)' };
+  return { name: 'BRONZE ATHLETE 🥉', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)' };
 };
 
 const CLASS_MAPPING = [

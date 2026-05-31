@@ -125,29 +125,30 @@ const calculateLevelData = (totalXp: number) => {
 };
 
 const getRankInfo = (level: number) => {
-  if (level >= 30) return { name: 'ELITE', color: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)', icon: Crown };
-  if (level >= 25) return { name: 'MASTER', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.4)', icon: Flame };
-  if (level >= 20) return { name: 'DIAMOND', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', icon: Shield };
-  if (level >= 15) return { name: 'PLATINUM', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.4)', icon: Target };
-  if (level >= 10) return { name: 'GOLD', color: '#eab308', glow: 'rgba(234, 179, 8, 0.4)', icon: Medal };
-  if (level >= 5)  return { name: 'SILVER', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.4)', icon: Medal };
-  return { name: 'BRONZE', color: '#b45309', glow: 'rgba(180, 83, 9, 0.4)', icon: Medal };
+  if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.6)', icon: Crown };
+  if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', icon: Zap };
+  if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', icon: Zap };
+  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)', icon: Flame };
+  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)', icon: Target };
+  if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', icon: Shield };
+  if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', icon: Medal };
+  if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', icon: Medal };
+  if (level >= 14) return { name: 'PLATINUM RACER 👟', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)', icon: Target };
+  if (level >= 12) return { name: 'PLATINUM RELAY ⏱️', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)', icon: Medal };
+  if (level >= 10) return { name: 'GOLD PACER 🌟', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)', icon: Target };
+  if (level >= 8)  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)', icon: Medal };
+  if (level >= 6)  return { name: 'SILVER SPRINTER 🥈', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)', icon: Medal };
+  if (level >= 4)  return { name: 'SILVER RUNNER 🎽', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)', icon: Medal };
+  if (level >= 2)  return { name: 'BRONZE STRIDER 🪵', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)', icon: Medal };
+  return { name: 'BRONZE ATHLETE 🥉', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)', icon: Medal };
 };
 
 const getNextRankInfo = (lvl: number, currentXp: number) => {
   if (lvl >= 30) return { nextRank: 'MAXED', remainingXp: 0, percent: 100 };
-  let nextRankLvl = 5;
-  if (lvl >= 5) nextRankLvl = 10;
-  if (lvl >= 10) nextRankLvl = 15;
-  if (lvl >= 15) nextRankLvl = 20;
-  if (lvl >= 20) nextRankLvl = 25;
-  if (lvl >= 25) nextRankLvl = 30;
-  let startRankLvl = nextRankLvl - 5; if (startRankLvl === 0) startRankLvl = 1;
-  let totalTierXp = 0; for(let i = startRankLvl; i < nextRankLvl; i++) { totalTierXp += Math.min(i * 150 + 500, 4000); }
-  let earnedTierXp = 0; for(let i = startRankLvl; i < lvl; i++) { earnedTierXp += Math.min(i * 150 + 500, 4000); }
-  earnedTierXp += currentXp;
-  const remainingXp = totalTierXp - earnedTierXp;
-  const percent = Math.min(100, (earnedTierXp / totalTierXp) * 100);
+  const nextRankLvl = lvl + 1;
+  const xpNeededForNextLvl = Math.min(lvl * 150 + 500, 4000);
+  const remainingXp = xpNeededForNextLvl - currentXp;
+  const percent = Math.min(100, (currentXp / xpNeededForNextLvl) * 100);
   const nextRankName = getRankInfo(nextRankLvl).name;
   return { nextRank: nextRankName, remainingXp, percent };
 };

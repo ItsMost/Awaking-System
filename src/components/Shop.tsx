@@ -184,13 +184,22 @@ const renderIcon = (iconValue: string, color: string, size: number = 38) => {
 };
 
 const getRankInfo = (level: number) => {
-  if (level >= 30) return { name: 'ELITE', color: '#a855f7' };
-  if (level >= 25) return { name: 'MASTER', color: '#ef4444' };
-  if (level >= 20) return { name: 'DIAMOND', color: '#3b82f6' };
-  if (level >= 15) return { name: 'PLATINUM', color: '#06b6d4' };
-  if (level >= 10) return { name: 'GOLD', color: '#eab308' };
-  if (level >= 5)  return { name: 'SILVER', color: '#94a3b8' };
-  return { name: 'BRONZE', color: '#b45309' };
+  if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444' };
+  if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b' };
+  if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b' };
+  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#8b5cf6' };
+  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#8b5cf6' };
+  if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6' };
+  if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6' };
+  if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6' };
+  if (level >= 14) return { name: 'PLATINUM RACER 👟', color: '#06b6d4' };
+  if (level >= 12) return { name: 'PLATINUM RELAY ⏱️', color: '#06b6d4' };
+  if (level >= 10) return { name: 'GOLD PACER 🌟', color: '#eab308' };
+  if (level >= 8)  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308' };
+  if (level >= 6)  return { name: 'SILVER SPRINTER 🥈', color: '#94a3b8' };
+  if (level >= 4)  return { name: 'SILVER RUNNER 🎽', color: '#94a3b8' };
+  if (level >= 2)  return { name: 'BRONZE STRIDER 🪵', color: '#b45309' };
+  return { name: 'BRONZE ATHLETE 🥉', color: '#b45309' };
 };
 
 const calculateLevelData = (totalXp: number) => {

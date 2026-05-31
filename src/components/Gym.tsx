@@ -302,7 +302,7 @@ const MOBILITY_EXERCISES: Record<string, string[]> = {
   mob_hamstring: [
     'Leg Swings (مرجحة الرجل للأمام والخلف - 15 لكل رجل)',
     'Inchworms / Walkouts (المشي باليدين للأمام والرجوع - 8 عدات)',
-    'Dynamic Hurdler Stretch (إطالة الحواجز الحركية - 10 عدات)',
+    'Dynamic Sprinter Stretch (إطالة الاسبرينت الحركية - 10 عدات)',
     'Frankensteins (مشي مع لمس مشط القدم باليد العكسية - 20 خطوة)',
     'Elephant Walks (ثني وفرد الركبتين بالتبادل من وضع الانحناء - 20 عدة)',
   ],
