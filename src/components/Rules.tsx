@@ -13,7 +13,7 @@ import {
 // ==========================================
 const Container = styled(motion.div)`
   padding: 20px;
-  font-family: 'Oxanium', sans-serif;
+  font-family: 'Exo 2', sans-serif;
   color: #fff;
   padding-bottom: 100px;
   max-width: 1000px;
@@ -64,7 +64,7 @@ const CardsGrid = styled.div`
 `;
 
 const RuleCard = styled(motion.div)<{ $color: string }>`
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(29, 15, 58, 0.45);
   backdrop-filter: blur(16px);
   border: 1px solid ${(props) => props.$color}30;
   border-radius: 20px;
@@ -133,7 +133,7 @@ const GridBox = styled.div`
 `;
 
 const RankItem = styled.div<{ $color: string }>`
-  background: #020617;
+  background: #07030f;
   border: 1px solid ${(props) => props.$color}40;
   padding: 10px;
   border-radius: 12px;
@@ -197,7 +197,7 @@ const RULES_DATA = [
         <InfoPill $color="#facc15">
           <strong>قاعدة الستريك (Streak):</strong> لا يرتفع العداد إلا بإتمام <strong>3 مهام أساسية</strong> يومياً (التمرين، تغطية البروتين، والمرونة).
         </InfoPill>
-        <InfoPill $color="#38bdf8">
+        <InfoPill $color="#c084fc">
           <strong>كسر السلسلة:</strong> تفويت مهمة أساسية واحدة يؤدي إلى تصفير الـ Streak فوراً، وتُطبق عليك "ضريبة الرانك".
         </InfoPill>
       </>
@@ -221,7 +221,7 @@ const RULES_DATA = [
           <RankItem $color="#a855f7"><Crown size={16} color="#a855f7" /> <span className="rank-name">ELITE</span> <span className="rank-desc">المستوى 30+</span> <span className="rank-tax">-50 HP | -250 G</span></RankItem>
         </GridBox>
         <br/>
-        <InfoPill $color="#00f2ff">
+        <InfoPill $color="#d946ef">
           <strong>مستوى 20 (Diamond):</strong> يفتح ميزة <strong>Evolution</strong> في البروفايل، حيث يتغير شكل الأيقونة لنسخة أكثر فخامة!
         </InfoPill>
       </>
@@ -231,12 +231,12 @@ const RULES_DATA = [
     id: 3,
     title: 'اقتصاد اللعبة (EXP & Gold)',
     icon: Activity,
-    color: '#0ea5e9',
+    color: '#a855f7',
     content: (
       <>
         صعود السلم يتطلب مجهوداً مضاعفاً كلما اقتربت من القمة.
         <br/><br/>
-        <InfoPill $color="#0ea5e9">
+        <InfoPill $color="#a855f7">
           <strong>نظام الـ EXP:</strong> اليوم المثالي يمنحك <strong>215 EXP</strong>. في البداية (من ليفل 1 لـ 2) تحتاج 650 EXP، ويتصاعد تدريجياً حتى يصل إلى <strong>4,000 EXP</strong> للارتقاء لمستوى واحد في المراحل المتقدمة.
         </InfoPill>
         <InfoPill $color="#eab308">
@@ -285,12 +285,12 @@ const RULES_DATA = [
     id: 6,
     title: 'المواسم التنافسية (Seasons & Leaderboard)',
     icon: Trophy,
-    color: '#0ea5e9',
+    color: '#a855f7',
     content: (
       <>
         المجد الحقيقي يكتب في نهاية الشهر.
         <br/><br/>
-        <InfoPill $color="#0ea5e9">
+        <InfoPill $color="#a855f7">
           <strong>بطولة الشهر:</strong> يوجد تصنيف عام يعتمد على خبرتك الكلية (Cumulative XP)، وتصنيف شهري يعتمد على الـ (Monthly XP).
         </InfoPill>
         <InfoPill $color="#eab308">

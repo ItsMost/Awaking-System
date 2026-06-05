@@ -164,24 +164,24 @@ const bgAnimation = keyframes`
 `;
 
 const Container = styled.div`
-  min-height: 100vh; background: linear-gradient(-45deg, #020617, #0f172a, #020617, #1e1b4b); background-size: 400% 400%; animation: ${bgAnimation} 15s ease infinite; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Oxanium', sans-serif; color: #fff; padding: 20px; position: relative; overflow: hidden;
+  min-height: 100vh; background: linear-gradient(-45deg, #07030f, #1d0f3a, #07030f, #1e1b4b); background-size: 400% 400%; animation: ${bgAnimation} 15s ease infinite; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Exo 2', sans-serif; color: #fff; padding: 20px; position: relative; overflow: hidden;
 `;
 
 const ParticlesOverlay = styled.div`
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(rgba(0, 242, 255, 0.15) 1px, transparent 1px); background-size: 30px 30px; opacity: 0.5; pointer-events: none;
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(rgba(217, 70, 239, 0.15) 1px, transparent 1px); background-size: 30px 30px; opacity: 0.5; pointer-events: none;
 `;
 
 const glitch = keyframes`
-  0% { text-shadow: 2px 2px #00f2ff, -2px -2px #ef4444; transform: translate(0); }
-  20% { text-shadow: -2px 2px #00f2ff, 2px -2px #ef4444; transform: translate(-2px, 2px); }
-  40% { text-shadow: 2px -2px #00f2ff, -2px 2px #ef4444; transform: translate(2px, -2px); }
-  60% { text-shadow: -2px -2px #00f2ff, 2px 2px #ef4444; transform: translate(-2px, -2px); }
-  80% { text-shadow: 2px 2px #00f2ff, -2px -2px #ef4444; transform: translate(2px, 2px); }
-  100% { text-shadow: 0px 0px #00f2ff, 0px 0px #ef4444; transform: translate(0); }
+  0% { text-shadow: 2px 2px #d946ef, -2px -2px #ef4444; transform: translate(0); }
+  20% { text-shadow: -2px 2px #d946ef, 2px -2px #ef4444; transform: translate(-2px, 2px); }
+  40% { text-shadow: 2px -2px #d946ef, -2px 2px #ef4444; transform: translate(2px, -2px); }
+  60% { text-shadow: -2px -2px #d946ef, 2px 2px #ef4444; transform: translate(-2px, -2px); }
+  80% { text-shadow: 2px 2px #d946ef, -2px -2px #ef4444; transform: translate(2px, 2px); }
+  100% { text-shadow: 0px 0px #d946ef, 0px 0px #ef4444; transform: translate(0); }
 `;
 
 const Title = styled.h1`
-  font-size: 36px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px; text-align: center; position: relative; z-index: 10; text-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
+  font-size: 36px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px; text-align: center; position: relative; z-index: 10; text-shadow: 0 0 20px rgba(217, 70, 239, 0.5);
   &.glitching { animation: ${glitch} 0.3s infinite; }
 `;
 
@@ -190,7 +190,7 @@ const Subtitle = styled.p`
 `;
 
 const FormCard = styled(motion.div)`
-  background: rgba(11, 17, 32, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(0, 242, 255, 0.2); border-radius: 24px; padding: 35px 30px; width: 100%; max-width: 480px; box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 242, 255, 0.05); position: relative; z-index: 10;
+  background: rgba(15, 7, 28, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(217, 70, 239, 0.2); border-radius: 24px; padding: 35px 30px; width: 100%; max-width: 480px; box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(217, 70, 239, 0.05); position: relative; z-index: 10;
 `;
 
 const InputGroup = styled.div`
@@ -209,15 +209,15 @@ const Input = styled.input<{ $isKey?: boolean }>`
     props.$isKey ? '#eab308' : '#334155'}; color: ${(props) =>
   props.$isKey
     ? '#eab308'
-    : '#fff'}; padding: 16px; border-radius: 12px; font-family: 'Oxanium', sans-serif; font-size: 16px; outline: none; transition: 0.3s; letter-spacing: ${(
+    : '#fff'}; padding: 16px; border-radius: 12px; font-family: 'Exo 2', sans-serif; font-size: 16px; outline: none; transition: 0.3s; letter-spacing: ${(
   props
 ) => (props.$isKey ? '3px' : 'normal')}; text-transform: ${(props) =>
   props.$isKey ? 'uppercase' : 'none'};
   &:focus { border-color: ${(props) =>
-    props.$isKey ? '#facc15' : '#00f2ff'}; box-shadow: 0 0 20px ${(props) =>
+    props.$isKey ? '#facc15' : '#d946ef'}; box-shadow: 0 0 20px ${(props) =>
   props.$isKey
     ? 'rgba(234, 179, 8, 0.2)'
-    : 'rgba(0, 242, 255, 0.2)'}; background: rgba(2, 6, 23, 1); }
+    : 'rgba(217, 70, 239, 0.2)'}; background: rgba(2, 6, 23, 1); }
   &::placeholder { color: #475569; font-weight: bold; letter-spacing: normal; text-transform: none; }
 `;
 
@@ -234,9 +234,9 @@ const GenderBtn = styled(motion.button)<{ $selected: boolean; $color: string }>`
     props.$selected ? `${props.$color}20` : 'rgba(2, 6, 23, 0.6)'};
   border: 1px solid ${(props) => (props.$selected ? props.$color : '#334155')};
   color: ${(props) => (props.$selected ? props.$color : '#94a3b8')};
-  padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Oxanium'; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.3s;
+  padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Exo 2'; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.3s;
   &:hover { border-color: ${(props) => props.$color}; color: ${(props) =>
-  props.$color}; background: rgba(15, 23, 42, 0.8); }
+  props.$color}; background: rgba(29, 15, 58, 0.8); }
 `;
 
 const IconsGrid = styled.div`
@@ -247,13 +247,13 @@ const IconsGrid = styled.div`
 const IconBtn = styled(motion.button)<{ $selected: boolean; $color: string }>`
   background: ${(props) =>
     props.$selected ? `${props.$color}20` : 'rgba(2, 6, 23, 0.6)'};
-  border: 1px solid ${(props) => (props.$selected ? props.$color : '#1e293b')};
+  border: 1px solid ${(props) => (props.$selected ? props.$color : '#2d184a')};
   color: ${(props) => (props.$selected ? props.$color : '#64748b')};
   padding: 12px 0; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s;
   box-shadow: ${(props) =>
     props.$selected ? `0 0 15px ${props.$color}50` : 'none'};
   &:hover { border-color: ${(props) => props.$color}; color: ${(props) =>
-  props.$color}; background: rgba(15, 23, 42, 0.8); }
+  props.$color}; background: rgba(29, 15, 58, 0.8); }
 `;
 
 const spin = keyframes` 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } `;
@@ -261,11 +261,11 @@ const LoadingSpinner = styled(Loader)` animation: ${spin} 1s linear infinite; `;
 
 const SubmitBtn = styled(motion.button)<{ disabled?: boolean }>`
   width: 100%; background: ${(props) =>
-    props.disabled ? '#334155' : 'linear-gradient(90deg, #0ea5e9, #00f2ff)'};
+    props.disabled ? '#334155' : 'linear-gradient(90deg, #a855f7, #d946ef)'};
   color: ${(props) =>
     props.disabled
       ? '#94a3b8'
-      : '#000'}; border: none; padding: 20px; border-radius: 14px; font-family: 'Oxanium', sans-serif; font-size: 16px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; cursor: ${(
+      : '#000'}; border: none; padding: 20px; border-radius: 14px; font-family: 'Exo 2', sans-serif; font-size: 16px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; cursor: ${(
   props
 ) =>
   props.disabled
@@ -275,23 +275,23 @@ const SubmitBtn = styled(motion.button)<{ disabled?: boolean }>`
 ) =>
   props.disabled
     ? 'none'
-    : '0 10px 25px rgba(0, 242, 255, 0.4)'}; transition: 0.3s;
+    : '0 10px 25px rgba(217, 70, 239, 0.4)'}; transition: 0.3s;
   &:hover { box-shadow: ${(props) =>
     props.disabled
       ? 'none'
-      : '0 10px 35px rgba(0, 242, 255, 0.6)'}; filter: brightness(1.1); }
+      : '0 10px 35px rgba(217, 70, 239, 0.6)'}; filter: brightness(1.1); }
 `;
 
 const ToggleModeBtn = styled.button`
-  background: none; border: none; color: #94a3b8; font-family: 'Oxanium', sans-serif; font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 25px; width: 100%; text-decoration: underline; transition: 0.3s;
-  &:hover { color: #00f2ff; }
+  background: none; border: none; color: #94a3b8; font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 25px; width: 100%; text-decoration: underline; transition: 0.3s;
+  &:hover { color: #d946ef; }
 `;
 
 // ==========================================
 // 3. قاعدة بيانات الأيقونات
 // ==========================================
 const availableIcons = [
-  { id: 'Sword', icon: Sword, color: '#00f2ff' },
+  { id: 'Sword', icon: Sword, color: '#d946ef' },
   { id: 'Flame', icon: Flame, color: '#ef4444' },
   { id: 'Zap', icon: Zap, color: '#eab308' },
   { id: 'Dumbbell', icon: Dumbbell, color: '#f97316' },
@@ -301,10 +301,10 @@ const availableIcons = [
   { id: 'Crown', icon: Crown, color: '#f59e0b' },
   { id: 'Skull', icon: Skull, color: '#a855f7' },
   { id: 'Footprints', icon: Footprints, color: '#10b981' },
-  { id: 'Wind', icon: Wind, color: '#38bdf8' },
+  { id: 'Wind', icon: Wind, color: '#c084fc' },
   { id: 'Target', icon: Target, color: '#f43f5e' },
   { id: 'Axe', icon: Axe, color: '#cbd5e1' },
-  { id: 'Anchor', icon: Anchor, color: '#0ea5e9' },
+  { id: 'Anchor', icon: Anchor, color: '#a855f7' },
   { id: 'Fingerprint', icon: Fingerprint, color: '#14b8a6' },
   { id: 'Hexagon', icon: Hexagon, color: '#8b5cf6' },
   { id: 'Cpu', icon: Cpu, color: '#06b6d4' },
@@ -521,7 +521,7 @@ const AwakeningScreen = ({ onAwaken }: any) => {
 
         <InputGroup>
           <Label>
-            <User size={14} color="#00f2ff" /> Hunter Name
+            <User size={14} color="#d946ef" /> Hunter Name
           </Label>
           <Input
             type="text"
@@ -533,7 +533,7 @@ const AwakeningScreen = ({ onAwaken }: any) => {
 
         <InputGroup>
           <Label>
-            <Lock size={14} color="#00f2ff" /> Secure Password
+            <Lock size={14} color="#d946ef" /> Secure Password
           </Label>
           <Input
             type="password"
@@ -584,7 +584,7 @@ const AwakeningScreen = ({ onAwaken }: any) => {
                 <GenderGrid>
                   <GenderBtn
                     $selected={gender === 'Male'}
-                    $color="#0ea5e9"
+                    $color="#a855f7"
                     onClick={() => {
                       setGender('Male');
                     }}

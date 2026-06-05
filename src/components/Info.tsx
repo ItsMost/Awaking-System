@@ -51,7 +51,7 @@ const playLoreSound = (type: 'open' | 'close') => {
 // ==========================================
 const Container = styled.div`
   padding: 20px;
-  font-family: 'Oxanium', sans-serif;
+  font-family: 'Exo 2', sans-serif;
   color: #fff;
   min-height: 100vh;
   padding-bottom: 100px;
@@ -61,8 +61,8 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #0f172a 0%, #020617 100%);
-  border: 1px solid #1e293b;
+  background: linear-gradient(90deg, #1d0f3a 0%, #07030f 100%);
+  border: 1px solid #2d184a;
   padding: 20px;
   border-radius: 16px;
   margin-bottom: 25px;
@@ -116,7 +116,7 @@ const Accordion = styled(motion.div)<{
 }>`
   background: #0b1120;
   border: 1px solid ${(props) =>
-    props.$expanded ? props.$themeColor : '#1e293b'};
+    props.$expanded ? props.$themeColor : '#2d184a'};
   border-radius: 12px;
   margin-bottom: 12px;
   overflow: hidden;
@@ -217,7 +217,7 @@ const LORE_CATEGORIES = [
         id: 'breakfast',
         title: 'Metabolic Start: Breakfast (الإفطار)',
         icon: Zap,
-        color: '#0ea5e9',
+        color: '#a855f7',
         content: `بعد 8 ساعات من النوم، جسدك يحتاج إلى الغذاء. الإفطار يوقف عملية الهدم العضلي، ينشط عملية الأيض (Metabolism)، ويجهز جهازك العصبي ذهنياً وبدنياً لباقي اليوم.`,
         warning: `تخطي الإفطار يرفع هرمون الكورتيزول (هرمون التوتر) لأعلى مستوياته. هذا الهرمون يقلل من كفاءة حرق الدهون ويزيد من احتمالية تكسير البروتين العضلي كمصدر سريع للطاقة.`,
       },
@@ -241,7 +241,7 @@ const LORE_CATEGORIES = [
         id: 'whey',
         title: 'Rapid Recovery: Whey Protein (الواي بروتين)',
         icon: Droplet,
-        color: '#38bdf8',
+        color: '#c084fc',
         content: `أسرع وأنقى مصدر للبروتين عالي الامتصاص. يمتص في الجسم خلال 30 دقيقة فقط. ممتاز بعد التمرين مباشرة لبدء عملية الاستشفاء العضلي (Muscle Protein Synthesis)، أو كوجبة سريعة لسد احتياجك اليومي من البروتين.`,
         warning: `الواي بروتين "مكمل غذائي" وليس بديلاً عن الطعام الحقيقي. الاعتماد عليه كلياً وإهمال اللحوم والبيض سيفقدك الفيتامينات والمعادن الضرورية للأداء الرياضي.`,
       },

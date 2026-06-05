@@ -74,8 +74,8 @@ const PETS_DATABASE = [
   { name: 'Golden Wyvern Core', type: 'wyvern', color: '#eab308' },
   { name: 'Healing Phoenix Ember', type: 'phoenix', color: '#ef4444' },
   { name: 'Shadow Owl Eye', type: 'owl', color: '#a855f7' },
-  { name: 'Iron Golem Matrix', type: 'golem', color: '#0ea5e9' },
-  { name: 'Frost Wolf Soul', type: 'wolf', color: '#38bdf8' },
+  { name: 'Iron Golem Matrix', type: 'golem', color: '#a855f7' },
+  { name: 'Frost Wolf Soul', type: 'wolf', color: '#c084fc' },
   { name: 'Emerald Dragon Scale', type: 'emerald', color: '#10b981' }
 ];
 
@@ -126,7 +126,7 @@ const getRankInfo = (level: number) => {
 };
 
 const CLASS_MAPPING = [
-  { id: 'sword', keys: ['sword', 'combat', 'blade', 'warrior'], name: 'Blade Master', baseIcon: Sword, evolvedIcon: Axe, color: '#00f2ff' },
+  { id: 'sword', keys: ['sword', 'combat', 'blade', 'warrior'], name: 'Blade Master', baseIcon: Sword, evolvedIcon: Axe, color: '#d946ef' },
   { id: 'flame', keys: ['flame', 'fire', 'pyro'], name: 'Pyromancer', baseIcon: Flame, evolvedIcon: Zap, color: '#ef4444' },
   { id: 'zap', keys: ['zap', 'energy', 'lightning', 'thunder'], name: 'Storm Bringer', baseIcon: Zap, evolvedIcon: Flame, color: '#eab308' },
   { id: 'dumbbell', keys: ['dumbbell', 'power', 'barbell', 'strength'], name: 'Titan Lifter', baseIcon: Dumbbell, evolvedIcon: Anchor, color: '#f97316' },
@@ -136,10 +136,10 @@ const CLASS_MAPPING = [
   { id: 'crown', keys: ['crown', 'royal', 'king', 'monarch'], name: 'Absolute Monarch', baseIcon: Crown, evolvedIcon: Award, color: '#f59e0b' },
   { id: 'skull', keys: ['skull', 'immortal', 'death', 'undead'], name: 'Immortal Lord', baseIcon: Skull, evolvedIcon: InfinityIcon, color: '#a855f7' },
   { id: 'footprints', keys: ['footprints', 'shoe', 'speed', 'runner'], name: 'Speedster', baseIcon: Footprints, evolvedIcon: Wind, color: '#10b981' },
-  { id: 'wind', keys: ['wind', 'air', 'breeze'], name: 'Wind Walker', baseIcon: Wind, evolvedIcon: Footprints, color: '#38bdf8' },
+  { id: 'wind', keys: ['wind', 'air', 'breeze'], name: 'Wind Walker', baseIcon: Wind, evolvedIcon: Footprints, color: '#c084fc' },
   { id: 'target', keys: ['target', 'precision', 'sniper', 'aim'], name: 'Deadeye Sniper', baseIcon: Target, evolvedIcon: Crosshair, color: '#f43f5e' },
   { id: 'axe', keys: ['axe', 'berserker', 'chop'], name: 'Berserker', baseIcon: Axe, evolvedIcon: Sword, color: '#cbd5e1' },
-  { id: 'anchor', keys: ['anchor', 'deepsea', 'ocean'], name: 'Deep Sea Titan', baseIcon: Anchor, evolvedIcon: Dumbbell, color: '#0ea5e9' },
+  { id: 'anchor', keys: ['anchor', 'deepsea', 'ocean'], name: 'Deep Sea Titan', baseIcon: Anchor, evolvedIcon: Dumbbell, color: '#a855f7' },
   { id: 'fingerprint', keys: ['fingerprint', 'phantom', 'stealth'], name: 'Phantom', baseIcon: Fingerprint, evolvedIcon: Ghost, color: '#14b8a6' },
   { id: 'hexagon', keys: ['hexagon', 'fortress', 'base'], name: 'Fortress', baseIcon: Hexagon, evolvedIcon: Shield, color: '#8b5cf6' },
   { id: 'cpu', keys: ['cpu', 'tech', 'cyber', 'hacker'], name: 'Cyber Hacker', baseIcon: Cpu, evolvedIcon: Fingerprint, color: '#06b6d4' },
@@ -209,68 +209,65 @@ const MiniOrb = ({ type, color }: { type: string, color: string }) => {
 // ==========================================
 // 4. التصميمات المفرودة (Styled Components)
 // ==========================================
-const Container = styled(motion.div)` padding: 20px; font-family: 'Oxanium', sans-serif; color: #fff; padding-bottom: 100px; max-width: 650px; margin: 0 auto; position: relative; `;
+const Container = styled(motion.div)` padding: 20px; font-family: 'Exo 2', sans-serif; color: #fff; padding-bottom: 100px; max-width: 650px; margin: 0 auto; position: relative; `;
 const TopActions = styled.div` display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; `;
-const TopBtn = styled.button<{ $active?: boolean; $color?: string }>` background: ${(props) => (props.$active ? `${props.$color}20` : 'rgba(15, 23, 42, 0.45)')}; border: 1px solid ${(props) => (props.$active ? props.$color : 'rgba(255,255,255,0.05)')}; color: ${(props) => (props.$active ? props.$color : '#94a3b8')}; padding: 10px 18px; border-radius: 12px; display: flex; align-items: center; gap: 8px; font-family: 'Oxanium'; font-weight: 900; font-size: 12px; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(8px); box-shadow: ${(props) => props.$active ? `0 0 15px ${props.$color}30` : '0 4px 15px rgba(0,0,0,0.2)'}; &:hover { background: ${(props) => (props.$active ? `${props.$color}30` : 'rgba(255,255,255,0.08)')}; color: ${(props) => props.$color || '#fff'}; transform: translateY(-2px); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
+const TopBtn = styled.button<{ $active?: boolean; $color?: string }>` background: ${(props) => (props.$active ? `${props.$color}20` : 'rgba(29, 15, 58, 0.45)')}; border: 1px solid ${(props) => (props.$active ? props.$color : 'rgba(255,255,255,0.05)')}; color: ${(props) => (props.$active ? props.$color : '#94a3b8')}; padding: 10px 18px; border-radius: 12px; display: flex; align-items: center; gap: 8px; font-family: 'Exo 2'; font-weight: 900; font-size: 12px; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(8px); box-shadow: ${(props) => props.$active ? `0 0 15px ${props.$color}30` : '0 4px 15px rgba(0,0,0,0.2)'}; &:hover { background: ${(props) => (props.$active ? `${props.$color}30` : 'rgba(255,255,255,0.08)')}; color: ${(props) => props.$color || '#fff'}; transform: translateY(-2px); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
 const InboxBadge = styled.span` background: #ef4444; color: #fff; padding: 2px 6px; border-radius: 20px; font-size: 10px; font-weight: 900; margin-left: 5px; `;
 const TabsGrid = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 25px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
   width: 100%;
 `;
 
 const Tab = styled(motion.button)<{ $active: boolean; $glowColor?: string }>`
-  padding: 10px 18px;
+  padding: 10px 14px;
   border-radius: 14px;
   border: 1px solid ${(props) => (props.$active ? `${props.$glowColor}40` : 'rgba(255,255,255,0.05)')};
-  font-family: 'Oxanium', sans-serif;
+  font-family: 'Exo 2', sans-serif;
   font-weight: 900;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: ${(props) => (props.$active ? `${props.$glowColor}15` : 'rgba(15, 23, 42, 0.45)')};
-  color: ${(props) => (props.$active ? props.$glowColor || '#0ea5e9' : '#94a3b8')};
+  background: ${(props) => (props.$active ? `${props.$glowColor}15` : 'rgba(29, 15, 58, 0.45)')};
+  color: ${(props) => (props.$active ? props.$glowColor || '#a855f7' : '#94a3b8')};
   backdrop-filter: blur(8px);
   box-shadow: ${(props) => props.$active ? `0 0 25px ${props.$glowColor}25, inset 0 0 10px ${props.$glowColor}15` : 'none'};
-  flex-shrink: 0;
+  flex: 1;
+  min-width: 100px;
   white-space: nowrap;
   
   &:hover {
-    border-color: ${(props) => props.$glowColor || '#0ea5e9'}70;
-    color: ${(props) => props.$glowColor || '#0ea5e9'};
+    border-color: ${(props) => props.$glowColor || '#a855f7'}70;
+    color: ${(props) => props.$glowColor || '#a855f7'};
     transform: translateY(-2px);
   }
 `;
 
 // Season Hall Premium Styling
 const SeasonHallCard = styled.div`
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(2, 6, 23, 0.8) 100%);
-  border: 1px solid rgba(0, 242, 255, 0.2);
+  background: linear-gradient(135deg, rgba(29, 15, 58, 0.6) 0%, rgba(2, 6, 23, 0.8) 100%);
+  border: 1px solid rgba(217, 70, 239, 0.2);
   border-radius: 16px;
   padding: 22px;
   margin-top: 10px;
   backdrop-filter: blur(12px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 242, 255, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(217, 70, 239, 0.05);
 `;
 
 const SeasonHeader = styled.h3`
   margin: 0 0 20px 0;
   font-size: 14px;
   font-weight: 900;
-  color: #00f2ff;
+  color: #d946ef;
   letter-spacing: 2px;
   text-align: center;
-  text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+  text-shadow: 0 0 10px rgba(217, 70, 239, 0.4);
   text-transform: uppercase;
 `;
 
@@ -345,11 +342,11 @@ const HallOfFameContainer = styled.div`
   margin-bottom: 35px;
   position: relative;
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  background: radial-gradient(circle at bottom, rgba(15, 23, 42, 0.4) 0%, transparent 80%);
+  background: radial-gradient(circle at bottom, rgba(29, 15, 58, 0.4) 0%, transparent 80%);
 `;
 const PedestalWrapper = styled(motion.div)<{ $isFirst?: boolean }>` display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 32%; position: relative; z-index: ${(props) => props.$isFirst ? 10 : 5}; margin: 0 2px; `;
 const PedestalBase = styled.div<{ $color: string; $height: number }>` 
-  width: 100%; height: ${(props) => props.$height}px; background: linear-gradient(to top, rgba(15, 23, 42, 0.95), ${(props) => props.$color}15); 
+  width: 100%; height: ${(props) => props.$height}px; background: linear-gradient(to top, rgba(29, 15, 58, 0.95), ${(props) => props.$color}15); 
   border: 1px solid ${(props) => props.$color}40; border-bottom: none; border-top-left-radius: 16px; border-top-right-radius: 16px; position: relative; 
   backdrop-filter: blur(12px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 15px ${(props) => props.$color}10, 0 -5px 20px ${(props) => props.$color}15; display: flex; justify-content: center; align-items: center; 
@@ -372,13 +369,13 @@ const Crown3D = styled(motion.div)` position: absolute; top: -35px; z-index: 15;
 const BeamLight = styled.div<{ $color: string }>` position: absolute; bottom: 0; width: 40px; height: 350px; background: linear-gradient(to top, ${(props) => props.$color}40, transparent); filter: blur(20px); pointer-events: none; z-index: 0; `;
 
 const SearchContainer = styled.div` position: relative; margin-bottom: 25px; `;
-const SearchIconBox = styled.div` position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #0ea5e9; `;
-const SearchInput = styled.input` width: 100%; background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255,255,255,0.05); color: #fff; padding: 16px 16px 16px 50px; border-radius: 14px; font-family: 'Oxanium'; font-size: 15px; outline: none; transition: 0.3s; backdrop-filter: blur(8px); &:focus { border-color: #00f2ff; box-shadow: 0 0 15px rgba(0,242,255,0.2); } &::placeholder { color: #475569; font-weight: bold; } `;
+const SearchIconBox = styled.div` position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #a855f7; `;
+const SearchInput = styled.input` width: 100%; background: rgba(29, 15, 58, 0.45); border: 1px solid rgba(255,255,255,0.05); color: #fff; padding: 16px 16px 16px 50px; border-radius: 14px; font-family: 'Exo 2'; font-size: 15px; outline: none; transition: 0.3s; backdrop-filter: blur(8px); &:focus { border-color: #d946ef; box-shadow: 0 0 15px rgba(217, 70, 239,0.2); } &::placeholder { color: #475569; font-weight: bold; } `;
 
 // 🚨 تصميم كروت اللاعبين الـ Epic 2D بجماليات Glassmorphism داكنة 🚨
 const cardBreathe = keyframes` 0% { box-shadow: 0 4px 10px rgba(0,0,0,0.3); } 50% { box-shadow: 0 4px 20px rgba(255,255,255,0.05); } 100% { box-shadow: 0 4px 10px rgba(0,0,0,0.3); } `;
 const PlayerCard = styled(motion.div)<{ $rankColor: string }>` 
-  background: rgba(15, 23, 42, 0.4); 
+  background: rgba(29, 15, 58, 0.4); 
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05); 
   border-left: 4px solid ${(props) => props.$rankColor}; border-radius: 16px; padding: 16px 20px; margin-bottom: 14px; display: flex; align-items: center; cursor: pointer; 
@@ -401,33 +398,33 @@ const LevelCol = styled.div` display: flex; flex-direction: column; align-items:
 const LevelTextVal = styled.div<{ $rankColor: string }>` font-size: 16px; font-weight: 900; color: ${(props) => props.$rankColor}; text-shadow: 0 0 10px ${(props) => props.$rankColor}50; `;
 const EXPText = styled.div` font-size: 10px; color: #94a3b8; font-weight: bold; margin-top: 4px; text-align: right; `;
 
-const LoadingSpinner = styled.div` border: 4px solid rgba(14, 165, 233, 0.1); border-left-color: #0ea5e9; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 60px auto; @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } `;
+const LoadingSpinner = styled.div` border: 4px solid rgba(168, 85, 247, 0.1); border-left-color: #a855f7; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 60px auto; @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } `;
 
 // 🚨 Portal Modals 🚨
 const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); `;
-const ModalContent = styled(motion.div)<{ $isCoach?: boolean; $borderColor?: string; $width?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$borderColor || (props.$isCoach ? '#ef4444' : '#1e293b')}; border-radius: 20px; padding: 25px; width: 100%; max-width: ${(props) => props.$width || '450px'}; position: relative; box-shadow: 0 0 50px ${(props) => props.$isCoach ? 'rgba(239,68,68,0.3)' : 'rgba(0,0,0,0.8)'}; max-height: 90vh; overflow-y: auto; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: ${(props) => props.$borderColor || '#334155'}; border-radius: 5px; } `;
+const ModalContent = styled(motion.div)<{ $isCoach?: boolean; $borderColor?: string; $width?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$borderColor || (props.$isCoach ? '#ef4444' : '#2d184a')}; border-radius: 20px; padding: 25px; width: 100%; max-width: ${(props) => props.$width || '450px'}; position: relative; box-shadow: 0 0 50px ${(props) => props.$isCoach ? 'rgba(239,68,68,0.3)' : 'rgba(0,0,0,0.8)'}; max-height: 90vh; overflow-y: auto; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: ${(props) => props.$borderColor || '#334155'}; border-radius: 5px; } `;
 const CloseBtn = styled.button` position: absolute; top: 15px; right: 15px; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; z-index: 10; &:hover { color: #fff; } `;
-const PasswordOverlay = styled(motion.div)` background: #020617; border: 1px solid #ef4444; padding: 25px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 5px 30px rgba(239,68,68,0.3); width: 100%; max-width: 350px; text-align: center; `;
-const PasswordInput = styled.input` background: #0b1120; border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; font-family: 'Oxanium'; font-size: 16px; text-align: center; letter-spacing: 3px; &:focus { outline: none; border-color: #ef4444; } `;
+const PasswordOverlay = styled(motion.div)` background: #07030f; border: 1px solid #ef4444; padding: 25px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 5px 30px rgba(239,68,68,0.3); width: 100%; max-width: 350px; text-align: center; `;
+const PasswordInput = styled.input` background: #0b1120; border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; font-family: 'Exo 2'; font-size: 16px; text-align: center; letter-spacing: 3px; &:focus { outline: none; border-color: #ef4444; } `;
 
 const ProfileHeader = styled.div` display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 25px; margin-top: 10px; `;
 const DataGrid = styled.div` display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; width: 100%; `;
-const DataBox = styled.div` background: #1e293b50; border: 1px solid #334155; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; text-align: center; `;
+const DataBox = styled.div` background: #2d184a50; border: 1px solid #334155; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; text-align: center; `;
 const SectionLabel = styled.div` font-size: 11px; color: #94a3b8; font-weight: 900; letter-spacing: 1px; margin: 25px 0 10px 0; border-bottom: 1px solid #334155; padding-bottom: 5px; display: flex; align-items: center; gap: 5px; text-transform: uppercase; `;
 const TaskRow = styled.div<{ $status: string }>` display: flex; justify-content: space-between; align-items: center; background: rgba(2,6,23,0.8); border: 1px solid ${(props) => props.$status === 'approved' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#ef4444'}; padding: 12px; border-radius: 10px; margin-bottom: 10px; font-size: 12px; transition: 0.3s; box-shadow: ${(props) => props.$status === 'approved' ? 'inset 0 0 15px rgba(16,185,129,0.1)' : 'none'}; `;
-const RecordRow = styled.div` display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-left: 3px solid #38bdf8; padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; `;
+const RecordRow = styled.div` display: flex; justify-content: space-between; align-items: center; background: #1d0f3a; border-left: 3px solid #c084fc; padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; `;
 const CoachSection = styled(motion.div)` margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ef4444; `;
 
-const RequestCard = styled.div` background: #0f172a; border: 1px solid #facc15; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; `;
+const RequestCard = styled.div` background: #1d0f3a; border: 1px solid #facc15; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; `;
 const RequestHeader = styled.div` display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #334155; padding-bottom: 8px; `;
 const RequestActions = styled.div` display: flex; gap: 10px; margin-top: 5px; `;
-const ActionBtn = styled.button<{ $type: 'approve' | 'reject' | 'primary' }>` flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-family: 'Oxanium'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; background: ${(props) => props.$type === 'approve' ? '#10b98120' : props.$type === 'primary' ? '#10b981' : '#ef444420'}; color: ${(props) => props.$type === 'approve' ? '#10b981' : props.$type === 'primary' ? '#000' : '#ef4444'}; border: 1px solid ${(props) => props.$type === 'approve' ? '#10b981' : props.$type === 'primary' ? '#10b981' : '#ef4444'}; &:hover { filter: brightness(1.2); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
-const KeyCard = styled.div<{ $isUsed: boolean }>` background: #0f172a; border: 1px solid ${(props) => (props.$isUsed ? '#ef4444' : '#10b981')}; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); `;
+const ActionBtn = styled.button<{ $type: 'approve' | 'reject' | 'primary' }>` flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-family: 'Exo 2'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; background: ${(props) => props.$type === 'approve' ? '#10b98120' : props.$type === 'primary' ? '#10b981' : '#ef444420'}; color: ${(props) => props.$type === 'approve' ? '#10b981' : props.$type === 'primary' ? '#000' : '#ef4444'}; border: 1px solid ${(props) => props.$type === 'approve' ? '#10b981' : props.$type === 'primary' ? '#10b981' : '#ef4444'}; &:hover { filter: brightness(1.2); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
+const KeyCard = styled.div<{ $isUsed: boolean }>` background: #1d0f3a; border: 1px solid ${(props) => (props.$isUsed ? '#ef4444' : '#10b981')}; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); `;
 const KeyText = styled.div<{ $isUsed: boolean }>` font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 2px; color: ${(props) => (props.$isUsed ? '#fca5a5' : '#34d399')}; text-decoration: ${(props) => (props.$isUsed ? 'line-through' : 'none')}; `;
 
 const FilterTabs = styled.div` display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; &::-webkit-scrollbar { height: 4px; } &::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; } `;
-const FilterTab = styled.button<{ $active: boolean; $color: string }>` background: ${(props) => props.$active ? `${props.$color}20` : '#1e293b50'}; border: 1px solid ${(props) => props.$active ? props.$color : '#334155'}; color: ${(props) => props.$active ? props.$color : '#94a3b8'}; padding: 8px 12px; border-radius: 8px; font-family: 'Oxanium'; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 4px; transition: 0.3s; &:hover { background: ${(props) => props.$color}20; color: ${(props) => props.$color}; } `;
-const BulkBtn = styled.button` background: #10b981; color: #000; border: none; padding: 12px; border-radius: 8px; font-family: 'Oxanium'; font-size: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 15px; transition: 0.3s; &:hover { filter: brightness(1.2); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); } &:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; box-shadow: none; } `;
+const FilterTab = styled.button<{ $active: boolean; $color: string }>` background: ${(props) => props.$active ? `${props.$color}20` : '#2d184a50'}; border: 1px solid ${(props) => props.$active ? props.$color : '#334155'}; color: ${(props) => props.$active ? props.$color : '#94a3b8'}; padding: 8px 12px; border-radius: 8px; font-family: 'Exo 2'; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 4px; transition: 0.3s; &:hover { background: ${(props) => props.$color}20; color: ${(props) => props.$color}; } `;
+const BulkBtn = styled.button` background: #10b981; color: #000; border: none; padding: 12px; border-radius: 8px; font-family: 'Exo 2'; font-size: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 15px; transition: 0.3s; &:hover { filter: brightness(1.2); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); } &:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; box-shadow: none; } `;
 
 // ==========================================
 // 6. المكون الرئيسي (Leaderboard & Coach Mode)
@@ -620,7 +617,7 @@ const Rank = ({ player, setPlayer }: any) => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text); playClick();
-    toast.success('Key Copied to Clipboard!', { style: { background: '#0f172a', border: '1px solid #38bdf8', color: '#38bdf8' } });
+    toast.success('Key Copied to Clipboard!', { style: { background: '#1d0f3a', border: '1px solid #c084fc', color: '#c084fc' } });
   };
 
   const handlePasswordSubmit = () => {
@@ -914,7 +911,7 @@ const Rank = ({ player, setPlayer }: any) => {
 
     return (
       <>
-        <div style={{color: '#0ea5e9', fontSize: 10, marginTop: 10, marginBottom: 5, fontWeight: 'bold'}}>DAILY DIRECTIVES (TODAY: {gameTodayStr})</div>
+        <div style={{color: '#a855f7', fontSize: 10, marginTop: 10, marginBottom: 5, fontWeight: 'bold'}}>DAILY DIRECTIVES (TODAY: {gameTodayStr})</div>
         {baseQuests.map((q) => renderRow(q, true))}
 
         {isGameFriday && (
@@ -945,7 +942,7 @@ const Rank = ({ player, setPlayer }: any) => {
                 {loadingKeys ? (
                   <div style={{ textAlign: 'center', padding: '20px', color: '#10b981' }}><LoadingSpinner /></div>
                 ) : accessKeysList.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '30px', background: '#1e293b30', borderRadius: '12px', color: '#94a3b8' }}>No keys generated yet.</div>
+                  <div style={{ textAlign: 'center', padding: '30px', background: '#2d184a30', borderRadius: '12px', color: '#94a3b8' }}>No keys generated yet.</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
                     {accessKeysList.map((keyData) => (
@@ -955,7 +952,7 @@ const Rank = ({ player, setPlayer }: any) => {
                           <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>{keyData.is_used ? `Claimed by: ${keyData.used_by}` : 'Status: Unused (Active)'}</div>
                         </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
-                          <button onClick={() => copyToClipboard(keyData.key_code)} style={{ background: '#1e293b', border: 'none', padding: '8px', borderRadius: '8px', color: '#0ea5e9', cursor: 'pointer' }} title="Copy Code"><Copy size={16} /></button>
+                          <button onClick={() => copyToClipboard(keyData.key_code)} style={{ background: '#2d184a', border: 'none', padding: '8px', borderRadius: '8px', color: '#a855f7', cursor: 'pointer' }} title="Copy Code"><Copy size={16} /></button>
                           {!keyData.is_used && (
                             <button onClick={() => deleteKey(keyData.id)} style={{ background: '#2a0808', border: 'none', padding: '8px', borderRadius: '8px', color: '#ef4444', cursor: 'pointer' }} title="Delete Code"><Trash2 size={16} /></button>
                           )}
@@ -991,7 +988,7 @@ const Rank = ({ player, setPlayer }: any) => {
                 
                 <FilterTabs>
                   <FilterTab $active={inboxFilter === 'all'} $color="#eab308" onClick={() => setInboxFilter('all')}><Filter size={12}/> All</FilterTab>
-                  <FilterTab $active={inboxFilter === 'quest'} $color="#0ea5e9" onClick={() => setInboxFilter('quest')}><CheckSquare size={12}/> Quests</FilterTab>
+                  <FilterTab $active={inboxFilter === 'quest'} $color="#a855f7" onClick={() => setInboxFilter('quest')}><CheckSquare size={12}/> Quests</FilterTab>
                   <FilterTab $active={inboxFilter === 'record'} $color="#a855f7" onClick={() => setInboxFilter('record')}><Trophy size={12}/> PRs</FilterTab>
                   <FilterTab $active={inboxFilter === 'injury'} $color="#ef4444" onClick={() => setInboxFilter('injury')}><HeartPulse size={12}/> Rehab</FilterTab>
                 </FilterTabs>
@@ -999,7 +996,7 @@ const Rank = ({ player, setPlayer }: any) => {
                 {loadingInbox ? (
                   <div style={{ textAlign: 'center', padding: '20px', color: '#eab308' }}><LoadingSpinner /></div>
                 ) : getFilteredInbox().length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '30px', background: '#1e293b30', borderRadius: '12px', color: '#94a3b8' }}>No pending requests in this category.</div>
+                  <div style={{ textAlign: 'center', padding: '30px', background: '#2d184a30', borderRadius: '12px', color: '#94a3b8' }}>No pending requests in this category.</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <BulkBtn disabled={isProcessing} onClick={handleBulkApprove}>
@@ -1011,8 +1008,8 @@ const Rank = ({ player, setPlayer }: any) => {
                           <span style={{ fontWeight: '900', color: '#fff' }}>{req.player_name}</span>
                           <span style={{ fontSize: '10px', color: '#94a3b8' }}>{new Date(req.created_at).toLocaleDateString()}</span>
                         </RequestHeader>
-                        <div style={{ fontSize: '14px', color: req.task_name === '[INJURY REPORT]' ? '#ef4444' : '#38bdf8', fontWeight: 'bold' }}>{req.task_name}</div>
-                        <div style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 5, background: '#1e293b50', padding: '8px', borderRadius: '6px' }}>
+                        <div style={{ fontSize: '14px', color: req.task_name === '[INJURY REPORT]' ? '#ef4444' : '#c084fc', fontWeight: 'bold' }}>{req.task_name}</div>
+                        <div style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 5, background: '#2d184a50', padding: '8px', borderRadius: '6px' }}>
                           {req.evidence?.includes('Image') ? <FileImage size={14} color="#10b981" /> : <Activity size={14} color="#facc15" />} {req.evidence || 'No Evidence Provided'}
                         </div>
                         <RequestActions>
@@ -1052,7 +1049,7 @@ const Rank = ({ player, setPlayer }: any) => {
                 <DataGrid>
                   <DataBox>
                     <span style={{ fontSize: '10px', color: '#94a3b8' }}>LEVEL</span>
-                    <span style={{ fontSize: '18px', color: '#00f2ff', fontWeight: 'bold' }}><ChevronUp size={14} /> {selectedHunter.visualLevel || 1}</span>
+                    <span style={{ fontSize: '18px', color: '#d946ef', fontWeight: 'bold' }}><ChevronUp size={14} /> {selectedHunter.visualLevel || 1}</span>
                   </DataBox>
                   <DataBox>
                     <span style={{ fontSize: '10px', color: '#94a3b8' }}>CURRENT EXP</span>
@@ -1064,14 +1061,14 @@ const Rank = ({ player, setPlayer }: any) => {
 
                 <SectionLabel><TrendingUp size={14} /> RECENT RECORDS (PRS)</SectionLabel>
                 {loadingHunterData ? (
-                  <div style={{ textAlign: 'center', fontSize: '12px', color: '#0ea5e9' }}>Loading records...</div>
+                  <div style={{ textAlign: 'center', fontSize: '12px', color: '#a855f7' }}>Loading records...</div>
                 ) : hunterRecordsData.length === 0 ? (
                   <div style={{ textAlign: 'center', color: '#64748b', fontSize: '12px', padding: '10px' }}>No records logged.</div>
                 ) : (
                   <div style={{ maxHeight: '150px', overflowY: 'auto', paddingRight: '5px' }}>
                     {hunterRecordsData.map((r, i) => (
                       <RecordRow key={i}>
-                        <span style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Dumbbell size={16} color="#0ea5e9" /> {String(r.exercise_name)}</span>
+                        <span style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}><Dumbbell size={16} color="#a855f7" /> {String(r.exercise_name)}</span>
                         <span style={{ color: '#eab308', fontWeight: '900', fontSize: '15px' }}>{String(r.weight_kg || '')} {r.reps ? ` ${String(r.reps)}` : ''}</span>
                       </RecordRow>
                     ))}
@@ -1080,7 +1077,7 @@ const Rank = ({ player, setPlayer }: any) => {
 
                 <SectionLabel><Database size={14} /> PUBLIC MISSIONS LOG</SectionLabel>
                 {loadingHunterData ? (
-                  <div style={{ textAlign: 'center', fontSize: '12px', color: '#0ea5e9' }}>Loading missions...</div>
+                  <div style={{ textAlign: 'center', fontSize: '12px', color: '#a855f7' }}>Loading missions...</div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '250px', overflowY: 'auto', paddingRight: '5px' }}>
                     {renderAllMissions()}
@@ -1100,7 +1097,7 @@ const Rank = ({ player, setPlayer }: any) => {
                       </DataBox>
                       <DataBox>
                         <span style={{ fontSize: '10px', color: '#94a3b8' }}>BODY WEIGHT</span>
-                        <span style={{ fontSize: '18px', color: '#38bdf8', fontWeight: 'bold' }}><Scale size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {selectedHunter.weight ? `${selectedHunter.weight} KG` : 'N/A'}</span>
+                        <span style={{ fontSize: '18px', color: '#c084fc', fontWeight: 'bold' }}><Scale size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} /> {selectedHunter.weight ? `${selectedHunter.weight} KG` : 'N/A'}</span>
                       </DataBox>
                       <DataBox>
                         <span style={{ fontSize: '10px', color: '#94a3b8' }}>INBODY (FAT %)</span>
@@ -1149,8 +1146,8 @@ const Rank = ({ player, setPlayer }: any) => {
 
       <TabsGrid>
         <Tab $active={activeBoard === 'global'} $glowColor="#a855f7" onClick={() => { playClick(); setActiveBoard('global'); }}>الترتيب العام <Globe size={16} /></Tab>
-        <Tab $active={activeBoard === 'monthly'} $glowColor="#0ea5e9" onClick={() => { playClick(); setActiveBoard('monthly'); }}>بطل الشهر <Trophy size={16} /></Tab>
-        <Tab $active={activeBoard === 'male'} $glowColor="#38bdf8" onClick={() => { playClick(); setActiveBoard('male'); }}>تصنيف الشباب <Sword size={16} /></Tab>
+        <Tab $active={activeBoard === 'monthly'} $glowColor="#a855f7" onClick={() => { playClick(); setActiveBoard('monthly'); }}>بطل الشهر <Trophy size={16} /></Tab>
+        <Tab $active={activeBoard === 'male'} $glowColor="#c084fc" onClick={() => { playClick(); setActiveBoard('male'); }}>تصنيف الشباب <Sword size={16} /></Tab>
         <Tab $active={activeBoard === 'female'} $glowColor="#ec4899" onClick={() => { playClick(); setActiveBoard('female'); }}>تصنيف البنات <Crown size={16} /></Tab>
         <Tab $active={activeBoard === 'seasons'} $glowColor="#eab308" onClick={() => { playClick(); setActiveBoard('seasons'); }}>سجل الأبطال <Award size={16} /></Tab>
       </TabsGrid>
@@ -1170,7 +1167,7 @@ const Rank = ({ player, setPlayer }: any) => {
                     {getHunterIconOnly(hunter, classColor, isFirst ? 35 : 25)}
                   </HeroAvatar>
                   <HeroName $color={pColor}>{hunter.name.split(' ')[0]}</HeroName>
-                  <HeroLevel>LVL {hunter.visualLevel} <br/><span style={{color: '#0ea5e9'}}>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.visualXp} XP</span></HeroLevel>
+                  <HeroLevel>LVL {hunter.visualLevel} <br/><span style={{color: '#a855f7'}}>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.visualXp} XP</span></HeroLevel>
                   {hunter.active_pet && (
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
                       <MiniOrb type={PETS_DATABASE.find(p => p.name === hunter.active_pet)?.type || 'wyvern'} color={PETS_DATABASE.find(p => p.name === hunter.active_pet)?.color || '#eab308'} />
@@ -1224,7 +1221,7 @@ const Rank = ({ player, setPlayer }: any) => {
                         </IconCircle>
                         <NameCol>
                           <PlayerNameText>
-                            {hunter.name} {isMe && <span style={{ color: '#0ea5e9', fontSize: 10 }}> (YOU)</span>}
+                            {hunter.name} {isMe && <span style={{ color: '#a855f7', fontSize: 10 }}> (YOU)</span>}
                             {playerWins > 0 && <span style={{ color: '#eab308', fontSize: '11px', textShadow: '0 0 5px rgba(234, 179, 8, 0.5)' }}>👑 x{playerWins}</span>}
                           </PlayerNameText>
                           <PlayerTitleText $rankColor={hunter.rankColor}>{hunter.rankName}</PlayerTitleText>
@@ -1256,12 +1253,12 @@ const Rank = ({ player, setPlayer }: any) => {
             </SeasonItem>
 
             <SeasonItem style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: 15 }}>
-              <SeasonBadge $color="#0ea5e9">SEASON TWO</SeasonBadge>
+              <SeasonBadge $color="#a855f7">SEASON TWO</SeasonBadge>
               <WinnerDetails>
                 <WinnerTitleTextVal>CHAMPION</WinnerTitleTextVal>
                 <WinnerNameTextVal>RAYAN 👑</WinnerNameTextVal>
               </WinnerDetails>
-              <PrizeBadge $color="#0ea5e9">EAA + ELECTROLYTES</PrizeBadge>
+              <PrizeBadge $color="#a855f7">EAA + ELECTROLYTES</PrizeBadge>
             </SeasonItem>
           </SeasonHallCard>
         </motion.div>

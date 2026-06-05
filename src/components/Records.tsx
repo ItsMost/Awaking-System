@@ -77,7 +77,7 @@ const playHoverSound = () => {
 // ==========================================
 const Container = styled.div`
   padding: 20px;
-  font-family: 'Oxanium', sans-serif;
+  font-family: 'Exo 2', sans-serif;
   color: #fff;
   min-height: 100vh;
   padding-bottom: 80px;
@@ -89,8 +89,8 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #0f172a 0%, #020617 100%);
-  border: 1px solid #1e293b;
+  background: linear-gradient(90deg, #1d0f3a 0%, #07030f 100%);
+  border: 1px solid #2d184a;
   padding: 20px;
   border-radius: 16px;
   margin-bottom: 30px;
@@ -100,11 +100,11 @@ const Header = styled.div`
 const Title = styled.h1`
   font-size: 24px;
   margin: 0;
-  color: #00f2ff;
+  color: #d946ef;
   display: flex;
   align-items: center;
   gap: 10px;
-  text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+  text-shadow: 0 0 10px rgba(217, 70, 239, 0.4);
   text-transform: uppercase;
   letter-spacing: 2px;
 `;
@@ -164,7 +164,7 @@ const ClaimBtn = styled.button`
   border: none;
   padding: 12px 40px;
   border-radius: 8px;
-  font-family: 'Oxanium', sans-serif;
+  font-family: 'Exo 2', sans-serif;
   font-weight: 900;
   font-size: 16px;
   letter-spacing: 2px;
@@ -190,7 +190,7 @@ const CategoryHeader = styled.div<{ $color: string }>`
 
 const ListItem = styled(motion.div)`
   background: #0b1120;
-  border: 1px solid #1e293b;
+  border: 1px solid #2d184a;
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 12px;
@@ -202,26 +202,26 @@ const ListItem = styled(motion.div)`
 
   &:hover {
     border-color: #334155;
-    background: #0f172a;
+    background: #1d0f3a;
   }
 `;
 
 const TopRow = styled.div` display: flex; justify-content: space-between; align-items: center; `;
 const ItemTitle = styled.div` font-size: 15px; font-weight: bold; color: #f8fafc; `;
-const ItemValue = styled.div` font-size: 14px; font-weight: 900; color: #00f2ff; text-shadow: 0 0 8px rgba(0, 242, 255, 0.4); `;
+const ItemValue = styled.div` font-size: 14px; font-weight: 900; color: #d946ef; text-shadow: 0 0 8px rgba(217, 70, 239, 0.4); `;
 const BottomRow = styled.div` display: flex; gap: 12px; align-items: center; `;
 const InputField = styled.input`
-  flex: 1; background: #020617; border: 1px solid #1e293b; color: #fff; padding: 12px 15px; border-radius: 8px; font-family: 'Oxanium', sans-serif; font-size: 14px; text-align: center; outline: none; transition: 0.3s;
+  flex: 1; background: #07030f; border: 1px solid #2d184a; color: #fff; padding: 12px 15px; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 14px; text-align: center; outline: none; transition: 0.3s;
   &::placeholder { color: #475569; font-weight: bold; }
-  &:focus { border-color: #00f2ff; box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+  &:focus { border-color: #d946ef; box-shadow: 0 0 10px rgba(217, 70, 239, 0.2); }
 `;
 const UpdateBtn = styled(motion.button)<{ $btnBg: string; $btnColor: string }>`
   background: ${(props) => props.$btnBg}; color: ${(props) =>
-  props.$btnColor}; border: 1px solid rgba(255,255,255,0.05); padding: 12px 20px; border-radius: 8px; font-family: 'Oxanium', sans-serif; font-size: 12px; font-weight: 900; letter-spacing: 1px; cursor: pointer; transition: 0.3s;
+  props.$btnColor}; border: 1px solid rgba(255,255,255,0.05); padding: 12px 20px; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 900; letter-spacing: 1px; cursor: pointer; transition: 0.3s;
   &:hover { filter: brightness(1.2); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
-const PendingList = styled.div` margin-top: 40px; background: #0f172a; border: 1px dashed #eab308; border-radius: 16px; padding: 20px; `;
+const PendingList = styled.div` margin-top: 40px; background: #1d0f3a; border: 1px dashed #eab308; border-radius: 16px; padding: 20px; `;
 
 // ==========================================
 // 3. قاعدة البيانات
@@ -247,7 +247,7 @@ const DEFAULT_RECORDS = [
 ];
 
 const CATEGORY_STYLES: Record<string, { headerColor: string; btnBg: string; btnColor: string }> = {
-  SPRINTS: { headerColor: '#0ea5e9', btnBg: '#4c0519', btnColor: '#fda4af' },
+  SPRINTS: { headerColor: '#a855f7', btnBg: '#4c0519', btnColor: '#fda4af' },
   'JUMPS & EXPLOSIVENESS': { headerColor: '#c084fc', btnBg: '#2e1065', btnColor: '#d8b4fe' },
   'STRENGTH & POWER': { headerColor: '#f43f5e', btnBg: '#3f1900', btnColor: '#fde047' },
 };
@@ -359,7 +359,7 @@ const Records = ({ player, setPlayer }: any) => {
     if (!inputValue || isNaN(parseFloat(inputValue))) {
       playRecordSound('error');
       toast.error('Please enter a valid number.', {
-        style: { background: '#020617', border: '1px solid #ef4444', color: '#ef4444' },
+        style: { background: '#07030f', border: '1px solid #ef4444', color: '#ef4444' },
       });
       return;
     }
@@ -370,7 +370,7 @@ const Records = ({ player, setPlayer }: any) => {
 
     if (isBaseline) {
       playRecordSound('submit');
-      confetti({ particleCount: 80, spread: 60, colors: ['#00f2ff', '#facc15', '#ffffff'] });
+      confetti({ particleCount: 80, spread: 60, colors: ['#d946ef', '#facc15', '#ffffff'] });
 
       const updatedRecords = records.map((r) =>
         r.id === record.id ? { ...r, value: newValue } : r
@@ -385,7 +385,7 @@ const Records = ({ player, setPlayer }: any) => {
         }, { onConflict: 'player_name, exercise_name' });
         
         toast.success(`[BASELINE SET]: ${record.title} initialized at ${newValue} ${record.unit}!`, {
-          style: { background: '#020617', border: '1px solid #10b981', color: '#10b981', fontWeight: 'bold' },
+          style: { background: '#07030f', border: '1px solid #10b981', color: '#10b981', fontWeight: 'bold' },
         });
       } catch (err) {
         console.error('Failed to save baseline', err);
@@ -446,7 +446,7 @@ const Records = ({ player, setPlayer }: any) => {
         },
       ]);
       toast.success('[RECORD BROKEN]: Verification Request sent to Coach.', {
-        style: { background: '#020617', border: '1px solid #eab308', color: '#eab308', fontWeight: 'bold' },
+        style: { background: '#07030f', border: '1px solid #eab308', color: '#eab308', fontWeight: 'bold' },
       });
     } catch (err) {
       console.error('Failed to send request', err);
@@ -495,7 +495,7 @@ const Records = ({ player, setPlayer }: any) => {
 
       <Header>
         <Title>
-          <Medal size={28} color="#00f2ff" />
+          <Medal size={28} color="#d946ef" />
           HALL OF RECORDS
         </Title>
         <div style={{ fontSize: '12px', color: '#94a3b8', textAlign: 'right', fontWeight: 'bold', letterSpacing: '1px' }}>
@@ -558,7 +558,7 @@ const Records = ({ player, setPlayer }: any) => {
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {pendingRequests.map((req) => (
-              <div key={req.id} style={{ background: '#020617', border: '1px solid #1e293b', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={req.id} style={{ background: '#07030f', border: '1px solid #2d184a', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>{req.title}</div>
                   <div style={{ fontSize: '11px', color: '#94a3b8' }}>Submitted: {req.date}</div>

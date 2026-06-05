@@ -19,15 +19,15 @@ import { toast, Toaster } from 'sonner';
 // 1. التصميمات (Styled Components)
 // ==========================================
 const Container = styled(motion.div)`
-  padding: 20px; font-family: 'Oxanium', sans-serif; color: #fff; min-height: 100vh; padding-bottom: 100px; max-width: 600px; margin: 0 auto;
+  padding: 20px; font-family: 'Exo 2', sans-serif; color: #fff; min-height: 100vh; padding-bottom: 100px; max-width: 600px; margin: 0 auto;
 `;
 
 const Header = styled.div`
-  display: flex; flex-direction: column; align-items: center; background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid #1e293b; padding: 25px 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+  display: flex; flex-direction: column; align-items: center; background: linear-gradient(135deg, #1d0f3a 0%, #07030f 100%); border: 1px solid #2d184a; padding: 25px 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
 `;
 
 const Title = styled.h1`
-  margin: 10px 0 5px 0; font-size: 24px; color: #0ea5e9; text-transform: uppercase; letter-spacing: 2px; font-weight: 900;
+  margin: 10px 0 5px 0; font-size: 24px; color: #a855f7; text-transform: uppercase; letter-spacing: 2px; font-weight: 900;
 `;
 
 const Subtitle = styled.p`
@@ -35,37 +35,37 @@ const Subtitle = styled.p`
 `;
 
 const CoachForm = styled(motion.div)`
-  background: #020617; border: 1px dashed #ef4444; border-radius: 16px; padding: 20px; margin-bottom: 25px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);
+  background: #07030f; border: 1px dashed #ef4444; border-radius: 16px; padding: 20px; margin-bottom: 25px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);
 `;
 
 const Input = styled.input`
-  background: #0f172a; border: 1px solid #334155; color: #fff; padding: 12px 15px; border-radius: 10px; font-family: 'Oxanium'; font-size: 14px; outline: none; transition: 0.3s;
-  &:focus { border-color: #0ea5e9; box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+  background: #1d0f3a; border: 1px solid #334155; color: #fff; padding: 12px 15px; border-radius: 10px; font-family: 'Exo 2'; font-size: 14px; outline: none; transition: 0.3s;
+  &:focus { border-color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
 `;
 
 const TextArea = styled.textarea`
-  background: #0f172a; border: 1px solid #334155; color: #fff; padding: 12px 15px; border-radius: 10px; font-family: 'Oxanium'; font-size: 14px; outline: none; min-height: 100px; resize: vertical; transition: 0.3s; direction: rtl;
-  &:focus { border-color: #0ea5e9; box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+  background: #1d0f3a; border: 1px solid #334155; color: #fff; padding: 12px 15px; border-radius: 10px; font-family: 'Exo 2'; font-size: 14px; outline: none; min-height: 100px; resize: vertical; transition: 0.3s; direction: rtl;
+  &:focus { border-color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
 `;
 
 const Select = styled.select`
-  background: #0f172a; border: 1px solid #334155; color: #fff; padding: 12px 15px; border-radius: 10px; font-family: 'Oxanium'; font-size: 14px; outline: none; cursor: pointer;
+  background: #1d0f3a; border: 1px solid #334155; color: #fff; padding: 12px 15px; border-radius: 10px; font-family: 'Exo 2'; font-size: 14px; outline: none; cursor: pointer;
 `;
 
 const ActionBtn = styled.button<{ $color: string }>`
   background: ${(props) =>
-    props.$color}; color: #000; border: none; padding: 12px; border-radius: 10px; font-weight: 900; font-family: 'Oxanium'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; font-size: 14px;
+    props.$color}; color: #000; border: none; padding: 12px; border-radius: 10px; font-weight: 900; font-family: 'Exo 2'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; font-size: 14px;
   &:hover { filter: brightness(1.2); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
 const NewsCard = styled(motion.div)<{ $color: string }>`
-  background: #0f172a; border-left: 4px solid ${(props) =>
+  background: #1d0f3a; border-left: 4px solid ${(props) =>
     props.$color}; border-radius: 12px; padding: 20px; margin-bottom: 15px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3); direction: rtl;
 `;
 
 const CardHeader = styled.div`
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 10px;
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #2d184a; padding-bottom: 10px;
 `;
 
 const Badge = styled.div<{ $color: string }>`
@@ -94,7 +94,7 @@ const DeleteBtn = styled.button`
 // 2. فئات الأخبار (Categories)
 // ==========================================
 const CATEGORIES = [
-  { id: 'world_record', label: 'أرقام عالمية', icon: Globe, color: '#0ea5e9' },
+  { id: 'world_record', label: 'أرقام عالمية', icon: Globe, color: '#a855f7' },
   { id: 'tournament', label: 'بطولات قادمة', icon: Trophy, color: '#eab308' },
   { id: 'team_news', label: 'أخبار التيم', icon: Flame, color: '#f97316' },
   { id: 'technique', label: 'توجيهات فنية', icon: Target, color: '#10b981' },
@@ -215,7 +215,7 @@ const News = () => {
       <Toaster position="top-center" theme="dark" />
 
       <Header>
-        <Globe size={40} color="#0ea5e9" style={{ marginBottom: '10px' }} />
+        <Globe size={40} color="#a855f7" style={{ marginBottom: '10px' }} />
         <Title>Global Radar</Title>
         <Subtitle>أحدث الأرقام القياسية وأخبار ألعاب القوى 🌍</Subtitle>
       </Header>
@@ -284,7 +284,7 @@ const News = () => {
 
       {/* عرض الأخبار */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '50px', color: '#0ea5e9' }}>
+        <div style={{ textAlign: 'center', padding: '50px', color: '#a855f7' }}>
           جاري مسح الرادار... 📡
         </div>
       ) : newsList.length === 0 ? (
@@ -293,7 +293,7 @@ const News = () => {
             textAlign: 'center',
             padding: '50px',
             color: '#64748b',
-            background: '#0f172a',
+            background: '#1d0f3a',
             borderRadius: '12px',
           }}
         >
