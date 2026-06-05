@@ -691,13 +691,14 @@ const Rank = ({ player, setPlayer }: any) => {
       if (fetchError) throw fetchError;
 
       if (hunters && hunters.length > 0) {
-        const updates = hunters.map(h => ({
-          id: h.id,
-          cumulative_xp_offset: h.cumulative_xp || 0
-        }));
-
-        const { error: resetError } = await supabase.from('elite_players').upsert(updates);
-        if (resetError) throw resetError;
+        const updatePromises = hunters.map(h => 
+          supabase.from('elite_players')
+            .update({ cumulative_xp_offset: h.cumulative_xp || 0 })
+            .eq('id', h.id)
+        );
+        const results = await Promise.all(updatePromises);
+        const firstError = results.find(r => r.error);
+        if (firstError) throw firstError.error;
       }
 
       toast.success('🏆 تم تصفير نقاط الترتيب العام بنجاح مع الحفاظ على الرتب والمستويات!', { style: { background: '#0c0a09', color: '#f97316', border: '1px solid #f97316' } });
