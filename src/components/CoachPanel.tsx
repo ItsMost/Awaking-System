@@ -9,15 +9,16 @@ import { toast } from 'sonner';
 // 1. القاموس السري للمكافآت (Rewards Dictionary)
 // ==========================================
 const QUEST_REWARDS: Record<string, { exp: number, gold: number }> = {
-  'Practice': { exp: 100, gold: 30 },
-  'Practice (Rehab)': { exp: 90, gold: 30 },
-  'Recovery Cooldown': { exp: 20, gold: 10 },
-  'Thermal / Cryotherapy': { exp: 20, gold: 10 },
+  'Practice': { exp: 150, gold: 30 },
+  'Hydration Target (4L)': { exp: 50, gold: 10 },
+  'Nutritional Compliance': { exp: 50, gold: 10 },
+  'Functional Mobility': { exp: 45, gold: 15 },
+  'Recovery Cooldown': { exp: 50, gold: 10 },
+  'Weekly Volume Compliance': { exp: 150, gold: 100 },
+  'Perfect Microcycle Streak': { exp: 150, gold: 100 },
   'Recovery Logistics': { exp: 100, gold: 50 },
   'Supplement Inventory': { exp: 100, gold: 50 },
   'InBody Assessment': { exp: 75, gold: 200 },
-  'Weekly Volume Compliance': { exp: 150, gold: 100 },
-  'Perfect Microcycle Streak': { exp: 150, gold: 100 },
   'Disciplinary Execution': { exp: 0, gold: 0 }, 
 };
 

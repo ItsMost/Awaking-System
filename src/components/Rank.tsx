@@ -91,16 +91,16 @@ const calculateLevelData = (totalXp: number) => {
 };
 
 const NORMAL_DAILY_QUESTS = ['Practice', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility', 'Recovery Cooldown'];
-const INJURED_DAILY_QUESTS = ['Practice (Rehab)', 'Hydration Target (4L)', 'Tissue Repair Nutrition', 'Rehab Mobility Protocol', 'Thermal / Cryotherapy'];
 const FRIDAY_DIRECTIVES = ['Weekly Volume Compliance', 'Perfect Microcycle Streak'];
 const BIWEEKLY_QUESTS = ['Recovery Logistics'];
 const MONTHLY_QUESTS = ['Supplement Inventory', 'InBody Assessment'];
 
 const QUEST_REWARDS: Record<string, { exp: number; gold: number }> = {
-  'Practice': { exp: 100, gold: 30 }, 'Practice (Rehab)': { exp: 90, gold: 30 },
-  'Hydration Target (4L)': { exp: 30, gold: 10 }, 'Nutritional Compliance': { exp: 30, gold: 10 },
-  'Functional Mobility': { exp: 35, gold: 15 }, 'Recovery Cooldown': { exp: 20, gold: 10 },
-  'Rehab Mobility Protocol': { exp: 35, gold: 15 }, 'Thermal / Cryotherapy': { exp: 20, gold: 10 },
+  'Practice': { exp: 150, gold: 30 },
+  'Hydration Target (4L)': { exp: 50, gold: 10 },
+  'Nutritional Compliance': { exp: 50, gold: 10 },
+  'Functional Mobility': { exp: 45, gold: 15 },
+  'Recovery Cooldown': { exp: 50, gold: 10 },
   'Weekly Volume Compliance': { exp: 150, gold: 100 }, 'Perfect Microcycle Streak': { exp: 150, gold: 100 },
   'Recovery Logistics': { exp: 100, gold: 50 }, 'Supplement Inventory': { exp: 100, gold: 50 },
   'InBody Assessment': { exp: 75, gold: 200 }, 'Disciplinary Execution': { exp: 0, gold: 0 },
@@ -475,6 +475,19 @@ const Rank = ({ player, setPlayer }: any) => {
         return;
       }
 
+      // Auto-repair logic: if cumulative_xp_offset > cumulative_xp, cap it
+      for (const h of hunters) {
+        const cxp = h.cumulative_xp || 0;
+        const cxpOffset = h.cumulative_xp_offset || 0;
+        if (cxpOffset > cxp) {
+          h.cumulative_xp_offset = cxp;
+          await supabase
+            .from('elite_players')
+            .update({ cumulative_xp_offset: cxp })
+            .eq('id', h.id);
+        }
+      }
+
       const processedHunters = hunters.map(h => {
         const leaderboardXp = (h.cumulative_xp || 0) - (h.cumulative_xp_offset || 0);
         const levelData = calculateLevelData(leaderboardXp);
@@ -744,12 +757,28 @@ const Rank = ({ player, setPlayer }: any) => {
       let newMonthlyXp = Math.max(0, (selectedHunter.monthly_xp || 0) - reward.exp);
       let newGold = Math.max(0, (selectedHunter.gold || 0) - reward.gold);
 
+      let newXpOffset = selectedHunter.cumulative_xp_offset || 0;
+      if (newXpOffset > newXp) {
+        newXpOffset = newXp;
+      }
+
       await supabase.from('elite_quests').delete().eq('id', reqToDelete.id);
-      await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold }).eq('name', selectedHunter.name);
+      await supabase.from('elite_players').update({ 
+        cumulative_xp: newXp, 
+        monthly_xp: newMonthlyXp, 
+        gold: newGold,
+        cumulative_xp_offset: newXpOffset
+      }).eq('name', selectedHunter.name);
       await supabase.from('elite_economy').insert([{ player_name: selectedHunter.name, amount: reward.exp, currency: 'xp', operation: 'decrease', reason: `Coach Reverted: ${taskName}` }]);
 
       setHunterTasksData(prev => prev.filter(t => t.id !== reqToDelete.id));
-      setSelectedHunter((prev: any) => ({ ...prev, cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold }));
+      setSelectedHunter((prev: any) => ({ 
+        ...prev, 
+        cumulative_xp: newXp, 
+        monthly_xp: newMonthlyXp, 
+        gold: newGold,
+        cumulative_xp_offset: newXpOffset
+      }));
       
       toast.success("✅ تم الإلغاء وخصم النقاط بنجاح!");
       fetchAndProcessLeaderboard();
@@ -767,10 +796,7 @@ const Rank = ({ player, setPlayer }: any) => {
     
     await supabase.from('elite_quests').update({ status: 'approved' }).eq('id', request.id);
 
-    if (request.task_name === '[INJURY REPORT]') {
-      await supabase.from('elite_players').update({ is_injured: true }).eq('name', request.player_name);
-      await supabase.from('elite_quests').delete().eq('id', request.id);
-    } else if (request.type === 'record' || request.task_name.startsWith('[NEW PR]')) {
+    if (request.type === 'record' || request.task_name.startsWith('[NEW PR]')) {
       const { data: hunterData } = await supabase.from('elite_players').select('*').eq('name', request.player_name).single();
       if (hunterData) {
         const newGold = (hunterData.gold || 0) + 200;
@@ -862,9 +888,8 @@ const Rank = ({ player, setPlayer }: any) => {
   const getFilteredInbox = () => {
     return inboxRequests.filter(req => {
       if (inboxFilter === 'all') return true;
-      if (inboxFilter === 'injury') return req.task_name === '[INJURY REPORT]';
       if (inboxFilter === 'record') return req.type === 'record' || req.task_name.startsWith('[NEW PR]');
-      if (inboxFilter === 'quest') return req.type !== 'record' && req.task_name !== '[INJURY REPORT]';
+      if (inboxFilter === 'quest') return req.type !== 'record';
       return true;
     });
   };
@@ -900,7 +925,7 @@ const Rank = ({ player, setPlayer }: any) => {
     const gameTodayStr = getLocalYYYYMMDD(now);
     const isGameFriday = now.getDay() === 5;
 
-    const baseQuests = selectedHunter.is_injured ? INJURED_DAILY_QUESTS : NORMAL_DAILY_QUESTS;
+    const baseQuests = NORMAL_DAILY_QUESTS;
 
     const getTaskStatus = (taskName: string, isDaily: boolean) => {
       if (isDaily) {
@@ -1024,7 +1049,6 @@ const Rank = ({ player, setPlayer }: any) => {
                   <FilterTab $active={inboxFilter === 'all'} $color="#eab308" onClick={() => setInboxFilter('all')}><Filter size={12}/> All</FilterTab>
                   <FilterTab $active={inboxFilter === 'quest'} $color="#f59e0b" onClick={() => setInboxFilter('quest')}><CheckSquare size={12}/> Quests</FilterTab>
                   <FilterTab $active={inboxFilter === 'record'} $color="#f59e0b" onClick={() => setInboxFilter('record')}><Trophy size={12}/> PRs</FilterTab>
-                  <FilterTab $active={inboxFilter === 'injury'} $color="#ef4444" onClick={() => setInboxFilter('injury')}><HeartPulse size={12}/> Rehab</FilterTab>
                 </FilterTabs>
 
                 {loadingInbox ? (
@@ -1042,7 +1066,7 @@ const Rank = ({ player, setPlayer }: any) => {
                           <span style={{ fontWeight: '900', color: '#fff' }}>{req.player_name}</span>
                           <span style={{ fontSize: '10px', color: '#94a3b8' }}>{new Date(req.created_at).toLocaleDateString()}</span>
                         </RequestHeader>
-                        <div style={{ fontSize: '14px', color: req.task_name === '[INJURY REPORT]' ? '#ef4444' : '#eab308', fontWeight: 'bold' }}>{req.task_name}</div>
+                        <div style={{ fontSize: '14px', color: '#eab308', fontWeight: 'bold' }}>{req.task_name}</div>
                         <div style={{ fontSize: '12px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 5, background: '#44403c50', padding: '8px', borderRadius: '6px' }}>
                           {req.evidence?.includes('Image') ? <FileImage size={14} color="#10b981" /> : <Activity size={14} color="#facc15" />} {req.evidence || 'No Evidence Provided'}
                         </div>

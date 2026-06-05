@@ -19,7 +19,6 @@ import Shop from './components/Shop';
 import Profile from './components/Profile';
 import Records from './components/Records';
 import Rules from './components/Rules';
-import Rehab from './components/Rehab';
 import CoachPanel from './components/CoachPanel'; 
 import { supabase } from './lib/supabase';
 
@@ -557,7 +556,7 @@ const App = () => {
 
   const handleTabChange = (tabId: string) => {
     if (tabId === 'rank' || tabId === 'profile') playSound('shield');
-    else if (tabId === 'records' || tabId === 'rehab') playAuraSound(player);
+    else if (tabId === 'records') playAuraSound(player);
     else playSound('click');
     
     
@@ -661,7 +660,6 @@ const App = () => {
     { id: 'rank', label: 'RANK', icon: Target, color: '#f59e0b' },
     { id: 'profile', label: 'PROFILE', icon: User, color: '#ec4899' },
     { id: 'rules', label: 'RULES', icon: Book, color: '#f43f5e' },
-    { id: 'rehab', label: 'CLINIC', icon: Activity, color: '#10b981' },
     ...(isCoachMode ? [{ id: 'coach', label: 'COMMAND', icon: Settings, color: '#ef4444' }] : []),
   ];
 
@@ -776,7 +774,6 @@ const App = () => {
             {activeTab === 'rank' && <Rank player={player} setPlayer={setPlayer} />}
             {activeTab === 'profile' && <Profile player={player} setPlayer={setPlayer} />}
             {activeTab === 'rules' && <Rules />}
-            {activeTab === 'rehab' && <Rehab />}
             {activeTab === 'coach' && <CoachPanel />}
           </motion.div>
         </AnimatePresence>

@@ -5,7 +5,7 @@ import {
   BookOpen, Shield, Flame,
   Gamepad2, Star,
   Target, Medal, Crown, Activity, Clock,
-  Ghost, Stethoscope, Trophy
+  Ghost, Trophy
 } from 'lucide-react';
 
 // ==========================================
@@ -264,23 +264,7 @@ const RULES_DATA = [
       </>
     )
   },
-  {
-    id: 5,
-    title: 'العيادة وإدارة الإصابات (Rehab Clinic)',
-    icon: Stethoscope,
-    color: '#ef4444',
-    content: (
-      <>
-        الإصابة ليست عذراً للتوقف، بل فرصة للتعافي بذكاء وبطرق علمية مدروسة.
-        <br/><br/>
-        <ul style={{ listStyleType: 'circle', paddingRight: '20px' }}>
-          <li>استخدم مجسم الـ 3D في العيادة لتحديد مكان الألم وشدته. سيعطيك النظام بروتوكول علاج فوري.</li>
-          <li>إذا أبلغت المدرب بالإصابة وتم الموافقة عليها، ستتحول حالتك إلى <Highlight $color="#ef4444">Injured</Highlight>.</li>
-          <li>تلقائياً، ستتغير مهامك اليومية من تمارين شاقة إلى <strong>مهام علاج طبيعي (Rehab)</strong>، لتتمكن من الحفاظ على الـ Streak وجمع الـ EXP أثناء فترة التعافي!</li>
-        </ul>
-      </>
-    )
-  },
+
   {
     id: 6,
     title: 'المواسم التنافسية (Seasons & Leaderboard)',

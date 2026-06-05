@@ -619,24 +619,16 @@ const FRIDAY_DIRECTIVES = [
 ];
 
 const SHARED_PRACTICE_ID = 'shared_practice';
-const SHARED_HYDRATION = { id: 'shared_1', title: 'Hydration Target (4L)', desc: 'تحقيق معدل استهلاك المياه لضمان ترطيب العضلات وطرد السموم (٤ لتر).', exp: 30, gold: 10, type: 'honor', icon: Droplet, color: '#eab308' };
-const SHARED_NUTRITION = { id: 'shared_2', title: 'Nutritional Compliance', desc: 'تتبع السعرات والماكروز لتحقيق هدف البروتين الصافي لبناء العضلات.', exp: 30, gold: 10, type: 'nutrition', icon: Flame, color: '#f97316' };
-const SHARED_MOBILITY = { id: 'shared_3', title: 'Functional Mobility', desc: 'أداء روتين المرونة الوظيفية لضمان صحة وكفاءة المفاصل.', exp: 35, gold: 15, type: 'mobilityRoutine', icon: Activity, color: '#10b981' };
+const SHARED_HYDRATION = { id: 'shared_1', title: 'Hydration Target (4L)', desc: 'تحقيق معدل استهلاك المياه لضمان ترطيب العضلات وطرد السموم (٤ لتر).', exp: 50, gold: 10, type: 'honor', icon: Droplet, color: '#eab308' };
+const SHARED_NUTRITION = { id: 'shared_2', title: 'Nutritional Compliance', desc: 'تتبع السعرات والماكروز لتحقيق هدف البروتين الصافي لبناء العضلات.', exp: 50, gold: 10, type: 'nutrition', icon: Flame, color: '#f97316' };
+const SHARED_MOBILITY = { id: 'shared_3', title: 'Functional Mobility', desc: 'أداء روتين المرونة الوظيفية لضمان صحة وكفاءة المفاصل.', exp: 45, gold: 15, type: 'mobilityRoutine', icon: Activity, color: '#10b981' };
 
 const NORMAL_DAILY_QUESTS = [
-  { id: SHARED_PRACTICE_ID, title: 'Practice', desc: 'إتمام الحصة التدريبية الأساسية وفقاً للأحمال والأوزان المحددة بالجدول.', exp: 100, gold: 30, type: 'request', noImage: true, icon: Users, color: '#f59e0b' },
+  { id: SHARED_PRACTICE_ID, title: 'Practice', desc: 'إتمام الحصة التدريبية الأساسية وفقاً للأحمال والأوزان المحددة بالجدول.', exp: 150, gold: 30, type: 'request', noImage: true, icon: Users, color: '#f59e0b' },
   SHARED_HYDRATION,
   SHARED_NUTRITION,
   SHARED_MOBILITY,
-  { id: 'dq4', title: 'Recovery Cooldown', desc: 'خفض معدل ضربات القلب تدريجياً وإطالة الأنسجة بعد التمرين مباشرة.', exp: 20, gold: 10, type: 'request', noImage: true, icon: Wind, color: '#34d399' },
-];
-
-const INJURED_DAILY_QUESTS = [
-  { id: SHARED_PRACTICE_ID, title: 'Practice (Rehab)', desc: 'بديل التمرين الأساسي: إتمام جلسة العلاج الطبيعي والتقويات المخصصة للإصابة.', exp: 90, gold: 30, type: 'request', noImage: true, icon: Stethoscope, color: '#ef4444' },
-  SHARED_HYDRATION,
-  SHARED_NUTRITION,
-  SHARED_MOBILITY,
-  { id: 'iq4', title: 'Thermal / Cryotherapy', desc: 'تطبيق الكمادات (ثلج أو حرارة) حسب البروتوكول الطبي الموضح في قسم العلاج.', exp: 20, gold: 10, type: 'request', noImage: true, icon: HeartPulse, color: '#f43f5e' },
+  { id: 'dq4', title: 'Recovery Cooldown', desc: 'خفض معدل ضربات القلب تدريجياً وإطالة الأنسجة بعد التمرين مباشرة.', exp: 50, gold: 10, type: 'request', noImage: true, icon: Wind, color: '#34d399' },
 ];
 
 const PENALTY_QUEST = { id: 'penalty_q', title: 'Disciplinary Execution', desc: 'تنفيذ العقوبة الإدارية المطلوبة ورفع الإثبات لرفع تجميد النظام.', exp: 0, gold: 0, type: 'request', icon: ShieldAlert, color: '#ef4444', isPenalty: true };
@@ -654,9 +646,9 @@ const BATTLE_PASS_TIERS = [
 // 5. MAIN DASHBOARD COMPONENT
 // ==========================================
 const Dashboard = ({ player, setPlayer }: any) => {
-  const currentPlayer = player || { id: 'me', name: 'Athlete', cumulative_xp: 0, monthly_xp: 0, gold: 0, hp: 100, is_injured: false, active_penalty: false, weight: 75, streak: 0, last_active: null, last_penalty_check: null, claimed_rewards: [] };
+  const currentPlayer = player || { id: 'me', name: 'Athlete', cumulative_xp: 0, monthly_xp: 0, gold: 0, hp: 100, active_penalty: false, weight: 75, streak: 0, last_active: null, last_penalty_check: null, claimed_rewards: [] };
 
-  const DAILY_QUESTS = useMemo(() => currentPlayer.is_injured ? INJURED_DAILY_QUESTS : NORMAL_DAILY_QUESTS, [currentPlayer.is_injured]);
+  const DAILY_QUESTS = NORMAL_DAILY_QUESTS;
 
   const prevLevelRef = useRef<number | null>(null);
 
@@ -996,6 +988,17 @@ const Dashboard = ({ player, setPlayer }: any) => {
         const { data: userData } = await supabase.from('elite_players').select('*').eq('name', currentPlayer.name).single();
 
         if (userData && setPlayer) {
+          const cumulativeXp = userData.cumulative_xp || 0;
+          let cumulativeXpOffset = userData.cumulative_xp_offset || 0;
+          if (cumulativeXpOffset > cumulativeXp) {
+            cumulativeXpOffset = cumulativeXp;
+            userData.cumulative_xp_offset = cumulativeXp;
+            await supabase
+              .from('elite_players')
+              .update({ cumulative_xp_offset: cumulativeXp })
+              .eq('name', currentPlayer.name);
+          }
+
           const { data: settingsRow } = await supabase.from('global_news').select('*').eq('type', 'system_settings').maybeSingle();
           let settings = null;
           if (settingsRow && settingsRow.content) {
@@ -1052,7 +1055,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
             const dayEnd = new Date(checkDate); dayEnd.setHours(23, 59, 59, 999);
 
             const { data: dayReqs } = await supabase.from('elite_quests').select('task_name, status').eq('player_name', currentPlayer.name).gte('created_at', dayStart.toISOString()).lte('created_at', dayEnd.toISOString());
-            const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility'];
+            const mandatoryTasks = ['Practice', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility'];
             const completedMandatory = dayReqs ? dayReqs.filter(r => mandatoryTasks.includes(r.task_name) && (r.status === 'approved' || r.status === 'pending')).map(r => r.task_name) : [];
             const missedTasksCount = Math.max(0, 4 - completedMandatory.length);
             if (missedTasksCount > 0) hpPenaltyAmount += (missedTasksCount * penaltyHpPerTask);
@@ -1320,7 +1323,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0) + (hasPhoenix ? 10 : 0);
       let newHp = Math.min(MAX_HP, (currentPlayer.hp || 100) + earnedHp);
 
-      const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility'];
+      const mandatoryTasks = ['Practice', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility'];
       let newStreak = currentPlayer.streak || 0;
       let streakJustIncreased = false;
 
@@ -1482,7 +1485,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         const earnedHp = (isRecoveryTask ? 5 : 0) + (baseGold > 0 ? gearBonuses.bonusHp : 0) + (hasPhoenix ? 10 : 0);
         let newHp = Math.max(0, (currentPlayer.hp || 100) - earnedHp);
 
-        const mandatoryTasks = ['Practice', 'Practice (Rehab)', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility'];
+        const mandatoryTasks = ['Practice', 'Hydration Target (4L)', 'Nutritional Compliance', 'Functional Mobility'];
         let newStreak = currentPlayer.streak || 0;
         if (mandatoryTasks.includes(quest.title)) {
           const uniqueMandatoryCompleted = new Set(
