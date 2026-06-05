@@ -479,6 +479,7 @@ const Rank = ({ player, setPlayer }: any) => {
         const levelData = calculateLevelData(h.cumulative_xp || 0);
         const monthlyData = calculateLevelData(h.monthly_xp || 0);
         const rankInfo = getRankInfo(levelData.level);
+        const leaderboardXp = (h.cumulative_xp || 0) - (h.cumulative_xp_offset || 0);
 
         return {
           ...h,
@@ -486,24 +487,25 @@ const Rank = ({ player, setPlayer }: any) => {
           visualXp: levelData.xpInCurrentLevel,
           visualNeeded: levelData.expNeededForNextLevel,
           monthlyVisualXp: monthlyData.xpInCurrentLevel,
+          leaderboardXp: leaderboardXp,
           rankName: `${rankInfo.name} HUNTER${rankInfo.name === 'ELITE' ? ' 👑' : ''}`,
           rankColor: rankInfo.color,
           rankGlow: rankInfo.glow
         };
       });
 
-      const sortedGlobal = [...processedHunters].sort((a, b) => (b.cumulative_xp || 0) - (a.cumulative_xp || 0));
+      const sortedGlobal = [...processedHunters].sort((a, b) => (b.leaderboardXp || 0) - (a.leaderboardXp || 0));
       setGlobalLeaderboard(sortedGlobal.map((h, i) => ({ ...h, position: i + 1 })));
 
       const sortedMonthly = [...processedHunters].sort((a, b) => (b.monthly_xp || 0) - (a.monthly_xp || 0));
       setMonthlyLeaderboard(sortedMonthly.map((h, i) => ({ ...h, position: i + 1 })));
 
       const maleHunters = processedHunters.filter((h) => h.gender === 'Male' || !h.gender);
-      const sortedMale = [...maleHunters].sort((a, b) => (b.cumulative_xp || 0) - (a.cumulative_xp || 0));
+      const sortedMale = [...maleHunters].sort((a, b) => (b.leaderboardXp || 0) - (a.leaderboardXp || 0));
       setMaleLeaderboard(sortedMale.map((h, i) => ({ ...h, position: i + 1 })));
 
       const femaleHunters = processedHunters.filter((h) => h.gender === 'Female');
-      const sortedFemale = [...femaleHunters].sort((a, b) => (b.cumulative_xp || 0) - (a.cumulative_xp || 0));
+      const sortedFemale = [...femaleHunters].sort((a, b) => (b.leaderboardXp || 0) - (a.leaderboardXp || 0));
       setFemaleLeaderboard(sortedFemale.map((h, i) => ({ ...h, position: i + 1 })));
     } catch (err: any) {
       toast.error('Failed to load rankings.');
@@ -674,6 +676,36 @@ const Rank = ({ player, setPlayer }: any) => {
     } catch (err) { 
       console.error(err);
       toast.error('حدث خطأ أثناء تصفير الشهر.'); 
+    }
+    setIsProcessing(false);
+  };
+
+  const handleResetGlobalLeaderboard = async () => {
+    const confirmReset = window.confirm('⚠️ DANGER ZONE: هل أنت متأكد من تصفير نقاط الترتيب العام لجميع اللاعبين؟ ستبقى مستوياتهم ورتبهم كما هي، ولكن ستبدأ نقاط الترتيب العام من الصفر لجميع اللاعبين!');
+    if (!confirmReset) return;
+    
+    setIsProcessing(true);
+    try {
+      const { data: hunters, error: fetchError } = await supabase.from('elite_players').select('id, cumulative_xp');
+      if (fetchError) throw fetchError;
+
+      if (hunters && hunters.length > 0) {
+        const updates = hunters.map(h => ({
+          id: h.id,
+          cumulative_xp_offset: h.cumulative_xp || 0
+        }));
+
+        const { error: resetError } = await supabase.from('elite_players').upsert(updates);
+        if (resetError) throw resetError;
+      }
+
+      toast.success('🏆 تم تصفير نقاط الترتيب العام بنجاح مع الحفاظ على الرتب والمستويات!', { style: { background: '#0c0a09', color: '#f97316', border: '1px solid #f97316' } });
+      await supabase.from('elite_economy').insert([{ player_name: 'SYSTEM', amount: 0, currency: 'xp', operation: 'increase', reason: 'GLOBAL LEADERBOARD HAS BEEN RESET! 🏆' }]);
+      
+      fetchAndProcessLeaderboard();
+    } catch (err) { 
+      console.error(err);
+      toast.error('حدث خطأ أثناء تصفير الترتيب العام.'); 
     }
     setIsProcessing(false);
   };
@@ -1139,6 +1171,9 @@ const Rank = ({ player, setPlayer }: any) => {
               <TopBtn $active={true} $color="#f43f5e" onClick={handleResetMonth} disabled={isProcessing}>
                 <RotateCcw size={14} /> RESET MONTH
               </TopBtn>
+              <TopBtn $active={true} $color="#f97316" onClick={handleResetGlobalLeaderboard} disabled={isProcessing}>
+                <RotateCcw size={14} /> RESET GLOBAL
+              </TopBtn>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1167,7 +1202,7 @@ const Rank = ({ player, setPlayer }: any) => {
                     {getHunterIconOnly(hunter, classColor, isFirst ? 35 : 25)}
                   </HeroAvatar>
                   <HeroName $color={pColor}>{hunter.name.split(' ')[0]}</HeroName>
-                  <HeroLevel>LVL {hunter.visualLevel} <br/><span style={{color: '#f59e0b'}}>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.visualXp} XP</span></HeroLevel>
+                  <HeroLevel>LVL {hunter.visualLevel} <br/><span style={{color: '#f59e0b'}}>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.leaderboardXp} XP</span></HeroLevel>
                   {hunter.active_pet && (
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
                       <MiniOrb type={PETS_DATABASE.find(p => p.name === hunter.active_pet)?.type || 'wyvern'} color={PETS_DATABASE.find(p => p.name === hunter.active_pet)?.color || '#eab308'} />
@@ -1228,7 +1263,7 @@ const Rank = ({ player, setPlayer }: any) => {
                         </NameCol>
                         <LevelCol>
                           <LevelTextVal $rankColor={hunter.rankColor}>LVL {hunter.visualLevel}</LevelTextVal>
-                          <EXPText>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.visualXp} XP</EXPText>
+                          <EXPText>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.leaderboardXp} XP</EXPText>
                         </LevelCol>
                       </PlayerCard>
                     );
