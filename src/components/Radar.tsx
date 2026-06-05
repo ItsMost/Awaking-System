@@ -57,41 +57,41 @@ const playBroadcast = () => {
 // 2. التصميمات والأنيميشن
 // ==========================================
 const Container = styled(motion.div)` padding: 15px; font-family: 'Exo 2', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; `;
-const Header = styled.div` display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #1d0f3a 0%, #07030f 100%); border: 1px solid #a855f7; padding: 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(168, 85, 247, 0.2); `;
-const Title = styled.h1` font-size: 20px; margin: 0; color: #a855f7; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(168, 85, 247, 0.5); `;
+const Header = styled.div` display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #1c1917 0%, #0c0a09 100%); border: 1px solid #f59e0b; padding: 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2); `;
+const Title = styled.h1` font-size: 20px; margin: 0; color: #f59e0b; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); `;
 
-const LockedOverlay = styled.div` background: #07030f; border: 1px solid #ef4444; padding: 40px 20px; border-radius: 16px; text-align: center; color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); margin-top: 50px; `;
+const LockedOverlay = styled.div` background: #0c0a09; border: 1px solid #ef4444; padding: 40px 20px; border-radius: 16px; text-align: center; color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); margin-top: 50px; `;
 
 const sweep = keyframes`
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 `;
 const pulse = keyframes`
-  0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); }
-  70% { box-shadow: 0 0 0 20px rgba(168, 85, 247, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  70% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
 `;
 
 const RadarAnimationBox = styled.div`
-  width: 120px; height: 120px; border-radius: 50%; background: #1d0f3a; border: 2px solid #a855f7; margin: 0 auto 30px auto; position: relative; overflow: hidden; animation: ${pulse} 2s infinite; display: flex; align-items: center; justify-content: center;
+  width: 120px; height: 120px; border-radius: 50%; background: #1c1917; border: 2px solid #f59e0b; margin: 0 auto 30px auto; position: relative; overflow: hidden; animation: ${pulse} 2s infinite; display: flex; align-items: center; justify-content: center;
   &::after {
-    content: ''; position: absolute; top: 50%; left: 50%; width: 50%; height: 2px; background: linear-gradient(90deg, #a855f7, transparent); transform-origin: 0% 50%; animation: ${sweep} 3s linear infinite; box-shadow: 0 0 15px #a855f7;
+    content: ''; position: absolute; top: 50%; left: 50%; width: 50%; height: 2px; background: linear-gradient(90deg, #f59e0b, transparent); transform-origin: 0% 50%; animation: ${sweep} 3s linear infinite; box-shadow: 0 0 15px #f59e0b;
   }
 `;
 
-const FormCard = styled.div` background: #0b1120; border: 1px solid #2d184a; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); `;
-const InputLabel = styled.div` font-size: 11px; color: #a855f7; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; `;
-const StyledInput = styled.input` width: 100%; background: #07030f; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; font-family: 'Exo 2'; font-size: 14px; outline: none; transition: 0.3s; margin-bottom: 15px; &:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); } `;
-const StyledTextarea = styled.textarea` width: 100%; background: #07030f; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; font-family: 'Exo 2'; font-size: 14px; outline: none; transition: 0.3s; margin-bottom: 20px; resize: vertical; min-height: 100px; &:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); } `;
+const FormCard = styled.div` background: #0b1120; border: 1px solid #44403c; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); `;
+const InputLabel = styled.div` font-size: 11px; color: #f59e0b; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; `;
+const StyledInput = styled.input` width: 100%; background: #0c0a09; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; font-family: 'Exo 2'; font-size: 14px; outline: none; transition: 0.3s; margin-bottom: 15px; &:focus { border-color: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); } `;
+const StyledTextarea = styled.textarea` width: 100%; background: #0c0a09; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; font-family: 'Exo 2'; font-size: 14px; outline: none; transition: 0.3s; margin-bottom: 20px; resize: vertical; min-height: 100px; &:focus { border-color: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); } `;
 
 const SendBtn = styled.button<{ disabled: boolean }>`
-  width: 100%; background: ${(props) => props.disabled ? '#334155' : '#a855f7'}; color: ${(props) => props.disabled ? '#94a3b8' : '#000'}; border: none; padding: 16px; border-radius: 12px; font-family: 'Exo 2'; font-size: 14px; font-weight: 900; letter-spacing: 2px; cursor: ${(props) => props.disabled ? 'not-allowed' : 'pointer'}; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s;
-  &:hover { filter: ${(props) => props.disabled ? 'none' : 'brightness(1.2)'}; box-shadow: ${(props) => props.disabled ? 'none' : '0 0 20px rgba(168, 85, 247, 0.4)'}; }
+  width: 100%; background: ${(props) => props.disabled ? '#334155' : '#f59e0b'}; color: ${(props) => props.disabled ? '#94a3b8' : '#000'}; border: none; padding: 16px; border-radius: 12px; font-family: 'Exo 2'; font-size: 14px; font-weight: 900; letter-spacing: 2px; cursor: ${(props) => props.disabled ? 'not-allowed' : 'pointer'}; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s;
+  &:hover { filter: ${(props) => props.disabled ? 'none' : 'brightness(1.2)'}; box-shadow: ${(props) => props.disabled ? 'none' : '0 0 20px rgba(245, 158, 11, 0.4)'}; }
 `;
 
-const SectionTitle = styled.h2` font-size: 14px; color: #94a3b8; margin: 30px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #2d184a; padding-bottom: 10px; `;
+const SectionTitle = styled.h2` font-size: 14px; color: #94a3b8; margin: 30px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #44403c; padding-bottom: 10px; `;
 
-const LogCard = styled(motion.div)` background: #1d0f3a; border-left: 3px solid #a855f7; border-radius: 8px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; `;
+const LogCard = styled(motion.div)` background: #1c1917; border-left: 3px solid #f59e0b; border-radius: 8px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; `;
 const LogTitle = styled.div` font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; `;
 const LogContent = styled.div` font-size: 12px; color: #cbd5e1; line-height: 1.4; margin-bottom: 8px; direction: rtl; text-align: right; `;
 const LogDate = styled.div` font-size: 10px; color: #64748b; display: flex; align-items: center; gap: 4px; `;
@@ -176,11 +176,11 @@ const Radar = () => {
 
       <Header>
         <Title><Globe size={24} /> COMMAND RADAR</Title>
-        <Radio size={24} color="#a855f7" className="animate-pulse" />
+        <Radio size={24} color="#f59e0b" className="animate-pulse" />
       </Header>
 
       <RadarAnimationBox>
-        <Globe size={40} color="rgba(168, 85, 247, 0.3)" />
+        <Globe size={40} color="rgba(245, 158, 11, 0.3)" />
       </RadarAnimationBox>
 
       <FormCard>
@@ -208,7 +208,7 @@ const Radar = () => {
       <SectionTitle><Radio size={16} /> TRANSMISSION HISTORY</SectionTitle>
       
       {logs.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1d0f3a', borderRadius: '12px' }}>
+        <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#1c1917', borderRadius: '12px' }}>
           No broadcasts transmitted yet.
         </div>
       ) : (

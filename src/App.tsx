@@ -73,7 +73,7 @@ const getDynamicIcon = (hunter: any, size: number = 24) => {
   const iconStr = String(hunter?.selectedIcon || hunter?.selected_icon || hunter?.icon || hunter?.class || (hunter?.titles && hunter.titles[0]) || '').toLowerCase().trim();
   if (iconStr.includes('moon') || iconStr.includes('shadow')) return <Moon size={size} color="#d8b4fe" />;
   if (iconStr.includes('eye') || iconStr.includes('vision')) return <Eye size={size} color="#818cf8" />;
-  if (iconStr.includes('wind') || iconStr.includes('air')) return <Wind size={size} color="#c084fc" />;
+  if (iconStr.includes('wind') || iconStr.includes('air')) return <Wind size={size} color="#eab308" />;
   if (iconStr.includes('barbell') || iconStr.includes('dumbbell')) return <Dumbbell size={size} color="#f97316" />;
   if (iconStr.includes('zap') || iconStr.includes('lightning')) return <Zap size={size} color="#eab308" />;
   if (iconStr.includes('shoe') || iconStr.includes('foot')) return <Footprints size={size} color="#10b981" />;
@@ -81,24 +81,24 @@ const getDynamicIcon = (hunter: any, size: number = 24) => {
   if (iconStr.includes('lock') || iconStr.includes('gate')) return <LockIcon size={size} color="#10b981" />;
   if (iconStr.includes('flame') || iconStr.includes('fire')) return <Flame size={size} color="#ef4444" />;
   if (iconStr.includes('crown') || iconStr.includes('king')) return <Crown size={size} color="#f59e0b" />;
-  if (iconStr.includes('skull') || iconStr.includes('death')) return <Skull size={size} color="#a855f7" />;
+  if (iconStr.includes('skull') || iconStr.includes('death')) return <Skull size={size} color="#f59e0b" />;
   if (iconStr.includes('target') || iconStr.includes('crosshair')) return <Target size={size} color="#f43f5e" />;
   if (iconStr.includes('heart')) return <Heart size={size} color="#f43f5e" />;
   if (iconStr.includes('droplet') || iconStr.includes('water')) return <Droplet size={size} color="#60a5fa" />;
   if (iconStr.includes('axe')) return <Axe size={size} color="#cbd5e1" />;
-  if (iconStr.includes('anchor')) return <Anchor size={size} color="#a855f7" />;
+  if (iconStr.includes('anchor')) return <Anchor size={size} color="#f59e0b" />;
   if (iconStr.includes('fingerprint')) return <Fingerprint size={size} color="#14b8a6" />;
-  if (iconStr.includes('hexagon')) return <Hexagon size={size} color="#8b5cf6" />;
+  if (iconStr.includes('hexagon')) return <Hexagon size={size} color="#ea580c" />;
   if (iconStr.includes('cpu')) return <Cpu size={size} color="#06b6d4" />;
   if (iconStr.includes('infinity')) return <InfinityIcon size={size} color="#ec4899" />;
-  return <Sword size={size} color="#d946ef" />;
+  return <Sword size={size} color="#f97316" />;
 };
 
 const getIconColor = (hunter: any) => {
   const iconStr = String(hunter?.selectedIcon || hunter?.selected_icon || hunter?.icon || hunter?.class || (hunter?.titles && hunter.titles[0]) || '').toLowerCase().trim();
   if (iconStr.includes('moon') || iconStr.includes('shadow')) return '#d8b4fe';
   if (iconStr.includes('eye') || iconStr.includes('vision')) return '#818cf8';
-  if (iconStr.includes('wind') || iconStr.includes('air')) return '#c084fc';
+  if (iconStr.includes('wind') || iconStr.includes('air')) return '#eab308';
   if (iconStr.includes('barbell') || iconStr.includes('dumbbell')) return '#f97316';
   if (iconStr.includes('zap') || iconStr.includes('lightning')) return '#eab308';
   if (iconStr.includes('shoe') || iconStr.includes('foot')) return '#10b981';
@@ -106,22 +106,22 @@ const getIconColor = (hunter: any) => {
   if (iconStr.includes('lock') || iconStr.includes('gate')) return '#10b981';
   if (iconStr.includes('flame') || iconStr.includes('fire')) return '#ef4444';
   if (iconStr.includes('crown') || iconStr.includes('king')) return '#f59e0b';
-  if (iconStr.includes('skull') || iconStr.includes('death')) return '#a855f7';
+  if (iconStr.includes('skull') || iconStr.includes('death')) return '#f59e0b';
   if (iconStr.includes('target') || iconStr.includes('crosshair')) return '#f43f5e';
   if (iconStr.includes('heart')) return '#f43f5e';
   if (iconStr.includes('droplet') || iconStr.includes('water')) return '#60a5fa';
   if (iconStr.includes('axe')) return '#cbd5e1';
-  if (iconStr.includes('anchor')) return '#a855f7';
+  if (iconStr.includes('anchor')) return '#f59e0b';
   if (iconStr.includes('fingerprint')) return '#14b8a6';
-  if (iconStr.includes('hexagon')) return '#8b5cf6';
+  if (iconStr.includes('hexagon')) return '#ea580c';
   if (iconStr.includes('cpu')) return '#06b6d4';
   if (iconStr.includes('infinity')) return '#ec4899';
-  return '#d946ef';
+  return '#f97316';
 };
 
 const getStreakColor = (streak: number) => {
-  if (streak >= 30) return '#a855f7'; 
-  if (streak >= 14) return '#d946ef'; 
+  if (streak >= 30) return '#f59e0b'; 
+  if (streak >= 14) return '#f97316'; 
   if (streak >= 7) return '#10b981';  
   return '#f97316';                   
 };
@@ -135,9 +135,9 @@ const calculateLevelData = (totalXp: number) => {
 const PETS_DATABASE = [
   { name: 'Golden Wyvern Core', type: 'wyvern', color: '#eab308' },
   { name: 'Healing Phoenix Ember', type: 'phoenix', color: '#ef4444' },
-  { name: 'Shadow Owl Eye', type: 'owl', color: '#a855f7' },
-  { name: 'Iron Golem Matrix', type: 'golem', color: '#a855f7' },
-  { name: 'Frost Wolf Soul', type: 'wolf', color: '#c084fc' },
+  { name: 'Shadow Owl Eye', type: 'owl', color: '#f59e0b' },
+  { name: 'Iron Golem Matrix', type: 'golem', color: '#f59e0b' },
+  { name: 'Frost Wolf Soul', type: 'wolf', color: '#eab308' },
   { name: 'Emerald Dragon Scale', type: 'emerald', color: '#10b981' }
 ];
 
@@ -169,18 +169,18 @@ const MiniOrb = ({ type, color }: { type: string, color: string }) => {
 
 
 const AppContainer = styled.div`
-  min-height: 100vh; background: radial-gradient(circle at top right, #1d0f3a, #07030f 70%); color: #fff; font-family: 'Exo 2', sans-serif; overflow-x: hidden; position: relative;
+  min-height: 100vh; background: radial-gradient(circle at top right, #1c1917, #0c0a09 70%); color: #fff; font-family: 'Exo 2', sans-serif; overflow-x: hidden; position: relative;
 `;
 
 const BackgroundGrid = styled.div`
-  position: fixed; inset: 0; background-image: linear-gradient(rgba(217, 70, 239, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(217, 70, 239, 0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0;
+  position: fixed; inset: 0; background-image: linear-gradient(rgba(249, 115, 22, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(249, 115, 22, 0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0;
 `;
 
 const ContentWrapper = styled.div` position: relative; padding-bottom: 50px; `;
 const BootScreen = styled(motion.div)`
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at center, #0b1528 0%, #07030f 100%);
+  background: radial-gradient(circle at center, #0b1528 0%, #0c0a09 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -193,8 +193,8 @@ const BootScreen = styled(motion.div)`
 const HUDGrid = styled.div`
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(rgba(217, 70, 239, 0.02) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(217, 70, 239, 0.02) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(249, 115, 22, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(249, 115, 22, 0.02) 1px, transparent 1px);
   background-size: 30px 30px;
   pointer-events: none;
   opacity: 0.8;
@@ -205,7 +205,7 @@ const GlowOrb = styled.div`
   position: absolute;
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(217, 70, 239, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
   z-index: 2;
@@ -226,14 +226,14 @@ const BootLogoContainer = styled(motion.div)`
 `;
 
 const BootTextVal = styled(motion.p)`
-  color: #d946ef;
+  color: #f97316;
   font-family: 'Exo 2', monospace;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
   margin-top: 15px;
-  text-shadow: 0 0 10px rgba(217, 70, 239, 0.4);
+  text-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
 `;
 
 const ProgressBarContainer = styled.div`
@@ -243,20 +243,20 @@ const ProgressBarContainer = styled.div`
   border-radius: 10px;
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(217, 70, 239, 0.15);
-  box-shadow: 0 0 10px rgba(217, 70, 239, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.15);
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.1);
   z-index: 5;
 `;
 
 const ProgressBarFillVal = styled(motion.div)`
   height: 100%;
-  background: linear-gradient(90deg, #a855f7, #d946ef);
-  box-shadow: 0 0 15px #d946ef;
+  background: linear-gradient(90deg, #f59e0b, #f97316);
+  box-shadow: 0 0 15px #f97316;
   border-radius: 10px;
 `;
 
 const scanline = keyframes` 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } `;
-const ScanlineEffect = styled.div` position: absolute; top: 0; left: 0; width: 100%; height: 10px; background: rgba(217, 70, 239, 0.15); box-shadow: 0 0 20px rgba(217, 70, 239, 0.3); animation: ${scanline} 3.5s linear infinite; pointer-events: none; z-index: 3; `;
+const ScanlineEffect = styled.div` position: absolute; top: 0; left: 0; width: 100%; height: 10px; background: rgba(249, 115, 22, 0.15); box-shadow: 0 0 20px rgba(249, 115, 22, 0.3); animation: ${scanline} 3.5s linear infinite; pointer-events: none; z-index: 3; `;
 
 const StatusBar = styled.div`
   background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px 15px; position: sticky; top: 0; z-index: 50; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column;
@@ -280,7 +280,7 @@ const HexagonBox = styled.button<{ $color: string; }>`
 
 const PlayerDetails = styled.div` display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; margin-left: 10px; `;
 const PlayerNameRow = styled.div` display: flex; align-items: center; gap: 6px; width: 100%; `;
-const SystemLinkText = styled.div` font-size: 8px; color: #d946ef; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; `;
+const SystemLinkText = styled.div` font-size: 8px; color: #f97316; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; `;
 const NameText = styled.div` font-size: 15px; font-weight: 900; text-transform: uppercase; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; `;
 const PlayerTitleText = styled.div` font-size: 10px; color: #94a3b8; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; `;
 const StreakBadge = styled(motion.div)<{ $color: string }>` display: flex; align-items: center; background: linear-gradient(135deg, ${(props) => props.$color}15 0%, transparent 100%); border: 1px solid ${(props) => props.$color}; padding: 2px 6px; border-radius: 6px; flex-shrink: 0; box-shadow: 0 0 10px ${(props) => props.$color}30; svg { width: 10px; height: 10px; } span { font-size: 11px; } `;
@@ -292,14 +292,14 @@ const GoldBadge = styled.div`
 
 const EXPBarContainer = styled.div` display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: bold; `;
 const EXPBarWrapper = styled.div` flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; position: relative; `;
-const EXPBarFill = styled(motion.div)<{ $progress: number; }>` height: 100%; background: linear-gradient(90deg, #8b5cf6, #d946ef); width: ${(props) => props.$progress}%; position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(217, 70, 239, 0.5); `;
+const EXPBarFill = styled(motion.div)<{ $progress: number; }>` height: 100%; background: linear-gradient(90deg, #ea580c, #f97316); width: ${(props) => props.$progress}%; position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(249, 115, 22, 0.5); `;
 
 const NavigationGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   padding: 10px 15px;
-  background: rgba(15, 7, 28, 0.85);
+  background: rgba(20, 18, 16, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -333,7 +333,7 @@ const NavButton = styled(motion.button)<{ $active: boolean; $color: string; }>`
 
 // Winner Modal Premium Styling
 const WinnerContent = styled(motion.div)`
-  background: linear-gradient(135deg, #1d0f3a 0%, #1e1b4b 100%);
+  background: linear-gradient(135deg, #1c1917 0%, #1e1b4b 100%);
   border: 2px solid #eab308;
   border-radius: 24px;
   padding: 30px;
@@ -429,13 +429,13 @@ const ActionBtn = styled.button<{ $color: string }>`
 `;
 
 const TopRightControls = styled.div` display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; width: 100%; `;
-const IconButton = styled.button<{ $hasUnread?: boolean }>` background: rgba(0,0,0,0.5); border: 1px solid #334155; color: ${(props) => props.$hasUnread ? '#d946ef' : '#94a3b8'}; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; position: relative; box-shadow: ${(props) => props.$hasUnread ? '0 0 10px rgba(217, 70, 239,0.3)' : 'none'}; &:hover { color: #d946ef; border-color: #d946ef; background: rgba(217, 70, 239,0.1); } svg { width: 16px; height: 16px; } `;
+const IconButton = styled.button<{ $hasUnread?: boolean }>` background: rgba(0,0,0,0.5); border: 1px solid #334155; color: ${(props) => props.$hasUnread ? '#f97316' : '#94a3b8'}; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; position: relative; box-shadow: ${(props) => props.$hasUnread ? '0 0 10px rgba(249, 115, 22,0.3)' : 'none'}; &:hover { color: #f97316; border-color: #f97316; background: rgba(249, 115, 22,0.1); } svg { width: 16px; height: 16px; } `;
 const UnreadDot = styled.div` position: absolute; top: -4px; right: -4px; background: #ef4444; color: #fff; font-size: 9px; font-weight: bold; padding: 2px 4px; border-radius: 10px; box-shadow: 0 0 8px #ef4444; `;
 const HeartIcon = ({ size, color }: { size: number; color: string }) => ( <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> );
 
 const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(8px); `;
-const ModalContent = styled(motion.div)` background: #0b1120; border: 2px solid #d946ef; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; position: relative; max-height: 80vh; overflow-y: auto; box-shadow: 0 0 30px rgba(217, 70, 239,0.2); &::-webkit-scrollbar { width: 4px; } &::-webkit-scrollbar-thumb { background: #d946ef; border-radius: 4px; } `;
-const NotificationCard = styled.div<{ $type: string }>` background: #1d0f3a; border-left: 3px solid ${(props) => props.$type === 'broadcast' ? '#a855f7' : props.$type === 'penalty' ? '#ef4444' : '#10b981'}; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; `;
+const ModalContent = styled(motion.div)` background: #0b1120; border: 2px solid #f97316; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; position: relative; max-height: 80vh; overflow-y: auto; box-shadow: 0 0 30px rgba(249, 115, 22,0.2); &::-webkit-scrollbar { width: 4px; } &::-webkit-scrollbar-thumb { background: #f97316; border-radius: 4px; } `;
+const NotificationCard = styled.div<{ $type: string }>` background: #1c1917; border-left: 3px solid ${(props) => props.$type === 'broadcast' ? '#f59e0b' : props.$type === 'penalty' ? '#ef4444' : '#10b981'}; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; `;
 
 // ==========================================
 // 4. MAIN APP COMPONENT
@@ -535,7 +535,7 @@ const App = () => {
         const newNotif = { id: payload.new.id, title: payload.new.title, msg: payload.new.content, time: new Date(payload.new.created_at).toLocaleTimeString(), type: 'broadcast', read: false }; 
         setNotifications(prev => [newNotif, ...prev]); 
         playSound('notification'); 
-        toast(payload.new.title, { description: payload.new.content, style: { background: '#07030f', border: '1px solid #a855f7', color: '#a855f7' } }); 
+        toast(payload.new.title, { description: payload.new.content, style: { background: '#0c0a09', border: '1px solid #f59e0b', color: '#f59e0b' } }); 
       }
     }).subscribe();
     
@@ -609,11 +609,11 @@ const App = () => {
           <motion.div
             animate={{ y: [-5, 5, -5] }}
             transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(217, 70, 239, 0.05)', border: '2px solid #d946ef', borderRadius: '50%', padding: '20px', boxShadow: '0 0 30px rgba(217, 70, 239, 0.2), inset 0 0 20px rgba(217, 70, 239, 0.1)' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(249, 115, 22, 0.05)', border: '2px solid #f97316', borderRadius: '50%', padding: '20px', boxShadow: '0 0 30px rgba(249, 115, 22, 0.2), inset 0 0 20px rgba(249, 115, 22, 0.1)' }}
           >
-            <Terminal size={40} color="#d946ef" />
+            <Terminal size={40} color="#f97316" />
           </motion.div>
-          <h2 style={{ color: '#fff', letterSpacing: '4px', marginTop: 20, fontSize: 18, fontWeight: 900, textTransform: 'uppercase', textShadow: '0 0 10px rgba(217, 70, 239, 0.3)' }}>ELITE MAINFRAME</h2>
+          <h2 style={{ color: '#fff', letterSpacing: '4px', marginTop: 20, fontSize: 18, fontWeight: 900, textTransform: 'uppercase', textShadow: '0 0 10px rgba(249, 115, 22, 0.3)' }}>ELITE MAINFRAME</h2>
           <BootTextVal
             key={bootText}
             initial={{ opacity: 0, y: 5 }}
@@ -654,10 +654,10 @@ const App = () => {
   const isPetDead = player?.pet_hunger <= 0;
 
   const TABS = [
-    { id: 'dashboard', label: 'QUESTS', icon: LayoutDashboard, color: '#d946ef' },
+    { id: 'dashboard', label: 'QUESTS', icon: LayoutDashboard, color: '#f97316' },
     { id: 'records', label: 'RECORDS', icon: Trophy, color: '#facc15' },
-    { id: 'shop', label: 'SHOP', icon: Store, color: '#c084fc' },
-    { id: 'rank', label: 'RANK', icon: Target, color: '#a855f7' },
+    { id: 'shop', label: 'SHOP', icon: Store, color: '#eab308' },
+    { id: 'rank', label: 'RANK', icon: Target, color: '#f59e0b' },
     { id: 'profile', label: 'PROFILE', icon: User, color: '#ec4899' },
     { id: 'rules', label: 'RULES', icon: Book, color: '#f43f5e' },
     { id: 'rehab', label: 'CLINIC', icon: Activity, color: '#10b981' },
@@ -731,11 +731,11 @@ const App = () => {
         </PlayerInfoRow>
 
         <EXPBarContainer>
-          <span style={{ color: '#d946ef', fontWeight: '900', letterSpacing: '1px' }}>EXP</span>
+          <span style={{ color: '#f97316', fontWeight: '900', letterSpacing: '1px' }}>EXP</span>
           <EXPBarWrapper>
             <EXPBarFill $progress={progressPercent} initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} transition={{ duration: 1, ease: 'easeOut' }} />
           </EXPBarWrapper>
-          <span style={{ color: '#d946ef', fontWeight: 'bold' }}>{currentVisualXp} / {xpNeededForNextLevel}</span>
+          <span style={{ color: '#f97316', fontWeight: 'bold' }}>{currentVisualXp} / {xpNeededForNextLevel}</span>
         </EXPBarContainer>
       </StatusBar>
 

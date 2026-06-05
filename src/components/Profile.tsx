@@ -44,9 +44,9 @@ const playError = () => {
 const PETS_DATABASE = [
   { name: 'Golden Wyvern Core', type: 'wyvern', color: '#eab308' },
   { name: 'Healing Phoenix Ember', type: 'phoenix', color: '#ef4444' },
-  { name: 'Shadow Owl Eye', type: 'owl', color: '#a855f7' },
-  { name: 'Iron Golem Matrix', type: 'golem', color: '#a855f7' },
-  { name: 'Frost Wolf Soul', type: 'wolf', color: '#c084fc' },
+  { name: 'Shadow Owl Eye', type: 'owl', color: '#f59e0b' },
+  { name: 'Iron Golem Matrix', type: 'golem', color: '#f59e0b' },
+  { name: 'Frost Wolf Soul', type: 'wolf', color: '#eab308' },
   { name: 'Emerald Dragon Scale', type: 'emerald', color: '#10b981' }
 ];
 
@@ -128,8 +128,8 @@ const getRankInfo = (level: number) => {
   if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.6)', icon: Crown };
   if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', icon: Zap };
   if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', icon: Zap };
-  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)', icon: Flame };
-  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)', icon: Target };
+  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#ea580c', glow: 'rgba(139, 92, 246, 0.4)', icon: Flame };
+  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#ea580c', glow: 'rgba(139, 92, 246, 0.4)', icon: Target };
   if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', icon: Shield };
   if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', icon: Medal };
   if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', icon: Medal };
@@ -155,25 +155,25 @@ const getNextRankInfo = (lvl: number, currentXp: number) => {
 
 const CLASS_MAPPING = [
   { id: 'axe', name: 'Berserker', baseIcon: Axe, evolvedIcon: Sword, color: '#cbd5e1' },
-  { id: 'sword', name: 'Blade Master', baseIcon: Sword, evolvedIcon: Axe, color: '#d946ef' },
+  { id: 'sword', name: 'Blade Master', baseIcon: Sword, evolvedIcon: Axe, color: '#f97316' },
   { id: 'shadow', name: 'Shadow Assassin', baseIcon: Moon, evolvedIcon: Ghost, color: '#818cf8' },
-  { id: 'wind', name: 'Wind Walker', baseIcon: Wind, evolvedIcon: Footprints, color: '#c084fc' },
+  { id: 'wind', name: 'Wind Walker', baseIcon: Wind, evolvedIcon: Footprints, color: '#eab308' },
   { id: 'dumbbell', name: 'Titan Lifter', baseIcon: Dumbbell, evolvedIcon: Anchor, color: '#f97316' },
   { id: 'zap', name: 'Storm Bringer', baseIcon: Zap, evolvedIcon: Flame, color: '#eab308' },
   { id: 'shield', name: 'Iron Guardian', baseIcon: Shield, evolvedIcon: Hexagon, color: '#64748b' },
   { id: 'target', name: 'Deadeye Sniper', baseIcon: Target, evolvedIcon: Crosshair, color: '#f43f5e' },
   { id: 'droplet', name: 'Blood Medic', baseIcon: Droplet, evolvedIcon: Heart, color: '#ef4444' },
   { id: 'cpu', name: 'Cyber Hacker', baseIcon: Cpu, evolvedIcon: Fingerprint, color: '#06b6d4' },
-  { id: 'skull', name: 'Immortal Lord', baseIcon: Skull, evolvedIcon: InfinityIcon, color: '#a855f7' },
+  { id: 'skull', name: 'Immortal Lord', baseIcon: Skull, evolvedIcon: InfinityIcon, color: '#f59e0b' },
   { id: 'crown', name: 'Absolute Monarch', baseIcon: Crown, evolvedIcon: Award, color: '#f59e0b' },
   { id: 'lock', name: 'Gate Keeper', baseIcon: LockIcon, evolvedIcon: Unlock, color: '#10b981' },
   { id: 'flame', name: 'Pyromancer', baseIcon: Flame, evolvedIcon: Zap, color: '#ef4444' },
   { id: 'heart', name: 'Vitality Monk', baseIcon: Heart, evolvedIcon: Droplet, color: '#f43f5e' },
-  { id: 'anchor', name: 'Deep Sea Titan', baseIcon: Anchor, evolvedIcon: Dumbbell, color: '#a855f7' },
-  { id: 'hexagon', name: 'Fortress', baseIcon: Hexagon, evolvedIcon: Shield, color: '#8b5cf6' },
+  { id: 'anchor', name: 'Deep Sea Titan', baseIcon: Anchor, evolvedIcon: Dumbbell, color: '#f59e0b' },
+  { id: 'hexagon', name: 'Fortress', baseIcon: Hexagon, evolvedIcon: Shield, color: '#ea580c' },
   { id: 'fingerprint', name: 'Phantom', baseIcon: Fingerprint, evolvedIcon: Ghost, color: '#14b8a6' },
   { id: 'infinity', name: 'Eternal', baseIcon: InfinityIcon, evolvedIcon: Skull, color: '#ec4899' },
-  { id: 'eye', name: 'Visionary', baseIcon: Eye, evolvedIcon: Moon, color: '#d946ef' },
+  { id: 'eye', name: 'Visionary', baseIcon: Eye, evolvedIcon: Moon, color: '#f97316' },
   { id: 'footprints', name: 'Speedster', baseIcon: Footprints, evolvedIcon: Wind, color: '#10b981' },
   { id: 'athlete', name: 'Elite Athlete', baseIcon: Activity, evolvedIcon: Target, color: '#10b981' },
 ];
@@ -203,8 +203,8 @@ const getSystemDateStr = (date: Date) => {
 };
 
 const getStreakAura = (streak: number) => {
-  if (streak >= 30) return { name: 'MONARCH AURA', color: '#a855f7', icon: Crown };
-  if (streak >= 15) return { name: 'LIGHTNING AURA', color: '#a855f7', icon: Zap };
+  if (streak >= 30) return { name: 'MONARCH AURA', color: '#f59e0b', icon: Crown };
+  if (streak >= 15) return { name: 'LIGHTNING AURA', color: '#f59e0b', icon: Zap };
   if (streak >= 7) return { name: 'TOXIC AURA', color: '#10b981', icon: Activity };
   if (streak >= 1) return { name: 'FLAME AURA', color: '#f97316', icon: Flame };
   return { name: 'NO AURA', color: '#475569', icon: Ghost };
@@ -214,23 +214,23 @@ const getStreakAura = (streak: number) => {
 // 4. التصميمات النيون الفخمة (Mobile Optimized)
 // ==========================================
 const Container = styled.div` padding: 10px 15px; font-family: 'Exo 2', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; @media (max-width: 480px) { padding: 10px; }`;
-const Card = styled.div` background: #0b1120; border: 1px solid #2d184a; border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10; @media (max-width: 480px) { padding: 15px; border-radius: 14px; margin-bottom: 15px; }`;
+const Card = styled.div` background: #0b1120; border: 1px solid #44403c; border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10; @media (max-width: 480px) { padding: 15px; border-radius: 14px; margin-bottom: 15px; }`;
 
 const auraPulse = keyframes` 0% { box-shadow: 0 0 10px currentColor; } 50% { box-shadow: 0 0 25px currentColor; } 100% { box-shadow: 0 0 10px currentColor; } `;
 const GlowingCard = styled.div<{ $glowColor: string; $isAura?: boolean }>`
-  background: rgba(15, 7, 28, 0.85); backdrop-filter: blur(10px); border: 1px solid ${(props) => props.$glowColor}40; border-radius: 16px; padding: 25px; margin-bottom: 25px; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.5); color: ${(props) => props.$glowColor}; animation: ${(props) => props.$isAura ? auraPulse : 'none'} 3s infinite; z-index: 10;
+  background: rgba(20, 18, 16, 0.85); backdrop-filter: blur(10px); border: 1px solid ${(props) => props.$glowColor}40; border-radius: 16px; padding: 25px; margin-bottom: 25px; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.5); color: ${(props) => props.$glowColor}; animation: ${(props) => props.$isAura ? auraPulse : 'none'} 3s infinite; z-index: 10;
   &::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, ${(props) => props.$glowColor}, transparent); }
   @media (max-width: 480px) { padding: 15px; margin-bottom: 15px; border-radius: 14px; }
 `;
 
-const RankProgressCard = styled.div<{ $color: string; $shadow: string }>` background: linear-gradient(135deg, rgba(29, 15, 58, 0.9) 0%, rgba(2, 6, 23, 0.9) 100%); border: 1px solid ${(props) => props.$color}; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 0 20px ${(props) => props.$shadow}; display: flex; flex-direction: column; z-index: 10; position: relative; backdrop-filter: blur(10px); @media (max-width: 480px) { padding: 15px; margin-bottom: 15px; }`;
+const RankProgressCard = styled.div<{ $color: string; $shadow: string }>` background: linear-gradient(135deg, rgba(28, 25, 23, 0.9) 0%, rgba(2, 6, 23, 0.9) 100%); border: 1px solid ${(props) => props.$color}; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 0 20px ${(props) => props.$shadow}; display: flex; flex-direction: column; z-index: 10; position: relative; backdrop-filter: blur(10px); @media (max-width: 480px) { padding: 15px; margin-bottom: 15px; }`;
 const CardTitle = styled.div<{ $color: string }>` font-size: 13px; font-weight: 900; letter-spacing: 2px; color: ${(props) => props.$color}; text-transform: uppercase; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; width: 100%; justify-content: center; text-shadow: 0 0 10px ${(props) => props.$color}80; @media (max-width: 480px) { font-size: 11px; margin-bottom: 15px; gap: 6px; letter-spacing: 1px; }`;
 
 // 🚨 تصميم الملاذ السحري المحسن للموبايل 🚨
 const SanctuaryGrid = styled.div` display: flex; justify-content: center; gap: 15px; width: 100%; flex-wrap: wrap; @media (max-width: 480px) { gap: 10px; }`;
 const PetSlot = styled.div<{ $active: boolean, $color: string }>` 
-  background: ${(props) => props.$active ? `linear-gradient(180deg, ${props.$color}15 0%, rgba(29, 15, 58, 0.9) 100%)` : 'rgba(29, 15, 58, 0.8)'}; 
-  border: 1px solid ${(props) => props.$active ? props.$color : '#2d184a'}; 
+  background: ${(props) => props.$active ? `linear-gradient(180deg, ${props.$color}15 0%, rgba(28, 25, 23, 0.9) 100%)` : 'rgba(28, 25, 23, 0.8)'}; 
+  border: 1px solid ${(props) => props.$active ? props.$color : '#44403c'}; 
   border-radius: 16px; padding: 15px; width: 140px; display: flex; flex-direction: column; align-items: center; 
   box-shadow: ${(props) => props.$active ? `0 0 20px ${props.$color}30, inset 0 0 10px ${props.$color}15` : 'none'}; 
   transition: 0.3s; position: relative;
@@ -240,7 +240,7 @@ const EmptySlot = styled.div`
   background: rgba(2, 6, 23, 0.6); border: 1px dashed #334155; border-radius: 16px; width: 140px; height: 180px; 
   display: flex; flex-direction: column; align-items: center; justify-content: center; color: #64748b; gap: 10px; 
   transition: 0.3s; cursor: pointer;
-  &:hover { border-color: #a855f7; color: #a855f7; background: rgba(168, 85, 247, 0.1); }
+  &:hover { border-color: #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
   @media (max-width: 480px) { width: 130px; height: 160px; border-radius: 14px; gap: 6px; }
 `;
 
@@ -255,12 +255,12 @@ const ReleaseBtn = styled.button`
   @media (max-width: 480px) { font-size: 8px; padding: 5px; border-radius: 6px; margin-top: 5px; }
 `;
 
-const ProgressBarContainer = styled.div` width: 100%; height: 6px; background: rgba(29, 15, 58, 0.8); border-radius: 10px; overflow: hidden; border: 1px solid #2d184a; `;
+const ProgressBarContainer = styled.div` width: 100%; height: 6px; background: rgba(28, 25, 23, 0.8); border-radius: 10px; overflow: hidden; border: 1px solid #44403c; `;
 const ProgressBarFill = styled(motion.div)<{ $progress: number; $color: string }>` height: 100%; background: ${(props) => props.$color}; width: ${(props) => props.$progress}%; box-shadow: 0 0 10px ${(props) => props.$color}; `;
 
 // 🚨 Heatmap 🚨
 const HeatmapHeader = styled.div` display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; @media (max-width: 480px) { margin-bottom: 10px; flex-direction: column; gap: 6px; align-items: flex-start; }`;
-const HeatmapGrid = styled.div` display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-columns: 1fr; grid-auto-flow: column; gap: 3px; width: 100%; margin-bottom: 20px; background: rgba(29, 15, 58, 0.5); padding: 10px; border-radius: 12px; border: 1px solid #2d184a; overflow-x: auto; @media (max-width: 480px) { padding: 8px; gap: 2px; border-radius: 8px; margin-bottom: 15px; }`;
+const HeatmapGrid = styled.div` display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-columns: 1fr; grid-auto-flow: column; gap: 3px; width: 100%; margin-bottom: 20px; background: rgba(28, 25, 23, 0.5); padding: 10px; border-radius: 12px; border: 1px solid #44403c; overflow-x: auto; @media (max-width: 480px) { padding: 8px; gap: 2px; border-radius: 8px; margin-bottom: 15px; }`;
 const HeatmapCell = styled.div<{ $intensity: number; $baseColor: string; $isFuture?: boolean }>`
   width: 100%;
   min-width: 12px;
@@ -268,7 +268,7 @@ const HeatmapCell = styled.div<{ $intensity: number; $baseColor: string; $isFutu
   border-radius: 2px;
   background: ${(props) => 
     props.$isFuture ? 'rgba(30, 41, 59, 0.15)' : 
-    props.$intensity === 0 ? '#2d184a' : 
+    props.$intensity === 0 ? '#44403c' : 
     props.$intensity === 1 ? `${props.$baseColor}40` : 
     props.$intensity === 2 ? `${props.$baseColor}80` : 
     props.$baseColor
@@ -294,18 +294,18 @@ const LegendItem = styled.div` display: flex; flex-direction: column; align-item
 
 const InputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; @media (max-width: 480px) { gap: 10px; margin-bottom: 15px; }`;
 const InputLabel = styled.label` font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; @media (max-width: 480px) { font-size: 9px; margin-bottom: 6px; letter-spacing: 0; }`;
-const StyledInput = styled.input` width: 100%; background: #07030f; border: 1px solid #2d184a; color: #fff; padding: 12px; border-radius: 10px; font-family: 'Exo 2'; font-size: 16px; font-weight: bold; text-align: center; outline: none; transition: 0.3s; &:focus { border-color: #f97316; box-shadow: 0 0 10px rgba(249, 115, 22, 0.2); } @media (max-width: 480px) { padding: 10px; font-size: 14px; border-radius: 8px; }`;
+const StyledInput = styled.input` width: 100%; background: #0c0a09; border: 1px solid #44403c; color: #fff; padding: 12px; border-radius: 10px; font-family: 'Exo 2'; font-size: 16px; font-weight: bold; text-align: center; outline: none; transition: 0.3s; &:focus { border-color: #f97316; box-shadow: 0 0 10px rgba(249, 115, 22, 0.2); } @media (max-width: 480px) { padding: 10px; font-size: 14px; border-radius: 8px; }`;
 const UpdateBtn = styled.button` width: 100%; background: rgba(249, 115, 22, 0.1); border: 1px solid #f97316; color: #f97316; padding: 12px; border-radius: 10px; font-family: 'Exo 2'; font-size: 12px; font-weight: 900; letter-spacing: 1px; cursor: pointer; transition: 0.3s; margin-bottom: 10px; box-shadow: 0 0 10px rgba(249, 115, 22, 0.1); &:hover { background: #f97316; color: #000; box-shadow: 0 0 15px rgba(249, 115, 22, 0.4); } &:disabled { opacity: 0.5; cursor: not-allowed; } @media (max-width: 480px) { padding: 10px; font-size: 11px; }`;
 
-const SectionLabel = styled.div` font-size: 12px; color: #d946ef; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px; width: 100%; text-shadow: 0 0 10px rgba(217, 70, 239, 0.4); position: relative; z-index: 10; @media (max-width: 480px) { font-size: 11px; margin-bottom: 10px; }`;
+const SectionLabel = styled.div` font-size: 12px; color: #f97316; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px; width: 100%; text-shadow: 0 0 10px rgba(249, 115, 22, 0.4); position: relative; z-index: 10; @media (max-width: 480px) { font-size: 11px; margin-bottom: 10px; }`;
 const TitlesContainer = styled.div` display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-bottom: 30px; position: relative; z-index: 10; @media (max-width: 480px) { gap: 8px; margin-bottom: 20px; }`;
-const TitleBadge = styled.div` background: rgba(217, 70, 239, 0.1); border: 1px solid #d946ef; color: #d946ef; padding: 6px 15px; border-radius: 15px; font-size: 11px; font-weight: bold; box-shadow: 0 0 10px rgba(217, 70, 239, 0.2); backdrop-filter: blur(5px); @media (max-width: 480px) { padding: 5px 12px; font-size: 10px; }`;
+const TitleBadge = styled.div` background: rgba(249, 115, 22, 0.1); border: 1px solid #f97316; color: #f97316; padding: 6px 15px; border-radius: 15px; font-size: 11px; font-weight: bold; box-shadow: 0 0 10px rgba(249, 115, 22, 0.2); backdrop-filter: blur(5px); @media (max-width: 480px) { padding: 5px 12px; font-size: 10px; }`;
 const SignOutBtn = styled.button` width: 100%; background: rgba(2, 6, 23, 0.8); border: 1px solid #ef4444; color: #ef4444; padding: 15px; border-radius: 12px; font-family: 'Exo 2'; font-size: 13px; font-weight: 900; letter-spacing: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; box-shadow: 0 0 15px rgba(239, 68, 68, 0.1); position: relative; z-index: 10; backdrop-filter: blur(5px); &:hover { background: #ef4444; color: #000; box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); } @media (max-width: 480px) { padding: 12px; font-size: 11px; letter-spacing: 1px; border-radius: 10px; }`;
 
 // 🚨 نافذة مهام اليوم للموبايل 🚨
 const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); `;
-const ModalContent = styled(motion.div)<{ $color?: string }>` background: #0b1120; border: 1px solid ${(props) => props.$color || '#a855f7'}; border-radius: 16px; padding: 20px; width: 100%; max-width: 350px; position: relative; max-height: 80vh; overflow-y: auto; box-shadow: 0 0 30px ${(props) => props.$color ? `${props.$color}40` : 'rgba(168, 85, 247, 0.2)'}; &::-webkit-scrollbar { width: 0; } @media (max-width: 480px) { padding: 15px; border-radius: 14px; }`;
-const QuestLogItem = styled.div` display: flex; align-items: center; gap: 10px; background: rgba(29, 15, 58, 0.6); border: 1px solid #2d184a; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 12px; color: #cbd5e1; @media (max-width: 480px) { padding: 8px; font-size: 11px; gap: 6px; }`;
+const ModalContent = styled(motion.div)<{ $color?: string }>` background: #0b1120; border: 1px solid ${(props) => props.$color || '#f59e0b'}; border-radius: 16px; padding: 20px; width: 100%; max-width: 350px; position: relative; max-height: 80vh; overflow-y: auto; box-shadow: 0 0 30px ${(props) => props.$color ? `${props.$color}40` : 'rgba(245, 158, 11, 0.2)'}; &::-webkit-scrollbar { width: 0; } @media (max-width: 480px) { padding: 15px; border-radius: 14px; }`;
+const QuestLogItem = styled.div` display: flex; align-items: center; gap: 10px; background: rgba(28, 25, 23, 0.6); border: 1px solid #44403c; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 12px; color: #cbd5e1; @media (max-width: 480px) { padding: 8px; font-size: 11px; gap: 6px; }`;
 
 // ==========================================
 // 5. Custom Components (Charts)
@@ -349,9 +349,9 @@ const CustomRadarChart = ({ stats, color }: { stats: { label: string, value: num
         {[2, 4, 6, 8, 10].map((level) => {
           const webPoints = stats.map((_, i) => getPoint(level, i, stats.length));
           const webPath = `M ${webPoints.map(p => `${p.x},${p.y}`).join(' L ')} Z`;
-          return <path key={level} d={webPath} fill="none" stroke="#2d184a" strokeWidth="1" />;
+          return <path key={level} d={webPath} fill="none" stroke="#44403c" strokeWidth="1" />;
         })}
-        {stats.map((_, i) => { const p = getPoint(10, i, stats.length); return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="#2d184a" strokeWidth="1" />; })}
+        {stats.map((_, i) => { const p = getPoint(10, i, stats.length); return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="#44403c" strokeWidth="1" />; })}
         <path d={pathD} fill={`${color}40`} stroke={color} strokeWidth="2" style={{ filter: `drop-shadow(0 0 5px ${color})` }} />
         {stats.map((s, i) => {
           const p = getPoint(s.value, i, stats.length); const labelP = getPoint(12.5, i, stats.length); 
@@ -411,8 +411,8 @@ const Profile = ({ player, setPlayer }: any) => {
   const particlesInit = useCallback(async (engine: any) => { await loadFull(engine); }, []);
   const getParticleConfig = (streak: number): any => {
     let color = "#475569"; let speed = 1; let direction = "none"; let links = false; let particleCount = 0;
-    if (streak >= 30) { color = "#a855f7"; speed = 0.5; direction = "top"; particleCount = 30; } 
-    else if (streak >= 15) { color = "#a855f7"; speed = 2; direction = "none"; links = true; particleCount = 30; } 
+    if (streak >= 30) { color = "#f59e0b"; speed = 0.5; direction = "top"; particleCount = 30; } 
+    else if (streak >= 15) { color = "#f59e0b"; speed = 2; direction = "none"; links = true; particleCount = 30; } 
     else if (streak >= 7) { color = "#10b981"; speed = 1.5; direction = "top"; particleCount = 20; } 
     else if (streak >= 1) { color = "#f97316"; speed = 2; direction = "top"; particleCount = 15; } 
     return {
@@ -511,7 +511,7 @@ const Profile = ({ player, setPlayer }: any) => {
   const handleHeatmapClick = (dayData: any) => {
      if (dayData.isFuture) return;
      if (dayData.count === 0) {
-        toast.info(`لم تقم بأي مهام في يوم ${dayData.date}`, { style: { background: '#07030f', border: '1px solid #334155', color: '#94a3b8' }});
+        toast.info(`لم تقم بأي مهام في يوم ${dayData.date}`, { style: { background: '#0c0a09', border: '1px solid #334155', color: '#94a3b8' }});
         return;
      }
      playClick();
@@ -521,7 +521,7 @@ const Profile = ({ player, setPlayer }: any) => {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
     if (!file.type.startsWith('image/')) { toast.error('Invalid image.'); return; }
-    const loadingToast = toast.loading('Updating avatar...', { style: { background: '#07030f', color: '#d946ef', border: '1px solid #d946ef' } });
+    const loadingToast = toast.loading('Updating avatar...', { style: { background: '#0c0a09', color: '#f97316', border: '1px solid #f97316' } });
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
@@ -648,13 +648,13 @@ const Profile = ({ player, setPlayer }: any) => {
             <div style={{ fontSize: '10px', color: auraInfo.color, fontWeight: '900', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '4px' }}><AuraIcon size={10} /> {auraInfo.name}</div>
           </div>
         </div>
-        <button onClick={() => setShowSettings(true)} style={{ background: 'rgba(217, 70, 239, 0.1)', border: '1px solid #d946ef', color: '#d946ef', padding: '8px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: '10px', fontWeight: 'bold', boxShadow: '0 0 10px rgba(217, 70, 239, 0.2)' }}><Settings size={14} /> EDIT</button>
+        <button onClick={() => setShowSettings(true)} style={{ background: 'rgba(249, 115, 22, 0.1)', border: '1px solid #f97316', color: '#f97316', padding: '8px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: '10px', fontWeight: 'bold', boxShadow: '0 0 10px rgba(249, 115, 22, 0.2)' }}><Settings size={14} /> EDIT</button>
       </div>
 
-      <SectionLabel style={{ marginTop: 10, color: '#a855f7', textShadow: '0 0 10px rgba(168, 85, 247, 0.4)' }}>
+      <SectionLabel style={{ marginTop: 10, color: '#f59e0b', textShadow: '0 0 10px rgba(245, 158, 11, 0.4)' }}>
         <Ghost size={12} style={{ display: 'inline', marginBottom: -2 }} /> MYSTICAL SANCTUARY
       </SectionLabel>
-      <GlowingCard $glowColor="#a855f7" style={{ padding: '15px', marginBottom: 20 }}>
+      <GlowingCard $glowColor="#f59e0b" style={{ padding: '15px', marginBottom: 20 }}>
         <SanctuaryGrid>
           {playerPets.map((petName: string, index: number) => {
             const petData = PETS_DATABASE.find(p => p.name === petName) || { name: petName, type: 'wyvern', color: '#94a3b8' };
@@ -709,16 +709,16 @@ const Profile = ({ player, setPlayer }: any) => {
         </div>
         <ProgressBarContainer style={{ marginTop: 15, marginBottom: 10 }}><ProgressBarFill $progress={rankProgress.percent} $color={rankInfo.color} initial={{ width: 0 }} animate={{ width: `${rankProgress.percent}%` }} transition={{ duration: 1 }} /></ProgressBarContainer>
         <div style={{ fontSize: '10px', color: '#cbd5e1', textAlign: 'right', direction: 'rtl', fontWeight: 'bold' }}>
-          {lvl >= 30 ? <span style={{ color: '#a855f7' }}>أنت الأسطورة ELITE 👑</span> : <>يتبقى <span style={{ color: '#a855f7' }}>{rankProgress.remainingXp} EXP</span> للوصول إلى <span style={{ color: '#fff' }}>{rankProgress.nextRank}</span>.</>}
+          {lvl >= 30 ? <span style={{ color: '#f59e0b' }}>أنت الأسطورة ELITE 👑</span> : <>يتبقى <span style={{ color: '#f59e0b' }}>{rankProgress.remainingXp} EXP</span> للوصول إلى <span style={{ color: '#fff' }}>{rankProgress.nextRank}</span>.</>}
         </div>
       </RankProgressCard>
 
       <GlowingCard $glowColor={userClass.color}>
         <CardTitle $color={userClass.color}><Hexagon size={16} /> EVOLUTION (LVL 20)</CardTitle>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px', marginBottom: '20px', width: '100%' }}>
-          <div style={{ width: 65, height: 65, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: `linear-gradient(135deg, rgba(29, 15, 58, 0.8) 0%, ${userClass.color}30 100%)`, border: `1px solid ${userClass.color}`, color: userClass.color, boxShadow: `0 0 20px ${userClass.color}40, inset 0 0 10px ${userClass.color}20`, backdropFilter: 'blur(5px)' }}><BaseIcon size={30} /></div>
+          <div style={{ width: 65, height: 65, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: `linear-gradient(135deg, rgba(28, 25, 23, 0.8) 0%, ${userClass.color}30 100%)`, border: `1px solid ${userClass.color}`, color: userClass.color, boxShadow: `0 0 20px ${userClass.color}40, inset 0 0 10px ${userClass.color}20`, backdropFilter: 'blur(5px)' }}><BaseIcon size={30} /></div>
           <div style={{ color: '#334155', fontSize: '18px', fontWeight: 'bold' }}>»</div>
-          <div style={{ width: 65, height: 65, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: isEvolved ? `linear-gradient(135deg, rgba(29, 15, 58, 0.8) 0%, ${userClass.color}30 100%)` : 'rgba(29, 15, 58, 0.8)', border: `1px solid ${isEvolved ? userClass.color : '#2d184a'}`, color: isEvolved ? userClass.color : '#334155', boxShadow: isEvolved ? `0 0 20px ${userClass.color}40, inset 0 0 10px ${userClass.color}20` : 'none', transition: '0.3s', backdropFilter: 'blur(5px)' }}>{isEvolved ? <EvolvedIcon size={30} /> : <LockIcon size={20} />}</div>
+          <div style={{ width: 65, height: 65, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: isEvolved ? `linear-gradient(135deg, rgba(28, 25, 23, 0.8) 0%, ${userClass.color}30 100%)` : 'rgba(28, 25, 23, 0.8)', border: `1px solid ${isEvolved ? userClass.color : '#44403c'}`, color: isEvolved ? userClass.color : '#334155', boxShadow: isEvolved ? `0 0 20px ${userClass.color}40, inset 0 0 10px ${userClass.color}20` : 'none', transition: '0.3s', backdropFilter: 'blur(5px)' }}>{isEvolved ? <EvolvedIcon size={30} /> : <LockIcon size={20} />}</div>
         </div>
         <ProgressBarContainer><ProgressBarFill $progress={evoProgress} $color={userClass.color} initial={{ width: 0 }} animate={{ width: `${evoProgress}%` }} transition={{ duration: 1 }} /></ProgressBarContainer>
       </GlowingCard>
@@ -731,18 +731,18 @@ const Profile = ({ player, setPlayer }: any) => {
         <HeatmapGrid>{heatmapData.map((d, i) => (<HeatmapCell key={i} $intensity={d.intensity} $baseColor={auraInfo.color} $isFuture={d.isFuture} onClick={() => handleHeatmapClick(d)} title={d.isFuture ? 'Future Day' : `${d.date}: ${d.count} Tasks`} />))}</HeatmapGrid>
         <LegendGrid>
           <LegendItem>7 STREAK<Activity size={16} color="#10b981" fill="#10b981" style={{ filter: 'drop-shadow(0 0 5px #10b981)' }} /></LegendItem>
-          <LegendItem>15 STREAK<Zap size={16} color="#a855f7" fill="#a855f7" style={{ filter: 'drop-shadow(0 0 5px #a855f7)' }} /></LegendItem>
-          <LegendItem>30 STREAK<Crown size={16} color="#a855f7" fill="#a855f7" style={{ filter: 'drop-shadow(0 0 5px #a855f7)' }} /></LegendItem>
+          <LegendItem>15 STREAK<Zap size={16} color="#f59e0b" fill="#f59e0b" style={{ filter: 'drop-shadow(0 0 5px #f59e0b)' }} /></LegendItem>
+          <LegendItem>30 STREAK<Crown size={16} color="#f59e0b" fill="#f59e0b" style={{ filter: 'drop-shadow(0 0 5px #f59e0b)' }} /></LegendItem>
         </LegendGrid>
       </GlowingCard>
 
-      <GlowingCard $glowColor="#a855f7">
-        <CardTitle $color="#a855f7" style={{ justifyContent: 'center', marginBottom: '5px' }}><Radar size={16} /> HUNTER'S SOUL</CardTitle>
+      <GlowingCard $glowColor="#f59e0b">
+        <CardTitle $color="#f59e0b" style={{ justifyContent: 'center', marginBottom: '5px' }}><Radar size={16} /> HUNTER'S SOUL</CardTitle>
         <div style={{ textAlign: 'center', fontSize: '9px', color: '#cbd5e1', marginBottom: '10px' }}>تحليل القوة الشامل</div>
-        <CustomRadarChart stats={radarStats} color="#a855f7" />
+        <CustomRadarChart stats={radarStats} color="#f59e0b" />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
           {radarStats.map((s, i) => (
-            <div key={i} style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '6px', borderRadius: '6px', border: '1px solid rgba(168, 85, 247, 0.3)', display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}><span style={{ color: '#cbd5e1' }}>{s.label}</span><span style={{ color: '#d946ef', fontWeight: 'bold' }}>{s.value.toFixed(1)}/10</span></div>
+            <div key={i} style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '6px', borderRadius: '6px', border: '1px solid rgba(245, 158, 11, 0.3)', display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}><span style={{ color: '#cbd5e1' }}>{s.label}</span><span style={{ color: '#f97316', fontWeight: 'bold' }}>{s.value.toFixed(1)}/10</span></div>
           ))}
         </div>
       </GlowingCard>
@@ -759,13 +759,13 @@ const Profile = ({ player, setPlayer }: any) => {
           <div><InputLabel>BODY FAT (%)</InputLabel><StyledInput type="number" value={editFat} onChange={(e) => setEditFat(e.target.value)} /></div>
         </InputGrid>
         <UpdateBtn onClick={handleUpdateStats} disabled={isSaving}>{isSaving ? 'UPDATING...' : 'UPDATE STATS'}</UpdateBtn>
-        <div style={{ width: '100%', textAlign: 'center', fontSize: '10px', color: '#c084fc', fontWeight: 'bold', marginTop: '5px' }}>Protein Target: <span style={{ color: '#fff' }}>{protMin}g - {protMax}g</span></div>
+        <div style={{ width: '100%', textAlign: 'center', fontSize: '10px', color: '#eab308', fontWeight: 'bold', marginTop: '5px' }}>Protein Target: <span style={{ color: '#fff' }}>{protMin}g - {protMax}g</span></div>
       </GlowingCard>
 
       <SectionLabel>UNLOCKED TITLES</SectionLabel>
       <TitlesContainer>{titles.map((t: string, i: number) => (<TitleBadge key={i}>{t}</TitleBadge>))}</TitlesContainer>
 
-      <Card style={{ marginTop: '20px', background: '#07030f', zIndex: 10, padding: 15 }}>
+      <Card style={{ marginTop: '20px', background: '#0c0a09', zIndex: 10, padding: 15 }}>
         <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '900', letterSpacing: '1px', marginBottom: '10px' }}>TOTAL PRACTICES ATTENDED</div>
         <div style={{ fontSize: '30px', fontWeight: '900', color: '#fff', textShadow: '0 0 15px rgba(255,255,255,0.2)' }}>{attendanceStats.attended} <span style={{ fontSize: '14px', color: '#64748b' }}>/ {attendanceStats.total}</span></div>
       </Card>
@@ -775,9 +775,9 @@ const Profile = ({ player, setPlayer }: any) => {
       <AnimatePresence>
         {selectedDayQuests.show && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-             <ModalContent $color="#a855f7" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
+             <ModalContent $color="#f59e0b" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
                <button onClick={() => setSelectedDayQuests({ show: false, date: '', quests: [] })} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20} /></button>
-               <h2 style={{ color: '#a855f7', margin: '0 0 15px 0', fontSize: '16px', display: 'flex', alignItems: 'center', gap: 8, textTransform: 'uppercase' }}><CalendarDays size={18} /> يوم {selectedDayQuests.date}</h2>
+               <h2 style={{ color: '#f59e0b', margin: '0 0 15px 0', fontSize: '16px', display: 'flex', alignItems: 'center', gap: 8, textTransform: 'uppercase' }}><CalendarDays size={18} /> يوم {selectedDayQuests.date}</h2>
                
                <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '15px' }}>
                   عدد المهام المنجزة: <span style={{ color: '#fff', fontWeight: 'bold' }}>{selectedDayQuests.quests.length}</span>
@@ -799,9 +799,9 @@ const Profile = ({ player, setPlayer }: any) => {
       <AnimatePresence>
         {showSettings && (
           <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ModalContent $color="#d946ef" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
+            <ModalContent $color="#f97316" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}>
               <button onClick={() => setShowSettings(false)} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20} /></button>
-              <h2 style={{ color: '#d946ef', margin: '0 0 15px 0', fontSize: '16px', display: 'flex', alignItems: 'center', gap: 8, textTransform: 'uppercase' }}><Settings size={18} /> SYSTEM SETTINGS</h2>
+              <h2 style={{ color: '#f97316', margin: '0 0 15px 0', fontSize: '16px', display: 'flex', alignItems: 'center', gap: 8, textTransform: 'uppercase' }}><Settings size={18} /> SYSTEM SETTINGS</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <div>
                   <InputLabel>HUNTER ALIAS</InputLabel>
@@ -813,7 +813,7 @@ const Profile = ({ player, setPlayer }: any) => {
                     {CLASS_MAPPING.map((cls) => {
                       const BaseI = cls.baseIcon; const EvoI = cls.evolvedIcon;
                       return (
-                        <div key={cls.id} style={{ background: '#07030f', border: `1px solid ${editIcon.includes(cls.id) ? cls.color : '#2d184a'}`, padding: '10px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div key={cls.id} style={{ background: '#0c0a09', border: `1px solid ${editIcon.includes(cls.id) ? cls.color : '#44403c'}`, padding: '10px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '12px', fontWeight: 'bold', color: editIcon.includes(cls.id) ? cls.color : '#fff' }}>{cls.name}</span>
                           <div style={{ display: 'flex', gap: '6px' }}>
                             <button onClick={() => setEditIcon(cls.id)} style={{ background: editIcon === cls.id ? `${cls.color}20` : 'transparent', border: `1px solid ${editIcon === cls.id ? cls.color : '#334155'}`, padding: '6px', borderRadius: '6px', color: editIcon === cls.id ? cls.color : '#64748b', cursor: 'pointer', transition: '0.2s' }}><BaseI size={16} /></button>
@@ -824,7 +824,7 @@ const Profile = ({ player, setPlayer }: any) => {
                     })}
                   </div>
                 </div>
-                <UpdateBtn onClick={handleSaveSettings} disabled={isSaving} style={{ background: '#d946ef', color: '#000', borderColor: '#d946ef', boxShadow: '0 0 10px rgba(217, 70, 239, 0.3)', marginTop: '5px' }}>{isSaving ? 'SYNCING...' : 'SAVE & APPLY'}</UpdateBtn>
+                <UpdateBtn onClick={handleSaveSettings} disabled={isSaving} style={{ background: '#f97316', color: '#000', borderColor: '#f97316', boxShadow: '0 0 10px rgba(249, 115, 22, 0.3)', marginTop: '5px' }}>{isSaving ? 'SYNCING...' : 'SAVE & APPLY'}</UpdateBtn>
               </div>
             </ModalContent>
           </ModalOverlay>

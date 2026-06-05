@@ -64,7 +64,7 @@ const CardsGrid = styled.div`
 `;
 
 const RuleCard = styled(motion.div)<{ $color: string }>`
-  background: rgba(29, 15, 58, 0.45);
+  background: rgba(28, 25, 23, 0.45);
   backdrop-filter: blur(16px);
   border: 1px solid ${(props) => props.$color}30;
   border-radius: 20px;
@@ -133,7 +133,7 @@ const GridBox = styled.div`
 `;
 
 const RankItem = styled.div<{ $color: string }>`
-  background: #07030f;
+  background: #0c0a09;
   border: 1px solid ${(props) => props.$color}40;
   padding: 10px;
   border-radius: 12px;
@@ -197,7 +197,7 @@ const RULES_DATA = [
         <InfoPill $color="#facc15">
           <strong>قاعدة الستريك (Streak):</strong> لا يرتفع العداد إلا بإتمام <strong>3 مهام أساسية</strong> يومياً (التمرين، تغطية البروتين، والمرونة).
         </InfoPill>
-        <InfoPill $color="#c084fc">
+        <InfoPill $color="#eab308">
           <strong>كسر السلسلة:</strong> تفويت مهمة أساسية واحدة يؤدي إلى تصفير الـ Streak فوراً، وتُطبق عليك "ضريبة الرانك".
         </InfoPill>
       </>
@@ -218,10 +218,10 @@ const RULES_DATA = [
           <RankItem $color="#06b6d4"><Target size={16} color="#06b6d4" /> <span className="rank-name">PLATINUM</span> <span className="rank-desc">المستويات 15-19</span> <span className="rank-tax">-25 HP | -125 G</span></RankItem>
           <RankItem $color="#3b82f6"><Shield size={16} color="#3b82f6" /> <span className="rank-name">DIAMOND</span> <span className="rank-desc">المستويات 20-24</span> <span className="rank-tax">-30 HP | -150 G</span></RankItem>
           <RankItem $color="#ef4444"><Flame size={16} color="#ef4444" /> <span className="rank-name">MASTER</span> <span className="rank-desc">المستويات 25-29</span> <span className="rank-tax">-40 HP | -200 G</span></RankItem>
-          <RankItem $color="#a855f7"><Crown size={16} color="#a855f7" /> <span className="rank-name">ELITE</span> <span className="rank-desc">المستوى 30+</span> <span className="rank-tax">-50 HP | -250 G</span></RankItem>
+          <RankItem $color="#f59e0b"><Crown size={16} color="#f59e0b" /> <span className="rank-name">ELITE</span> <span className="rank-desc">المستوى 30+</span> <span className="rank-tax">-50 HP | -250 G</span></RankItem>
         </GridBox>
         <br/>
-        <InfoPill $color="#d946ef">
+        <InfoPill $color="#f97316">
           <strong>مستوى 20 (Diamond):</strong> يفتح ميزة <strong>Evolution</strong> في البروفايل، حيث يتغير شكل الأيقونة لنسخة أكثر فخامة!
         </InfoPill>
       </>
@@ -231,12 +231,12 @@ const RULES_DATA = [
     id: 3,
     title: 'اقتصاد اللعبة (EXP & Gold)',
     icon: Activity,
-    color: '#a855f7',
+    color: '#f59e0b',
     content: (
       <>
         صعود السلم يتطلب مجهوداً مضاعفاً كلما اقتربت من القمة.
         <br/><br/>
-        <InfoPill $color="#a855f7">
+        <InfoPill $color="#f59e0b">
           <strong>نظام الـ EXP:</strong> اليوم المثالي يمنحك <strong>215 EXP</strong>. في البداية (من ليفل 1 لـ 2) تحتاج 650 EXP، ويتصاعد تدريجياً حتى يصل إلى <strong>4,000 EXP</strong> للارتقاء لمستوى واحد في المراحل المتقدمة.
         </InfoPill>
         <InfoPill $color="#eab308">
@@ -285,12 +285,12 @@ const RULES_DATA = [
     id: 6,
     title: 'المواسم التنافسية (Seasons & Leaderboard)',
     icon: Trophy,
-    color: '#a855f7',
+    color: '#f59e0b',
     content: (
       <>
         المجد الحقيقي يكتب في نهاية الشهر.
         <br/><br/>
-        <InfoPill $color="#a855f7">
+        <InfoPill $color="#f59e0b">
           <strong>بطولة الشهر:</strong> يوجد تصنيف عام يعتمد على خبرتك الكلية (Cumulative XP)، وتصنيف شهري يعتمد على الـ (Monthly XP).
         </InfoPill>
         <InfoPill $color="#eab308">
@@ -320,7 +320,7 @@ const RULES_DATA = [
     id: 8,
     title: 'صالة الألعاب العصبية (Elite Arcade)',
     icon: Gamepad2,
-    color: '#a855f7',
+    color: '#f59e0b',
     content: (
       <>
         اضغط على أيقونة الـ Gamepad 🎮 العائمة لفتح صالة الألعاب المصغرة لاختبار جهازك العصبي وسرعة رد الفعل:

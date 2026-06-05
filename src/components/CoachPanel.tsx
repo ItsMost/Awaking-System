@@ -26,8 +26,8 @@ const getReward = (taskName: string) => {
 };
 
 const getStreakTier = (s: number) => {
-  if (s >= 30) return { name: 'VOID QUANTUM 🌌', multiplier: 1.5, nextMilestone: 60, prevMilestone: 30, color: '#a855f7' };
-  if (s >= 14) return { name: 'CYBER TITAN ⚡', multiplier: 1.2, nextMilestone: 30, prevMilestone: 14, color: '#d946ef' };
+  if (s >= 30) return { name: 'VOID QUANTUM 🌌', multiplier: 1.5, nextMilestone: 60, prevMilestone: 30, color: '#f59e0b' };
+  if (s >= 14) return { name: 'CYBER TITAN ⚡', multiplier: 1.2, nextMilestone: 30, prevMilestone: 14, color: '#f97316' };
   if (s >= 7) return { name: 'EMERALD SENTINEL 💚', multiplier: 1.1, nextMilestone: 14, prevMilestone: 7, color: '#10b981' };
   return { name: 'EMBER INITIATE 🔥', multiplier: 1.0, nextMilestone: 7, prevMilestone: 0, color: '#f97316' };
 };
@@ -48,25 +48,25 @@ const calculateLevelData = (totalXp: number) => {
 // 2. التصميمات (Styled Components)
 // ==========================================
 const Container = styled(motion.div)` padding: 20px; font-family: 'Exo 2', sans-serif; color: #fff; padding-bottom: 100px; max-width: 800px; margin: 0 auto; `;
-const Header = styled.div` background: linear-gradient(90deg, #450a0a 0%, #07030f 100%); border: 1px solid #ef4444; border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); display: flex; align-items: center; gap: 15px; `;
+const Header = styled.div` background: linear-gradient(90deg, #450a0a 0%, #0c0a09 100%); border: 1px solid #ef4444; border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); display: flex; align-items: center; gap: 15px; `;
 const Title = styled.h1` margin: 0; color: #ef4444; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 15px rgba(239, 68, 68, 0.6); `;
 const SectionTitle = styled.h2<{ $color: string }>` font-size: 16px; color: ${(props) => props.$color}; letter-spacing: 2px; margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px; text-transform: uppercase; border-bottom: 1px dashed ${(props) => props.$color}50; padding-bottom: 10px; `;
 
-const BroadcastBox = styled.div` background: rgba(168, 85, 247, 0.1); border: 1px solid #a855f7; border-radius: 16px; padding: 20px; margin-bottom: 30px; box-shadow: 0 0 20px rgba(168, 85, 247, 0.15); `;
-const Input = styled.input` width: 100%; background: #07030f; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; font-family: 'Exo 2'; font-size: 14px; outline: none; &:focus { border-color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); } `;
-const TextArea = styled.textarea` width: 100%; background: #07030f; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; font-family: 'Exo 2'; font-size: 14px; min-height: 100px; resize: vertical; outline: none; &:focus { border-color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); } `;
-const SendBtn = styled.button` background: #a855f7; color: #000; border: none; padding: 15px 25px; border-radius: 12px; font-family: 'Exo 2'; font-weight: 900; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; width: 100%; &:hover { filter: brightness(1.2); box-shadow: 0 0 20px rgba(168, 85, 247, 0.5); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
+const BroadcastBox = styled.div` background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 16px; padding: 20px; margin-bottom: 30px; box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); `;
+const Input = styled.input` width: 100%; background: #0c0a09; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; font-family: 'Exo 2'; font-size: 14px; outline: none; &:focus { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); } `;
+const TextArea = styled.textarea` width: 100%; background: #0c0a09; border: 1px solid #334155; color: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; font-family: 'Exo 2'; font-size: 14px; min-height: 100px; resize: vertical; outline: none; &:focus { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); } `;
+const SendBtn = styled.button` background: #f59e0b; color: #000; border: none; padding: 15px 25px; border-radius: 12px; font-family: 'Exo 2'; font-weight: 900; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; width: 100%; &:hover { filter: brightness(1.2); box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
 
 // 🚨 تصميمات لستة الأخبار 🚨
 const NewsList = styled.div` margin-top: 20px; display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; padding-right: 5px; `;
-const NewsItem = styled.div` background: #07030f; border: 1px solid #2d184a; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 15px; `;
+const NewsItem = styled.div` background: #0c0a09; border: 1px solid #44403c; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 15px; `;
 
-const RequestCard = styled(motion.div)` background: #0b1120; border: 1px solid #2d184a; border-left: 4px solid #facc15; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; `;
+const RequestCard = styled(motion.div)` background: #0b1120; border: 1px solid #44403c; border-left: 4px solid #facc15; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; `;
 const ReqHeader = styled.div` display: flex; justify-content: space-between; align-items: flex-start; `;
 const ReqPlayer = styled.div` font-size: 16px; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 8px; margin-bottom: 5px; `;
 const ReqTask = styled.div` font-size: 14px; color: #facc15; font-weight: bold; display: flex; align-items: center; gap: 6px; `;
 const ReqTime = styled.div` font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 4px; `;
-const ReqEvidence = styled.div` background: #07030f; padding: 12px; border-radius: 8px; font-size: 13px; color: #cbd5e1; border: 1px dashed #334155; `;
+const ReqEvidence = styled.div` background: #0c0a09; padding: 12px; border-radius: 8px; font-size: 13px; color: #cbd5e1; border: 1px dashed #334155; `;
 const ActionRow = styled.div` display: flex; gap: 10px; margin-top: 10px; `;
 const ApproveBtn = styled.button` flex: 1; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 12px; border-radius: 8px; font-family: 'Exo 2'; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; &:hover { background: #10b981; color: #000; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
 const RejectBtn = styled.button` flex: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 8px; font-family: 'Exo 2'; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; &:hover { background: #ef4444; color: #000; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
@@ -90,10 +90,10 @@ const SwitchContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #07030f;
+  background: #0c0a09;
   padding: 12px 15px;
   border-radius: 10px;
-  border: 1px solid #2d184a;
+  border: 1px solid #44403c;
 `;
 
 const SwitchLabel = styled.div`
@@ -159,7 +159,7 @@ const SwitchSlider = styled.span`
 
 const DateInput = styled.input`
   width: 100%;
-  background: #07030f;
+  background: #0c0a09;
   border: 1px solid #334155;
   color: #fff;
   padding: 15px;
@@ -279,7 +279,7 @@ const CoachPanel = () => {
       
       if (error) throw error; 
 
-      toast.success('تم إرسال البث للجميع!', { style: { background: '#07030f', color: '#a855f7', border: '1px solid #a855f7' }});
+      toast.success('تم إرسال البث للجميع!', { style: { background: '#0c0a09', color: '#f59e0b', border: '1px solid #f59e0b' }});
       setBroadcastTitle('');
       setBroadcastMsg('');
       fetchActiveNews(); // تحديث اللستة بعد الإرسال
@@ -464,7 +464,7 @@ const CoachPanel = () => {
 
       {/* بث الرادار */}
       <BroadcastBox>
-        <SectionTitle $color="#a855f7"><Globe size={18} /> GLOBAL RADAR BROADCAST</SectionTitle>
+        <SectionTitle $color="#f59e0b"><Globe size={18} /> GLOBAL RADAR BROADCAST</SectionTitle>
         <Input placeholder="عنوان البث (مثال: تحديث أسبوعي)..." value={broadcastTitle} onChange={(e) => setBroadcastTitle(e.target.value)} />
         <TextArea placeholder="محتوى الرسالة اللي هتظهر لكل اللاعبين..." value={broadcastMsg} onChange={(e) => setBroadcastMsg(e.target.value)} />
         <SendBtn disabled={sendingBroadcast} onClick={handleBroadcast}>
@@ -473,8 +473,8 @@ const CoachPanel = () => {
 
         {/* 🚨 قسم إدارة الأخبار الحالية ومسحها 🚨 */}
         {activeNews.length > 0 && (
-          <div style={{ marginTop: '30px', borderTop: '1px dashed #a855f750', paddingTop: '15px' }}>
-            <div style={{ fontSize: '12px', color: '#a855f7', fontWeight: 'bold', marginBottom: '10px' }}>ACTIVE BROADCASTS (إدارة البث الحالي)</div>
+          <div style={{ marginTop: '30px', borderTop: '1px dashed #f59e0b50', paddingTop: '15px' }}>
+            <div style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 'bold', marginBottom: '10px' }}>ACTIVE BROADCASTS (إدارة البث الحالي)</div>
             <NewsList>
               {activeNews.map(news => (
                 <NewsItem key={news.id}>
@@ -552,7 +552,7 @@ const CoachPanel = () => {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}><Spinner size={30} style={{ margin: '0 auto 15px auto' }} /> SYNCING LOGS...</div>
       ) : pendingReqs.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px', background: '#07030f', border: '1px dashed #334155', borderRadius: '12px', color: '#64748b', fontWeight: 'bold' }}>
+        <div style={{ textAlign: 'center', padding: '40px', background: '#0c0a09', border: '1px dashed #334155', borderRadius: '12px', color: '#64748b', fontWeight: 'bold' }}>
           ALL CLEAR. NO PENDING REQUESTS.
         </div>
       ) : (

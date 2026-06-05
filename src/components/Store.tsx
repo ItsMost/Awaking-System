@@ -25,8 +25,8 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #1d0f3a 0%, #07030f 100%);
-  border: 1px solid #2d184a;
+  background: linear-gradient(90deg, #1c1917 0%, #0c0a09 100%);
+  border: 1px solid #44403c;
   padding: 20px;
   border-radius: 16px;
   margin-bottom: 25px;
@@ -34,8 +34,8 @@ const Header = styled.div`
 `;
 
 const InfoBox = styled.div`
-  background: rgba(217, 70, 239, 0.05);
-  border: 1px solid #d946ef;
+  background: rgba(249, 115, 22, 0.05);
+  border: 1px solid #f97316;
   padding: 15px;
   border-radius: 12px;
   margin-bottom: 25px;
@@ -117,14 +117,14 @@ const ComingSoonOverlay = styled.div`
 
 const ComingSoonBadge = styled.div`
   background: #000;
-  color: #d946ef;
-  border: 2px solid #d946ef;
+  color: #f97316;
+  border: 2px solid #f97316;
   padding: 5px 15px;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 2px;
-  box-shadow: 0 0 15px rgba(217, 70, 239, 0.4);
+  box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
   transform: rotate(-10deg);
 `;
 
@@ -134,7 +134,7 @@ const PHYSICAL_GEAR = [
     name: 'Monarch Spikes',
     desc: 'Track & Field Elite Spikes',
     price: 'EGP 1,850',
-    color: '#d946ef',
+    color: '#f97316',
     icon: Lightning,
   },
   {
@@ -142,7 +142,7 @@ const PHYSICAL_GEAR = [
     name: 'Creatine Monohydrate',
     desc: '100% Pure - 60 Servings',
     price: 'EGP 750',
-    color: '#a855f7',
+    color: '#f59e0b',
     icon: Box,
   },
   {
@@ -170,8 +170,8 @@ const Store = () => {
     toast.error('Store is currently locked. Global shipping coming soon!', {
       style: {
         background: '#0b1120',
-        border: '1px solid #d946ef',
-        color: '#d946ef',
+        border: '1px solid #f97316',
+        color: '#f97316',
       },
     });
   };
@@ -184,7 +184,7 @@ const Store = () => {
           style={{
             margin: 0,
             fontSize: '24px',
-            color: '#d946ef',
+            color: '#f97316',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
@@ -207,9 +207,9 @@ const Store = () => {
       </Header>
 
       <InfoBox>
-        <StoreIcon size={20} color="#d946ef" style={{ flexShrink: 0 }} />
+        <StoreIcon size={20} color="#f97316" style={{ flexShrink: 0 }} />
         <div>
-          <strong style={{ color: '#d946ef' }}>[ SYSTEM MERCHANT ]:</strong>{' '}
+          <strong style={{ color: '#f97316' }}>[ SYSTEM MERCHANT ]:</strong>{' '}
           "أهلاً بك في متجر الظلال الحقيقي. هنا لا نستخدم الذهب الوهمي، بل
           العملات الحقيقية لشراء معدات ومكملات رياضية حقيقية ستصل إلى باب منزلك.
           استعد للإطلاق قريباً!"

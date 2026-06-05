@@ -13,22 +13,22 @@ const StatusPoints = ({ player, onBack }: any) => {
 
   return (
     <div style={{ padding: '20px', backgroundColor: '#000', minHeight: '100vh', color: 'white' }}>
-      <button onClick={onBack} style={{ color: '#d946ef', background: 'none', border: 'none', cursor: 'pointer', marginBottom: '30px' }}>← BACK_TO_SYSTEM</button>
+      <button onClick={onBack} style={{ color: '#f97316', background: 'none', border: 'none', cursor: 'pointer', marginBottom: '30px' }}>← BACK_TO_SYSTEM</button>
       
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h1 style={{ letterSpacing: '5px', fontSize: '24px', margin: 0 }}>STAT_POINTS</h1>
-        <p style={{ color: '#d946ef', fontSize: '12px' }}>AVAILABLE POINTS: {points}</p>
+        <p style={{ color: '#f97316', fontSize: '12px' }}>AVAILABLE POINTS: {points}</p>
       </div>
 
       {['str', 'agi', 'vit'].map((s) => (
         <div key={s} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0c10', padding: '20px', borderRadius: '12px', marginBottom: '15px', border: '1px solid #1a1d23' }}>
           <div>
             <h3 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '2px' }}>{s}</h3>
-            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#d946ef' }}>{stats[s as keyof typeof stats]}</span>
+            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#f97316' }}>{stats[s as keyof typeof stats]}</span>
           </div>
           <button 
             onClick={() => upgrade(s as keyof typeof stats)}
-            style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid #d946ef', background: 'transparent', color: '#d946ef', fontSize: '20px', cursor: 'pointer', display: points > 0 ? 'block' : 'none' }}
+            style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid #f97316', background: 'transparent', color: '#f97316', fontSize: '20px', cursor: 'pointer', display: points > 0 ? 'block' : 'none' }}
           >
             +
           </button>

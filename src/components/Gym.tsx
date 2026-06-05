@@ -78,8 +78,8 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #1d0f3a 0%, #07030f 100%);
-  border: 1px solid #2d184a;
+  background: linear-gradient(90deg, #1c1917 0%, #0c0a09 100%);
+  border: 1px solid #44403c;
   padding: 20px;
   border-radius: 16px;
   margin-bottom: 20px;
@@ -89,11 +89,11 @@ const Header = styled.div`
 const Title = styled.h1`
   font-size: 24px;
   margin: 0;
-  color: #d946ef;
+  color: #f97316;
   display: flex;
   align-items: center;
   gap: 10px;
-  text-shadow: 0 0 10px rgba(217, 70, 239, 0.4);
+  text-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
   text-transform: uppercase;
   letter-spacing: 2px;
 `;
@@ -105,7 +105,7 @@ const TabContainer = styled.div`
   background: #0b1120;
   padding: 8px;
   border-radius: 12px;
-  border: 1px solid #2d184a;
+  border: 1px solid #44403c;
   margin-bottom: 25px;
 `;
 
@@ -155,7 +155,7 @@ const Accordion = styled(motion.div)<{
 }>`
   background: #0b1120;
   border: 1px solid ${(props) =>
-    props.$expanded ? props.$themeColor : '#2d184a'};
+    props.$expanded ? props.$themeColor : '#44403c'};
   border-radius: 12px;
   margin-bottom: 12px;
   overflow: hidden;
@@ -199,8 +199,8 @@ const ContentArea = styled(motion.div)`
 `;
 
 const PhysioInput = styled.div`
-  background: #07030f;
-  border: 1px solid #2d184a;
+  background: #0c0a09;
+  border: 1px solid #44403c;
   border-radius: 8px;
   padding: 12px 15px;
   display: flex;
@@ -250,7 +250,7 @@ const UpdatePhysioBtn = styled(motion.button)`
 `;
 
 const ExerciseList = styled.div<{ $borderColor: string }>`
-  background: #07030f;
+  background: #0c0a09;
   border: 1px dashed ${(props) => props.$borderColor};
   border-radius: 10px;
   padding: 15px;
@@ -500,7 +500,7 @@ const Gym = ({ player, setPlayer }: any) => {
       playPhysioSound('error');
       toast.error('أدخل رقم Grade صحيح (1، 2، أو 3).', {
         style: {
-          background: '#07030f',
+          background: '#0c0a09',
           border: '1px solid #ef4444',
           color: '#ef4444',
         },
@@ -514,7 +514,7 @@ const Gym = ({ player, setPlayer }: any) => {
       playPhysioSound('error');
       toast.error('الرقم يجب أن يكون 1 أو 2 أو 3 بناءً على مستوى الألم.', {
         style: {
-          background: '#07030f',
+          background: '#0c0a09',
           border: '1px solid #ef4444',
           color: '#ef4444',
         },
@@ -544,7 +544,7 @@ const Gym = ({ player, setPlayer }: any) => {
         `[PROTOCOL LOADED]: ${jointData.title} set to Grade ${newGrade}.`,
         {
           style: {
-            background: '#07030f',
+            background: '#0c0a09',
             border: '1px solid #ef4444',
             color: '#ef4444',
             fontWeight: 'bold',
@@ -562,7 +562,7 @@ const Gym = ({ player, setPlayer }: any) => {
 
       <Header>
         <Title>
-          <Activity size={30} color="#d946ef" />
+          <Activity size={30} color="#f97316" />
           KINETIC LAB
         </Title>
         <div
@@ -582,7 +582,7 @@ const Gym = ({ player, setPlayer }: any) => {
       <TabContainer>
         <TabButton
           $active={currentView === 'mobility'}
-          $color="#d946ef"
+          $color="#f97316"
           onClick={() => handleViewChange('mobility')}
           whileTap={{ scale: 0.95 }}
         >
@@ -610,8 +610,8 @@ const Gym = ({ player, setPlayer }: any) => {
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.2 }}
           >
-            <InfoBox $borderColor="#d946ef" $bgColor="rgba(217, 70, 239, 0.05)">
-              <Info size={20} color="#d946ef" style={{ flexShrink: 0 }} />
+            <InfoBox $borderColor="#f97316" $bgColor="rgba(249, 115, 22, 0.05)">
+              <Info size={20} color="#f97316" style={{ flexShrink: 0 }} />
               <div>
                 <strong>[دكتور العلاج الطبيعي]:</strong> "الموبيليتي مش تسخين
                 عادي، دي عملية تزييت حرفية للمفاصل وإعادة ضبط للجهاز العصبي.
@@ -628,7 +628,7 @@ const Gym = ({ player, setPlayer }: any) => {
                 <Accordion
                   key={mob.id}
                   $expanded={isExpanded}
-                  $themeColor="#d946ef"
+                  $themeColor="#f97316"
                 >
                   <AccordionHeader
                     onClick={() => {
@@ -636,7 +636,7 @@ const Gym = ({ player, setPlayer }: any) => {
                       setExpandedMobility(isExpanded ? null : mob.id);
                     }}
                   >
-                    <AccordionTitle $color="#d946ef">
+                    <AccordionTitle $color="#f97316">
                       <Crosshair size={16} /> {mob.title}
                     </AccordionTitle>
                     <ExpandIcon $expanded={isExpanded}>
@@ -650,9 +650,9 @@ const Gym = ({ player, setPlayer }: any) => {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                       >
-                        <ExerciseList $borderColor="#d946ef">
+                        <ExerciseList $borderColor="#f97316">
                           {exercises.map((ex, idx) => (
-                            <ExerciseItem key={idx} $bulletColor="#d946ef">
+                            <ExerciseItem key={idx} $bulletColor="#f97316">
                               {ex}
                             </ExerciseItem>
                           ))}

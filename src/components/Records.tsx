@@ -89,8 +89,8 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #1d0f3a 0%, #07030f 100%);
-  border: 1px solid #2d184a;
+  background: linear-gradient(90deg, #1c1917 0%, #0c0a09 100%);
+  border: 1px solid #44403c;
   padding: 20px;
   border-radius: 16px;
   margin-bottom: 30px;
@@ -100,11 +100,11 @@ const Header = styled.div`
 const Title = styled.h1`
   font-size: 24px;
   margin: 0;
-  color: #d946ef;
+  color: #f97316;
   display: flex;
   align-items: center;
   gap: 10px;
-  text-shadow: 0 0 10px rgba(217, 70, 239, 0.4);
+  text-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
   text-transform: uppercase;
   letter-spacing: 2px;
 `;
@@ -190,7 +190,7 @@ const CategoryHeader = styled.div<{ $color: string }>`
 
 const ListItem = styled(motion.div)`
   background: #0b1120;
-  border: 1px solid #2d184a;
+  border: 1px solid #44403c;
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 12px;
@@ -202,18 +202,18 @@ const ListItem = styled(motion.div)`
 
   &:hover {
     border-color: #334155;
-    background: #1d0f3a;
+    background: #1c1917;
   }
 `;
 
 const TopRow = styled.div` display: flex; justify-content: space-between; align-items: center; `;
 const ItemTitle = styled.div` font-size: 15px; font-weight: bold; color: #f8fafc; `;
-const ItemValue = styled.div` font-size: 14px; font-weight: 900; color: #d946ef; text-shadow: 0 0 8px rgba(217, 70, 239, 0.4); `;
+const ItemValue = styled.div` font-size: 14px; font-weight: 900; color: #f97316; text-shadow: 0 0 8px rgba(249, 115, 22, 0.4); `;
 const BottomRow = styled.div` display: flex; gap: 12px; align-items: center; `;
 const InputField = styled.input`
-  flex: 1; background: #07030f; border: 1px solid #2d184a; color: #fff; padding: 12px 15px; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 14px; text-align: center; outline: none; transition: 0.3s;
+  flex: 1; background: #0c0a09; border: 1px solid #44403c; color: #fff; padding: 12px 15px; border-radius: 8px; font-family: 'Exo 2', sans-serif; font-size: 14px; text-align: center; outline: none; transition: 0.3s;
   &::placeholder { color: #475569; font-weight: bold; }
-  &:focus { border-color: #d946ef; box-shadow: 0 0 10px rgba(217, 70, 239, 0.2); }
+  &:focus { border-color: #f97316; box-shadow: 0 0 10px rgba(249, 115, 22, 0.2); }
 `;
 const UpdateBtn = styled(motion.button)<{ $btnBg: string; $btnColor: string }>`
   background: ${(props) => props.$btnBg}; color: ${(props) =>
@@ -221,7 +221,7 @@ const UpdateBtn = styled(motion.button)<{ $btnBg: string; $btnColor: string }>`
   &:hover { filter: brightness(1.2); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
-const PendingList = styled.div` margin-top: 40px; background: #1d0f3a; border: 1px dashed #eab308; border-radius: 16px; padding: 20px; `;
+const PendingList = styled.div` margin-top: 40px; background: #1c1917; border: 1px dashed #eab308; border-radius: 16px; padding: 20px; `;
 
 // ==========================================
 // 3. قاعدة البيانات
@@ -247,8 +247,8 @@ const DEFAULT_RECORDS = [
 ];
 
 const CATEGORY_STYLES: Record<string, { headerColor: string; btnBg: string; btnColor: string }> = {
-  SPRINTS: { headerColor: '#a855f7', btnBg: '#4c0519', btnColor: '#fda4af' },
-  'JUMPS & EXPLOSIVENESS': { headerColor: '#c084fc', btnBg: '#2e1065', btnColor: '#d8b4fe' },
+  SPRINTS: { headerColor: '#f59e0b', btnBg: '#4c0519', btnColor: '#fda4af' },
+  'JUMPS & EXPLOSIVENESS': { headerColor: '#eab308', btnBg: '#2e1065', btnColor: '#d8b4fe' },
   'STRENGTH & POWER': { headerColor: '#f43f5e', btnBg: '#3f1900', btnColor: '#fde047' },
 };
 
@@ -359,7 +359,7 @@ const Records = ({ player, setPlayer }: any) => {
     if (!inputValue || isNaN(parseFloat(inputValue))) {
       playRecordSound('error');
       toast.error('Please enter a valid number.', {
-        style: { background: '#07030f', border: '1px solid #ef4444', color: '#ef4444' },
+        style: { background: '#0c0a09', border: '1px solid #ef4444', color: '#ef4444' },
       });
       return;
     }
@@ -370,7 +370,7 @@ const Records = ({ player, setPlayer }: any) => {
 
     if (isBaseline) {
       playRecordSound('submit');
-      confetti({ particleCount: 80, spread: 60, colors: ['#d946ef', '#facc15', '#ffffff'] });
+      confetti({ particleCount: 80, spread: 60, colors: ['#f97316', '#facc15', '#ffffff'] });
 
       const updatedRecords = records.map((r) =>
         r.id === record.id ? { ...r, value: newValue } : r
@@ -385,7 +385,7 @@ const Records = ({ player, setPlayer }: any) => {
         }, { onConflict: 'player_name, exercise_name' });
         
         toast.success(`[BASELINE SET]: ${record.title} initialized at ${newValue} ${record.unit}!`, {
-          style: { background: '#07030f', border: '1px solid #10b981', color: '#10b981', fontWeight: 'bold' },
+          style: { background: '#0c0a09', border: '1px solid #10b981', color: '#10b981', fontWeight: 'bold' },
         });
       } catch (err) {
         console.error('Failed to save baseline', err);
@@ -446,7 +446,7 @@ const Records = ({ player, setPlayer }: any) => {
         },
       ]);
       toast.success('[RECORD BROKEN]: Verification Request sent to Coach.', {
-        style: { background: '#07030f', border: '1px solid #eab308', color: '#eab308', fontWeight: 'bold' },
+        style: { background: '#0c0a09', border: '1px solid #eab308', color: '#eab308', fontWeight: 'bold' },
       });
     } catch (err) {
       console.error('Failed to send request', err);
@@ -495,7 +495,7 @@ const Records = ({ player, setPlayer }: any) => {
 
       <Header>
         <Title>
-          <Medal size={28} color="#d946ef" />
+          <Medal size={28} color="#f97316" />
           HALL OF RECORDS
         </Title>
         <div style={{ fontSize: '12px', color: '#94a3b8', textAlign: 'right', fontWeight: 'bold', letterSpacing: '1px' }}>
@@ -558,7 +558,7 @@ const Records = ({ player, setPlayer }: any) => {
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {pendingRequests.map((req) => (
-              <div key={req.id} style={{ background: '#07030f', border: '1px solid #2d184a', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={req.id} style={{ background: '#0c0a09', border: '1px solid #44403c', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>{req.title}</div>
                   <div style={{ fontSize: '11px', color: '#94a3b8' }}>Submitted: {req.date}</div>

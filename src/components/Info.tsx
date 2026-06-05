@@ -61,8 +61,8 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #1d0f3a 0%, #07030f 100%);
-  border: 1px solid #2d184a;
+  background: linear-gradient(90deg, #1c1917 0%, #0c0a09 100%);
+  border: 1px solid #44403c;
   padding: 20px;
   border-radius: 16px;
   margin-bottom: 25px;
@@ -72,18 +72,18 @@ const Header = styled.div`
 const Title = styled.h1`
   font-size: 24px;
   margin: 0;
-  color: #a855f7;
+  color: #f59e0b;
   display: flex;
   align-items: center;
   gap: 10px;
-  text-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
   text-transform: uppercase;
   letter-spacing: 2px;
 `;
 
 const IntroBox = styled.div`
-  background: rgba(168, 85, 247, 0.05);
-  border: 1px solid #a855f7;
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid #f59e0b;
   color: #d8b4fe;
   padding: 15px;
   border-radius: 12px;
@@ -116,7 +116,7 @@ const Accordion = styled(motion.div)<{
 }>`
   background: #0b1120;
   border: 1px solid ${(props) =>
-    props.$expanded ? props.$themeColor : '#2d184a'};
+    props.$expanded ? props.$themeColor : '#44403c'};
   border-radius: 12px;
   margin-bottom: 12px;
   overflow: hidden;
@@ -217,7 +217,7 @@ const LORE_CATEGORIES = [
         id: 'breakfast',
         title: 'Metabolic Start: Breakfast (الإفطار)',
         icon: Zap,
-        color: '#a855f7',
+        color: '#f59e0b',
         content: `بعد 8 ساعات من النوم، جسدك يحتاج إلى الغذاء. الإفطار يوقف عملية الهدم العضلي، ينشط عملية الأيض (Metabolism)، ويجهز جهازك العصبي ذهنياً وبدنياً لباقي اليوم.`,
         warning: `تخطي الإفطار يرفع هرمون الكورتيزول (هرمون التوتر) لأعلى مستوياته. هذا الهرمون يقلل من كفاءة حرق الدهون ويزيد من احتمالية تكسير البروتين العضلي كمصدر سريع للطاقة.`,
       },
@@ -226,14 +226,14 @@ const LORE_CATEGORIES = [
   {
     id: 'cat_supplements',
     title: 'SPORTS SUPPLEMENTS (المكملات الرياضية)',
-    color: '#a855f7',
+    color: '#f59e0b',
     icon: BookOpen,
     items: [
       {
         id: 'creatine',
         title: 'Power Output: Creatine (الكرياتين)',
         icon: Zap,
-        color: '#a855f7',
+        color: '#f59e0b',
         content: `الكرياتين هو المكمل الرياضي الأكثر دراسة علمياً. يعمل على زيادة مخازن الـ ATP (عملة الطاقة الخلوية). النتيجة؟ يمنحك طاقة إضافية لرفع عدة إضافية أو وزن أثقل. كما يزيد من ترطيب الخلية العضلية (Intracellular Hydration) لتتعافى أسرع. (الجرعة الموصى بها: 5 جرام يومياً).`,
         warning: `إهمال شرب الماء (3-4 لتر يومياً) أثناء تناول الكرياتين قد يسبب إجهاداً للكلى وجفافاً يؤدي إلى تقلصات عضلية (Cramps).`,
       },
@@ -241,7 +241,7 @@ const LORE_CATEGORIES = [
         id: 'whey',
         title: 'Rapid Recovery: Whey Protein (الواي بروتين)',
         icon: Droplet,
-        color: '#c084fc',
+        color: '#eab308',
         content: `أسرع وأنقى مصدر للبروتين عالي الامتصاص. يمتص في الجسم خلال 30 دقيقة فقط. ممتاز بعد التمرين مباشرة لبدء عملية الاستشفاء العضلي (Muscle Protein Synthesis)، أو كوجبة سريعة لسد احتياجك اليومي من البروتين.`,
         warning: `الواي بروتين "مكمل غذائي" وليس بديلاً عن الطعام الحقيقي. الاعتماد عليه كلياً وإهمال اللحوم والبيض سيفقدك الفيتامينات والمعادن الضرورية للأداء الرياضي.`,
       },
@@ -286,7 +286,7 @@ const Info = () => {
     <Container>
       <Header>
         <Title>
-          <BookOpen size={30} color="#a855f7" />
+          <BookOpen size={30} color="#f59e0b" />
           THE CODEX
         </Title>
         <div
@@ -303,7 +303,7 @@ const Info = () => {
       </Header>
 
       <IntroBox>
-        <BookOpen size={20} color="#a855f7" style={{ flexShrink: 0 }} />
+        <BookOpen size={20} color="#f59e0b" style={{ flexShrink: 0 }} />
         <div>
           <strong>[خبير التغذية الرياضية]:</strong> "المعرفة هي أساس التطور
           الرياضي. لا يمكنك كسر أرقامك القياسية والوصول لأقصى أداء بدني إذا كنت

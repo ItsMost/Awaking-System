@@ -66,7 +66,7 @@ const BodyScanner3D = ({ painLevel, isScanning }: { painLevel: number, isScannin
 
   // تغيير لون المجسم بناءً على درجة الألم (X-Ray Effect)
   const getBodyColor = () => {
-    if (painLevel === 0) return '#a855f7'; // أزرق طبيعي
+    if (painLevel === 0) return '#f59e0b'; // أزرق طبيعي
     if (painLevel < 5) return '#eab308'; // أصفر تحذيري
     if (painLevel < 8) return '#f97316'; // برتقالي
     return '#ef4444'; // أحمر حرج
@@ -120,7 +120,7 @@ const Container = styled(motion.div)`
 `;
 
 const Header = styled.div`
-  display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #022c22 0%, #07030f 100%); border: 1px solid #10b981; padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2); position: relative; overflow: hidden;
+  display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #022c22 0%, #0c0a09 100%); border: 1px solid #10b981; padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2); position: relative; overflow: hidden;
   @media (max-width: 480px) { padding: 15px; border-radius: 16px; margin-bottom: 15px; }
 `;
 
@@ -130,7 +130,7 @@ const Title = styled.h1`
 `;
 
 const ScannerWrapper = styled.div`
-  background: #07030f; border: 1px solid #10b981; border-radius: 20px; margin-bottom: 20px; height: 260px; display: flex; justify-content: center; align-items: center; position: relative; box-shadow: inset 0 0 40px rgba(16, 185, 129, 0.1); overflow: hidden;
+  background: #0c0a09; border: 1px solid #10b981; border-radius: 20px; margin-bottom: 20px; height: 260px; display: flex; justify-content: center; align-items: center; position: relative; box-shadow: inset 0 0 40px rgba(16, 185, 129, 0.1); overflow: hidden;
   @media (max-width: 480px) { height: 220px; border-radius: 16px; }
 `;
 
@@ -142,20 +142,20 @@ const scanline = keyframes` 0% { transform: translateY(-100%); } 100% { transfor
 const ScanlineEffect = styled.div` position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: rgba(16, 185, 129, 0.5); box-shadow: 0 0 15px rgba(16, 185, 129, 0.8); animation: ${scanline} 2s linear infinite; pointer-events: none; z-index: 5; `;
 
 const Card = styled(motion.div)`
-  background: linear-gradient(180deg, #0b1120 0%, #07030f 100%); border: 1px solid #2d184a; border-radius: 20px; padding: 25px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  background: linear-gradient(180deg, #0b1120 0%, #0c0a09 100%); border: 1px solid #44403c; border-radius: 20px; padding: 25px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   @media (max-width: 480px) { padding: 15px; border-radius: 16px; }
 `;
 
 const StepTitle = styled.h2<{ $color?: string }>`
-  font-size: 15px; color: ${(props) => props.$color || '#fff'}; margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #2d184a; padding-bottom: 15px; font-weight: 900;
+  font-size: 15px; color: ${(props) => props.$color || '#fff'}; margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #44403c; padding-bottom: 15px; font-weight: 900;
   @media (max-width: 480px) { font-size: 13px; margin: 0 0 15px 0; padding-bottom: 10px; }
 `;
 
 const Grid = styled.div` display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; @media (max-width: 480px) { gap: 8px; } `;
 
 const SelectBtn = styled.button<{ $active: boolean; $color: string }>`
-  background: ${(props) => (props.$active ? `${props.$color}15` : '#07030f')};
-  border: 1px solid ${(props) => (props.$active ? props.$color : '#2d184a')};
+  background: ${(props) => (props.$active ? `${props.$color}15` : '#0c0a09')};
+  border: 1px solid ${(props) => (props.$active ? props.$color : '#44403c')};
   color: ${(props) => (props.$active ? props.$color : '#94a3b8')};
   padding: 15px 10px; border-radius: 14px; font-family: 'Exo 2'; font-size: 12px; font-weight: 900; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
   box-shadow: ${(props) => (props.$active ? `0 0 15px ${props.$color}40, inset 0 0 10px ${props.$color}20` : 'none')};
@@ -167,26 +167,26 @@ const NextBtn = styled.button<{ $color?: string }>`
   width: 100%; background: ${(props) => props.$color || '#10b981'}; color: #000; border: none; padding: 16px; border-radius: 14px; font-family: 'Exo 2'; font-size: 14px; font-weight: 900; cursor: pointer; margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s; letter-spacing: 1px;
   box-shadow: 0 0 20px ${(props) => props.$color || '#10b981'}60;
   &:hover { filter: brightness(1.2); transform: translateY(-2px); }
-  &:disabled { background: #2d184a; color: #64748b; cursor: not-allowed; transform: none; box-shadow: none; }
+  &:disabled { background: #44403c; color: #64748b; cursor: not-allowed; transform: none; box-shadow: none; }
   @media (max-width: 480px) { padding: 14px; font-size: 13px; border-radius: 12px; margin-top: 15px; }
 `;
 
 const ProtocolBox = styled(motion.div)<{ $type: 'ice' | 'heat' | 'rest' | 'active' }>`
-  background: ${(props) => props.$type === 'ice' ? 'linear-gradient(90deg, #082f49, #07030f)' : props.$type === 'heat' ? 'linear-gradient(90deg, #450a0a, #07030f)' : props.$type === 'rest' ? 'linear-gradient(90deg, #2a0808, #07030f)' : 'linear-gradient(90deg, #022c22, #07030f)'};
-  border: 1px solid ${(props) => props.$type === 'ice' ? '#c084fc' : props.$type === 'heat' ? '#f97316' : props.$type === 'rest' ? '#ef4444' : '#10b981'};
+  background: ${(props) => props.$type === 'ice' ? 'linear-gradient(90deg, #082f49, #0c0a09)' : props.$type === 'heat' ? 'linear-gradient(90deg, #450a0a, #0c0a09)' : props.$type === 'rest' ? 'linear-gradient(90deg, #2a0808, #0c0a09)' : 'linear-gradient(90deg, #022c22, #0c0a09)'};
+  border: 1px solid ${(props) => props.$type === 'ice' ? '#eab308' : props.$type === 'heat' ? '#f97316' : props.$type === 'rest' ? '#ef4444' : '#10b981'};
   border-radius: 16px; padding: 20px; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 15px;
   @media (max-width: 480px) { padding: 15px; gap: 10px; border-radius: 14px; }
 `;
 
 const ProtocolIcon = styled.div<{ $type: 'ice' | 'heat' | 'rest' | 'active' }>`
   background: rgba(0,0,0,0.5); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  color: ${(props) => props.$type === 'ice' ? '#c084fc' : props.$type === 'heat' ? '#f97316' : props.$type === 'rest' ? '#ef4444' : '#10b981'};
+  color: ${(props) => props.$type === 'ice' ? '#eab308' : props.$type === 'heat' ? '#f97316' : props.$type === 'rest' ? '#ef4444' : '#10b981'};
   border: 1px solid currentColor; box-shadow: inset 0 0 10px currentColor;
   @media (max-width: 480px) { padding: 10px; border-radius: 10px; svg { width: 20px; height: 20px; } }
 `;
 
 const SeverityContainer = styled.div`
-  display: flex; align-items: center; justify-content: space-between; background: #07030f; border: 1px solid #2d184a; border-radius: 14px; padding: 10px 15px; margin-top: 15px;
+  display: flex; align-items: center; justify-content: space-between; background: #0c0a09; border: 1px solid #44403c; border-radius: 14px; padding: 10px 15px; margin-top: 15px;
 `;
 const SeverityBtn = styled.button<{ $color: string }>`
   background: ${(props) => props.$color}20; color: ${(props) => props.$color}; border: 1px solid ${(props) => props.$color}; width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; cursor: pointer; transition: 0.2s;
@@ -225,7 +225,7 @@ const Rehab = () => {
   const [isScanning, setIsScanning] = useState(false);
 
   const getSeverityColor = () => {
-    if (severity === 0) return '#a855f7';
+    if (severity === 0) return '#f59e0b';
     if (severity < 5) return '#eab308';
     if (severity < 8) return '#f97316';
     return '#ef4444';
@@ -306,15 +306,15 @@ const Rehab = () => {
       <AnimatePresence mode="wait">
         {step === 1 && (
           <Card key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-            <StepTitle $color="#c084fc"><Crosshair size={18} /> ١. أين يقع مركز الألم؟</StepTitle>
+            <StepTitle $color="#eab308"><Crosshair size={18} /> ١. أين يقع مركز الألم؟</StepTitle>
             <Grid>
               {LOCATIONS.map((loc) => (
-                <SelectBtn key={loc.id} $active={location === loc.id} $color="#c084fc" onClick={() => { playClick(); setLocation(loc.id); }}>
+                <SelectBtn key={loc.id} $active={location === loc.id} $color="#eab308" onClick={() => { playClick(); setLocation(loc.id); }}>
                   {loc.label}
                 </SelectBtn>
               ))}
             </Grid>
-            <NextBtn disabled={!location} onClick={handleNext} $color="#c084fc">تأكيد المنطقة <ChevronRight size={18} /></NextBtn>
+            <NextBtn disabled={!location} onClick={handleNext} $color="#eab308">تأكيد المنطقة <ChevronRight size={18} /></NextBtn>
           </Card>
         )}
 

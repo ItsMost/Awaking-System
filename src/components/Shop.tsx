@@ -153,12 +153,12 @@ const initializeDefaultItems = async () => {
   const defaults = [
     { name: 'Golden Wyvern Core', description: 'جوهر مالي: يزيد الذهب المكتسب بنسبة 10%.', price: 3000, category: 'pet', color: '#eab308', icon: 'spirit_wyvern', required_rank: 1 },
     { name: 'Healing Phoenix Ember', description: 'جوهر طبي: يعيد 10 HP يومياً عند إكمال المهام.', price: 3000, category: 'pet', color: '#ef4444', icon: 'spirit_phoenix', required_rank: 1 },
-    { name: 'Shadow Owl Eye', description: 'جوهر تجاري: يمنحك خصم 10% في المتجر دائماً.', price: 3000, category: 'pet', color: '#a855f7', icon: 'spirit_owl', required_rank: 1 },
-    { name: 'Iron Golem Matrix', description: 'جوهر مدافع: يحمي الستريك من الكسر.', price: 3000, category: 'pet', color: '#a855f7', icon: 'spirit_golem', required_rank: 1 },
-    { name: 'Frost Wolf Soul', description: 'صياد الألعاب: يزيد ذهب الألعاب بنسبة 20%.', price: 3000, category: 'pet', color: '#c084fc', icon: 'spirit_wolf', required_rank: 1 },
+    { name: 'Shadow Owl Eye', description: 'جوهر تجاري: يمنحك خصم 10% في المتجر دائماً.', price: 3000, category: 'pet', color: '#f59e0b', icon: 'spirit_owl', required_rank: 1 },
+    { name: 'Iron Golem Matrix', description: 'جوهر مدافع: يحمي الستريك من الكسر.', price: 3000, category: 'pet', color: '#f59e0b', icon: 'spirit_golem', required_rank: 1 },
+    { name: 'Frost Wolf Soul', description: 'صياد الألعاب: يزيد ذهب الألعاب بنسبة 20%.', price: 3000, category: 'pet', color: '#eab308', icon: 'spirit_wolf', required_rank: 1 },
     { name: 'Emerald Dragon Scale', description: 'مخفف الألم: يقلل خسارة الـ HP عند الغياب.', price: 3000, category: 'pet', color: '#10b981', icon: 'spirit_emerald', required_rank: 1 },
-    { name: 'Essence Crystal', description: 'يشحن طاقة مرافقك السحري بنسبة 50%.', price: 500, category: 'consumable', color: '#a855f7', icon: 'BatteryCharging', required_rank: 1 },
-    { name: 'Streak Protection Shield', description: 'درع حماية الستريك: يحميك من كسر أيامك النشطة وتصفير الستريك لمرة واحدة عند الغياب!', price: 1500, category: 'consumable', color: '#a855f7', icon: 'Shield', required_rank: 1 }
+    { name: 'Essence Crystal', description: 'يشحن طاقة مرافقك السحري بنسبة 50%.', price: 500, category: 'consumable', color: '#f59e0b', icon: 'BatteryCharging', required_rank: 1 },
+    { name: 'Streak Protection Shield', description: 'درع حماية الستريك: يحميك من كسر أيامك النشطة وتصفير الستريك لمرة واحدة عند الغياب!', price: 1500, category: 'consumable', color: '#f59e0b', icon: 'Shield', required_rank: 1 }
   ];
   
   const { data } = await supabase.from('shop_items').select('name');
@@ -187,8 +187,8 @@ const getRankInfo = (level: number) => {
   if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444' };
   if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b' };
   if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b' };
-  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#8b5cf6' };
-  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#8b5cf6' };
+  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#ea580c' };
+  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#ea580c' };
   if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6' };
   if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6' };
   if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6' };
@@ -219,7 +219,7 @@ const Container = styled(motion.div)`
 `;
 
 const Header = styled.div` 
-  display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #07030f 0%, #1e1b4b 100%); border: 1px solid #6366f1; padding: 20px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); position: relative; overflow: hidden; 
+  display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #0c0a09 0%, #1e1b4b 100%); border: 1px solid #6366f1; padding: 20px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); position: relative; overflow: hidden; 
   @media (max-width: 480px) { padding: 15px; border-radius: 14px; margin-bottom: 15px; }
 `;
 
@@ -249,7 +249,7 @@ const ItemGrid = styled.div`
 const cardHover = keyframes` 0% { transform: translateY(0px); box-shadow: 0 5px 20px rgba(0,0,0,0.3); } 100% { transform: translateY(-3px); box-shadow: 0 10px 25px currentColor; } `;
 
 const ExclusiveCard = styled(motion.div)<{ $soldOut: boolean; $color: string }>` 
-  background: ${(props) => props.$soldOut ? '#1d0f3a' : `linear-gradient(135deg, rgba(29, 15, 58, 0.9) 0%, ${props.$color}15 100%)`}; border: 1px solid ${(props) => props.$soldOut ? '#334155' : props.$color}; border-radius: 16px; padding: 20px; margin-bottom: 0px; position: relative; overflow: hidden; opacity: ${(props) => props.$soldOut ? 0.7 : 1}; transition: all 0.3s ease; color: ${(props) => props.$color}40; 
+  background: ${(props) => props.$soldOut ? '#1c1917' : `linear-gradient(135deg, rgba(28, 25, 23, 0.9) 0%, ${props.$color}15 100%)`}; border: 1px solid ${(props) => props.$soldOut ? '#334155' : props.$color}; border-radius: 16px; padding: 20px; margin-bottom: 0px; position: relative; overflow: hidden; opacity: ${(props) => props.$soldOut ? 0.7 : 1}; transition: all 0.3s ease; color: ${(props) => props.$color}40; 
   display: flex; flex-direction: column; justify-content: space-between;
   &:hover { animation: ${(props) => props.$soldOut ? 'none' : cardHover} 0.4s forwards; border-color: #fff; } 
   @media (max-width: 480px) { padding: 12px 10px; border-radius: 12px; }
@@ -269,7 +269,7 @@ const IconWrapper = styled.div<{ $color: string }>`
 `;
 
 const BuyBtn = styled.button<{ $affordable: boolean; $color?: string }>` 
-  background: ${(props) => props.$affordable ? (props.$color || '#10b981') : '#2d184a'}; color: ${(props) => props.$affordable ? '#000' : '#64748b'}; border: ${(props) => props.$affordable ? 'none' : '1px solid #334155'}; padding: 10px 15px; border-radius: 10px; font-family: 'Exo 2'; font-weight: 900; font-size: 13px; cursor: ${(props) => props.$affordable ? 'pointer' : 'not-allowed'}; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.3s; width: 100%; letter-spacing: 1px; margin-top: auto;
+  background: ${(props) => props.$affordable ? (props.$color || '#10b981') : '#44403c'}; color: ${(props) => props.$affordable ? '#000' : '#64748b'}; border: ${(props) => props.$affordable ? 'none' : '1px solid #334155'}; padding: 10px 15px; border-radius: 10px; font-family: 'Exo 2'; font-weight: 900; font-size: 13px; cursor: ${(props) => props.$affordable ? 'pointer' : 'not-allowed'}; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.3s; width: 100%; letter-spacing: 1px; margin-top: auto;
   &:hover { filter: ${(props) => props.$affordable ? 'brightness(1.2)' : 'none'}; box-shadow: ${(props) => props.$affordable ? `0 0 15px ${props.$color}60` : 'none'}; } 
   @media (max-width: 480px) { padding: 8px; font-size: 10px; border-radius: 8px; gap: 4px; letter-spacing: 0; }
 `;
@@ -282,15 +282,15 @@ const SoldOutText = styled.div`
 
 const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(10px); pointer-events: auto; `;
 const ModalContent = styled(motion.div)<{ $color?: string }>` 
-  background: linear-gradient(135deg, #0b1120 0%, #07030f 100%); border: 1px solid ${(props) => props.$color || '#eab308'}; border-radius: 24px; padding: 35px; width: 100%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 0 60px ${(props) => props.$color ? `${props.$color}50` : 'rgba(234, 179, 8, 0.3)'}; max-height: 90vh; overflow-y: auto; &::-webkit-scrollbar { width: 0px; } 
+  background: linear-gradient(135deg, #0b1120 0%, #0c0a09 100%); border: 1px solid ${(props) => props.$color || '#eab308'}; border-radius: 24px; padding: 35px; width: 100%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 0 60px ${(props) => props.$color ? `${props.$color}50` : 'rgba(234, 179, 8, 0.3)'}; max-height: 90vh; overflow-y: auto; &::-webkit-scrollbar { width: 0px; } 
   @media (max-width: 480px) { padding: 25px 15px; border-radius: 20px; }
 `;
 
 const ModalTitle = styled.h2<{ $color?: string }>` color: ${(props) => props.$color || '#eab308'}; margin-top: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; font-weight: 900; @media (max-width: 480px) { font-size: 16px; } `;
 const ModalDesc = styled.div` font-size: 15px; color: #cbd5e1; margin-bottom: 30px; line-height: 1.6; @media (max-width: 480px) { font-size: 13px; margin-bottom: 20px; } `;
-const ModalItemName = styled.span<{ $color?: string }>` color: ${(props) => props.$color || '#c084fc'}; font-size: 22px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 15px ${(props) => props.$color || '#c084fc'}80; @media (max-width: 480px) { font-size: 18px; } `;
+const ModalItemName = styled.span<{ $color?: string }>` color: ${(props) => props.$color || '#eab308'}; font-size: 22px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 15px ${(props) => props.$color || '#eab308'}80; @media (max-width: 480px) { font-size: 18px; } `;
 
-const SuccessCardWrapper = styled.div<{ $color: string }>` background: linear-gradient(135deg, ${(props) => props.$color}15, #07030f); border: 1px solid ${(props) => props.$color}; border-radius: 20px; padding: 30px 20px; text-align: center; box-shadow: 0 0 50px ${(props) => props.$color}40; max-width: 320px; width: 90vw; @media (max-width: 480px) { padding: 25px 15px; border-radius: 16px; } `;
+const SuccessCardWrapper = styled.div<{ $color: string }>` background: linear-gradient(135deg, ${(props) => props.$color}15, #0c0a09); border: 1px solid ${(props) => props.$color}; border-radius: 20px; padding: 30px 20px; text-align: center; box-shadow: 0 0 50px ${(props) => props.$color}40; max-width: 320px; width: 90vw; @media (max-width: 480px) { padding: 25px 15px; border-radius: 16px; } `;
 const SuccessTitle = styled.h1<{ $color: string }>` margin: 0 0 8px 0; color: #fff; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 15px ${(props) => props.$color}; @media (max-width: 480px) { font-size: 18px; letter-spacing: 1px; } `;
 const SuccessItemName = styled.h2<{ $color: string }>` margin: 0 0 20px 0; color: ${(props) => props.$color}; font-size: 16px; font-weight: bold; @media (max-width: 480px) { font-size: 14px; margin: 0 0 15px 0; } `;
 
@@ -302,9 +302,9 @@ const AddItemBtn = styled.button`
   @media (max-width: 480px) { padding: 12px; font-size: 11px; margin-bottom: 15px; }
 `;
 
-const EditInput = styled.input` width: 100%; background: rgba(2, 6, 23, 0.8); border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Exo 2'; font-size: 13px; outline: none; transition: 0.3s; &:focus { border-color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); } @media (max-width: 480px) { padding: 10px; font-size: 11px; } `;
+const EditInput = styled.input` width: 100%; background: rgba(2, 6, 23, 0.8); border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Exo 2'; font-size: 13px; outline: none; transition: 0.3s; &:focus { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); } @media (max-width: 480px) { padding: 10px; font-size: 11px; } `;
 const EditSelect = styled.select` width: 100%; background: rgba(2, 6, 23, 0.8); border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Exo 2'; font-size: 13px; outline: none; cursor: pointer; @media (max-width: 480px) { padding: 10px; font-size: 11px; } `;
-const EditTextarea = styled.textarea` width: 100%; background: rgba(2, 6, 23, 0.8); border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Exo 2'; font-size: 13px; outline: none; resize: vertical; min-height: 80px; transition: 0.3s; &:focus { border-color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); } @media (max-width: 480px) { padding: 10px; font-size: 11px; min-height: 60px; } `;
+const EditTextarea = styled.textarea` width: 100%; background: rgba(2, 6, 23, 0.8); border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'Exo 2'; font-size: 13px; outline: none; resize: vertical; min-height: 80px; transition: 0.3s; &:focus { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); } @media (max-width: 480px) { padding: 10px; font-size: 11px; min-height: 60px; } `;
 
 const LockedOverlay = styled.div` position: absolute; inset: 0; background: rgba(2, 6, 23, 0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 15; border-radius: inherit; pointer-events: none; `;
 const LockedText = styled.div<{ $color: string }>` 
@@ -354,7 +354,7 @@ const Shop = ({ player, setPlayer }: any) => {
 
   const isCoachMode = localStorage.getItem('elite_coach_mode') === 'true';
   const [editModal, setEditModal] = useState<{ show: boolean, item: any | null }>({ show: false, item: null });
-  const [formData, setFormData] = useState({ id: '', name: '', description: '', price: 0, category: 'general', color: '#c084fc', icon: 'Star', max_stock: '', required_rank: 1 });
+  const [formData, setFormData] = useState({ id: '', name: '', description: '', price: 0, category: 'general', color: '#eab308', icon: 'Star', max_stock: '', required_rank: 1 });
 
   useEffect(() => {
     initializeDefaultItems().then(() => fetchShopData());
@@ -503,7 +503,7 @@ const Shop = ({ player, setPlayer }: any) => {
     if (item) {
       setFormData({ id: item.id, name: item.name, description: item.description || '', price: item.price, category: item.category, color: item.color, icon: item.icon, max_stock: item.max_stock ? String(item.max_stock) : '', required_rank: item.required_rank || 1 });
     } else {
-      setFormData({ id: '', name: '', description: '', price: 0, category: 'general', color: '#c084fc', icon: 'Star', max_stock: '', required_rank: 1 });
+      setFormData({ id: '', name: '', description: '', price: 0, category: 'general', color: '#eab308', icon: 'Star', max_stock: '', required_rank: 1 });
     }
     setEditModal({ show: true, item: item || null });
   };
@@ -541,7 +541,7 @@ const Shop = ({ player, setPlayer }: any) => {
     if (!isCoachMode) return null;
     return (
       <CoachActions>
-        <CoachBtn $color="#a855f7" onClick={(e) => { e.stopPropagation(); openEditModal(item); }}><Edit2 size={12} /></CoachBtn>
+        <CoachBtn $color="#f59e0b" onClick={(e) => { e.stopPropagation(); openEditModal(item); }}><Edit2 size={12} /></CoachBtn>
         <CoachBtn $color="#ef4444" onClick={(e) => handleDeleteItem(e, item.id)}><Trash2 size={12} /></CoachBtn>
       </CoachActions>
     );
@@ -703,9 +703,9 @@ const Shop = ({ player, setPlayer }: any) => {
         <AnimatePresence>
           {editModal.show && (
             <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <ModalContent $color="#a855f7" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+              <ModalContent $color="#f59e0b" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
                 <button onClick={() => setEditModal({ show: false, item: null })} style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={18} /></button>
-                <ModalTitle $color="#a855f7" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <ModalTitle $color="#f59e0b" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                   <Edit2 size={16} /> {formData.id ? 'تعديل المنتج' : 'منتج جديد'}
                 </ModalTitle>
                 <div style={{ textAlign: 'right', fontSize: '10px', marginBottom: 4, color: '#94a3b8' }}>القسم</div>
@@ -732,7 +732,7 @@ const Shop = ({ player, setPlayer }: any) => {
                     <EditInput placeholder="#eab308" value={formData.color} onChange={(e) => setFormData({...formData, color: e.target.value})} />
                   </div>
                 </div>
-                <BuyBtn $affordable={true} $color="#a855f7" onClick={handleSaveItem} disabled={isProcessing} style={{ marginTop: 10, color: '#000' }}>
+                <BuyBtn $affordable={true} $color="#f59e0b" onClick={handleSaveItem} disabled={isProcessing} style={{ marginTop: 10, color: '#000' }}>
                   {isProcessing ? 'جاري الحفظ...' : <><Save size={16} /> حفظ التعديلات</>}
                 </BuyBtn>
               </ModalContent>
@@ -763,9 +763,9 @@ const Shop = ({ player, setPlayer }: any) => {
           <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>SYNCING VAULT...</div>
         ) : (
           <>
-            {renderSection('MYSTICAL COMPANIONS', Ghost, petsItems, '#a855f7')}
+            {renderSection('MYSTICAL COMPANIONS', Ghost, petsItems, '#f59e0b')}
             {renderSection('ESSENCE & ELIXIRS', BatteryCharging, consumableItems, '#f43f5e')}
-            {renderSection('TITLES VAULT', Award, titleItems, '#a855f7')}
+            {renderSection('TITLES VAULT', Award, titleItems, '#f59e0b')}
           </>
         )}
       </Container>

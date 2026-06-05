@@ -90,8 +90,8 @@ const getRankInfo = (level: number) => {
   if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.6)' };
   if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' };
   if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' };
-  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)' };
-  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)' };
+  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#ea580c', glow: 'rgba(139, 92, 246, 0.4)' };
+  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#ea580c', glow: 'rgba(139, 92, 246, 0.4)' };
   if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
   if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
   if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
@@ -122,8 +122,8 @@ const calculateLevelData = (totalXp: number) => {
 };
 
 const getStreakTier = (s: number) => {
-  if (s >= 30) return { name: 'VOID QUANTUM 🌌', multiplier: 1.5, nextMilestone: 60, prevMilestone: 30, color: '#a855f7' };
-  if (s >= 14) return { name: 'CYBER TITAN ⚡', multiplier: 1.2, nextMilestone: 30, prevMilestone: 14, color: '#d946ef' };
+  if (s >= 30) return { name: 'VOID QUANTUM 🌌', multiplier: 1.5, nextMilestone: 60, prevMilestone: 30, color: '#f59e0b' };
+  if (s >= 14) return { name: 'CYBER TITAN ⚡', multiplier: 1.2, nextMilestone: 30, prevMilestone: 14, color: '#f97316' };
   if (s >= 7) return { name: 'EMERALD SENTINEL 💚', multiplier: 1.1, nextMilestone: 14, prevMilestone: 7, color: '#10b981' };
   return { name: 'EMBER INITIATE 🔥', multiplier: 1.0, nextMilestone: 7, prevMilestone: 0, color: '#f97316' };
 };
@@ -146,8 +146,8 @@ const AnimatedCoin = React.memo(() => (
 
 const AnimatedExpStar = React.memo(() => (
   <motion.div style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 4 }} whileHover={{ scale: 1.2 }}>
-    <svg viewBox="0 0 100 100" width="14" height="14" style={{ filter: 'drop-shadow(0 0 2px #d946ef)' }}>
-      <polygon points="50,10 61,39 92,39 67,58 76,88 50,70 24,88 33,58 8,39 39,39" fill="#d946ef" stroke="#8b5cf6" strokeWidth="4" />
+    <svg viewBox="0 0 100 100" width="14" height="14" style={{ filter: 'drop-shadow(0 0 2px #f97316)' }}>
+      <polygon points="50,10 61,39 92,39 67,58 76,88 50,70 24,88 33,58 8,39 39,39" fill="#f97316" stroke="#ea580c" strokeWidth="4" />
       <circle cx="50" cy="50" r="10" fill="#fff" opacity="0.8" />
     </svg>
   </motion.div>
@@ -208,7 +208,7 @@ const QuestCardComponent = React.memo<QuestCardComponentProps>(({
           <QuestDesc>{dynamicDesc}</QuestDesc>
           {!isPenalty && (
             <Rewards>
-              <span style={{ color: '#d946ef', display: 'flex', alignItems: 'center' }}>
+              <span style={{ color: '#f97316', display: 'flex', alignItems: 'center' }}>
                 <AnimatedExpStar /> +{quest.exp * (status === 'idle' ? expMultiplier : 1)} XP
               </span>
               <span style={{ color: '#eab308', display: 'flex', alignItems: 'center' }}>
@@ -311,20 +311,20 @@ const UrgentQuestCardComponent = React.memo<UrgentQuestCardComponentProps>(({
 // ==========================================
 const Container = styled(motion.div)` padding: 15px; font-family: 'Exo 2', sans-serif; color: #fff; padding-bottom: 100px; max-width: 600px; margin: 0 auto; position: relative; overflow-x: hidden; @media (max-width: 480px) { padding: 10px; }`;
 
-const NewsTickerWrapper = styled.div` background: #07030f; border: 1px solid #2d184a; border-radius: 12px; padding: 10px; margin-bottom: 20px; display: flex; align-items: center; overflow: hidden; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.5); @media (max-width: 480px) { padding: 8px; margin-bottom: 12px; }`;
-const TickerIcon = styled.div` background: #a855f720; color: #a855f7; padding: 6px; border-radius: 8px; margin-right: 10px; z-index: 2; display: flex; align-items: center; justify-content: center; @media (max-width: 480px) { padding: 4px; svg { width: 14px; height: 14px; } }`;
+const NewsTickerWrapper = styled.div` background: #0c0a09; border: 1px solid #44403c; border-radius: 12px; padding: 10px; margin-bottom: 20px; display: flex; align-items: center; overflow: hidden; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.5); @media (max-width: 480px) { padding: 8px; margin-bottom: 12px; }`;
+const TickerIcon = styled.div` background: #f59e0b20; color: #f59e0b; padding: 6px; border-radius: 8px; margin-right: 10px; z-index: 2; display: flex; align-items: center; justify-content: center; @media (max-width: 480px) { padding: 4px; svg { width: 14px; height: 14px; } }`;
 const marquee = keyframes` 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } `;
 const TickerText = styled.div` display: flex; gap: 40px; white-space: nowrap; animation: ${marquee} 9s linear infinite; will-change: transform; font-size: 13px; font-weight: bold; color: #94a3b8; direction: rtl; span { color: #fff; } strong { color: #eab308; } @media (max-width: 480px) { font-size: 11px; }`;
 
 
 
-const DateNav = styled.div` display: flex; align-items: center; justify-content: space-between; background: rgba(29, 15, 58, 0.45); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 15px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); @media (max-width: 480px) { padding: 8px 12px; }`;
-const NavBtn = styled.button` background: none; border: none; color: #d946ef; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; transition: 0.3s; &:disabled { color: #334155; cursor: not-allowed; } &:hover:not(:disabled) { filter: brightness(1.2); transform: scale(1.1); } @media (max-width: 480px) { svg { width: 18px; height: 18px; } }`;
+const DateNav = styled.div` display: flex; align-items: center; justify-content: space-between; background: rgba(28, 25, 23, 0.45); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 15px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); @media (max-width: 480px) { padding: 8px 12px; }`;
+const NavBtn = styled.button` background: none; border: none; color: #f97316; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; transition: 0.3s; &:disabled { color: #334155; cursor: not-allowed; } &:hover:not(:disabled) { filter: brightness(1.2); transform: scale(1.1); } @media (max-width: 480px) { svg { width: 18px; height: 18px; } }`;
 const DateDisplay = styled.div` text-align: center; .day { font-size: 14px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; @media (max-width: 480px) { font-size: 12px; } } .full-date { font-size: 9px; color: #ef4444; margin-top: 2px; font-weight: bold; } `;
 
 // 🚨 STREAK PROGRESSION WIDGET STYLE (replaces Battle Pass) 🚨
 const StreakTrackerCard = styled.div<{ $streakColor: string }>`
-  background: linear-gradient(135deg, rgba(29, 15, 58, 0.6) 0%, rgba(2, 6, 23, 0.8) 100%);
+  background: linear-gradient(135deg, rgba(28, 25, 23, 0.6) 0%, rgba(2, 6, 23, 0.8) 100%);
   border: 1px solid ${props => props.$streakColor}40;
   border-radius: 16px;
   padding: 16px;
@@ -448,7 +448,7 @@ const StreakMilestoneNode = styled.div<{ $active: boolean; $color: string; $left
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: ${props => props.$active ? props.$color : '#1d0f3a'};
+  background: ${props => props.$active ? props.$color : '#1c1917'};
   border: 2px solid ${props => props.$active ? '#fff' : '#475569'};
   box-shadow: ${props => props.$active ? `0 0 12px ${props.$color}` : 'none'};
   transition: all 0.3s ease;
@@ -474,14 +474,14 @@ const SectionTitle = styled.h2<{ $color: string }>` font-size: 14px; color: ${(p
 
 // 🚨 OPTIMIZATION: Removed infinite pulse keyframes to eliminate DOM lag 🚨
 const QuestCard = styled(motion.div)<{ $status: string; $isPenalty?: boolean; $isLocked?: boolean; $glowColor: string }>`
-  background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : props.$status === 'pending' ? 'rgba(234, 179, 8, 0.1)' : props.$isPenalty ? '#2a0808' : 'linear-gradient(135deg, rgba(29, 15, 58, 0.9), rgba(2, 6, 23, 0.8))'}; 
+  background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : props.$status === 'pending' ? 'rgba(234, 179, 8, 0.1)' : props.$isPenalty ? '#2a0808' : 'linear-gradient(135deg, rgba(28, 25, 23, 0.9), rgba(2, 6, 23, 0.8))'}; 
   border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#eab308' : props.$isPenalty ? '#ef4444' : props.$glowColor}; 
   border-radius: 16px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: ${(props) => (props.$isLocked ? 'default' : 'pointer')}; transition: all 0.3s ease; opacity: ${(props) => (props.$isLocked && props.$status === 'idle' ? 0.5 : 1)}; 
-  &:hover { background: ${(props) => props.$status === 'idle' && !props.$isLocked ? props.$isPenalty ? '#450a0a' : 'rgba(29, 15, 58, 1)' : ''}; transform: ${(props) => (props.$status === 'idle' && !props.$isLocked ? 'translateY(-3px) scale(1.02)' : 'none')}; border-color: ${(props) => props.$status === 'idle' && !props.$isLocked ? '#fff' : ''}; }
+  &:hover { background: ${(props) => props.$status === 'idle' && !props.$isLocked ? props.$isPenalty ? '#450a0a' : 'rgba(28, 25, 23, 1)' : ''}; transform: ${(props) => (props.$status === 'idle' && !props.$isLocked ? 'translateY(-3px) scale(1.02)' : 'none')}; border-color: ${(props) => props.$status === 'idle' && !props.$isLocked ? '#fff' : ''}; }
   @media (max-width: 480px) { padding: 12px; border-radius: 12px; }
 `;
 
-const UrgentCard = styled(QuestCard)` border-width: 2px; background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.15)' : 'linear-gradient(90deg, #450a0a 0%, #07030f 100%)'}; &::before { content: 'CRITICAL DIRECTIVE'; position: absolute; top: 8px; right: 15px; font-size: 9px; font-weight: 900; color: #ef4444; letter-spacing: 2px; @media (max-width: 480px) { font-size: 8px; top: 6px; right: 12px; } } `;
+const UrgentCard = styled(QuestCard)` border-width: 2px; background: ${(props) => props.$status === 'completed' ? 'rgba(16, 185, 129, 0.15)' : 'linear-gradient(90deg, #450a0a 0%, #0c0a09 100%)'}; &::before { content: 'CRITICAL DIRECTIVE'; position: absolute; top: 8px; right: 15px; font-size: 9px; font-weight: 900; color: #ef4444; letter-spacing: 2px; @media (max-width: 480px) { font-size: 8px; top: 6px; right: 12px; } } `;
 
 const LeftContent = styled.div` display: flex; align-items: center; gap: 12px; flex: 1; `;
 const IconWrapper = styled.div<{ $color: string }>` background: ${(props) => props.$color}15; border: 1px solid ${(props) => props.$color}40; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; @media (max-width: 480px) { width: 40px; height: 40px; border-radius: 10px; svg { width: 20px; height: 20px; } } `;
@@ -489,7 +489,7 @@ const TextContent = styled.div` display: flex; flex-direction: column; gap: 4px;
 const QuestTitle = styled.div<{ $status: string; $isPenalty?: boolean }>` font-size: 14px; font-weight: 900; color: ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : props.$isPenalty ? '#fca5a5' : '#fff'}; text-decoration: ${(props) => (props.$status === 'completed' ? 'line-through' : 'none')}; line-height: 1.3; @media (max-width: 480px) { font-size: 13px; } `;
 const QuestDesc = styled.div` font-size: 11px; color: #94a3b8; line-height: 1.4; @media (max-width: 480px) { font-size: 10px; line-height: 1.3; }`;
 const Rewards = styled.div` display: flex; align-items: center; gap: 15px; font-size: 11px; font-weight: 900; margin-top: 4px; @media (max-width: 480px) { font-size: 10px; gap: 10px; margin-top: 2px; }`;
-const RightAction = styled.div<{ $type: string; $status: string }>` width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: ${(props) => props.$status === 'completed' ? '#10b98120' : props.$status === 'pending' ? '#facc1520' : props.$type === 'request' ? '#2d184a' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#334155'}; flex-shrink: 0; transition: 0.3s; @media (max-width: 480px) { width: 35px; height: 35px; svg { width: 18px; height: 18px; } } `;
+const RightAction = styled.div<{ $type: string; $status: string }>` width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: ${(props) => props.$status === 'completed' ? '#10b98120' : props.$status === 'pending' ? '#facc1520' : props.$type === 'request' ? '#44403c' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${(props) => props.$status === 'completed' ? '#10b981' : props.$status === 'pending' ? '#facc15' : '#334155'}; flex-shrink: 0; transition: 0.3s; @media (max-width: 480px) { width: 35px; height: 35px; svg { width: 18px; height: 18px; } } `;
 
 const ModalOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; `;
 const ModalContent = styled(motion.div)<{ $color: string; $width?: string }>` background: #0b1120; border: 2px solid ${(props) => props.$color}; border-radius: 20px; padding: 30px; width: 100%; max-width: ${(props) => props.$width || '450px'}; position: relative; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 30px ${(props) => props.$color}20; &::-webkit-scrollbar { width: 5px; } &::-webkit-scrollbar-thumb { background: ${(props) => props.$color}; border-radius: 5px; } @media (max-width: 480px) { padding: 20px; border-radius: 16px; }`;
@@ -502,29 +502,29 @@ const LoadingSpinner = styled(Loader)` animation: ${spin} 1s linear infinite; `;
 const SyncOverlay = styled.div` position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(2px); `;
 
 const MacroGrid = styled.div` display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; @media (max-width: 480px) { gap: 6px; }`;
-const MacroBox = styled.div` background: #07030f; border: 1px solid #2d184a; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; @media (max-width: 480px) { padding: 8px 4px; border-radius: 10px; }`;
+const MacroBox = styled.div` background: #0c0a09; border: 1px solid #44403c; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center; @media (max-width: 480px) { padding: 8px 4px; border-radius: 10px; }`;
 const MacroLabel = styled.div<{ $color: string }>` font-size: 10px; font-weight: 900; color: ${(props) => props.$color}; text-transform: uppercase; @media (max-width: 480px) { font-size: 8px; }`;
 const MacroValue = styled.div` font-size: 14px; font-weight: bold; color: #fff; @media (max-width: 480px) { font-size: 12px; }`;
 
-const ProgressBarBG = styled.div` background: #2d184a; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-top: 5px; @media (max-width: 480px) { height: 6px; }`;
-const ProgressBarFill = styled(motion.div)<{ $progress: number; $color?: string }>` background: ${(props) => props.$color || '#c084fc'}; height: 100%; width: ${(props) => props.$progress}%; box-shadow: 0 0 10px ${(props) => props.$color || '#c084fc'}; transition: width 0.5s ease-out; `;
+const ProgressBarBG = styled.div` background: #44403c; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; margin-top: 5px; @media (max-width: 480px) { height: 6px; }`;
+const ProgressBarFill = styled(motion.div)<{ $progress: number; $color?: string }>` background: ${(props) => props.$color || '#eab308'}; height: 100%; width: ${(props) => props.$progress}%; box-shadow: 0 0 10px ${(props) => props.$color || '#eab308'}; transition: width 0.5s ease-out; `;
 
 const NutriTabs = styled.div` display: flex; gap: 10px; margin-bottom: 15px; `;
-const NutriTab = styled.button<{ $active: boolean }>` flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-family: 'Exo 2'; cursor: pointer; transition: 0.3s; background: ${(props) => props.$active ? '#f97316' : '#2d184a'}; color: ${(props) => props.$active ? '#000' : '#94a3b8'}; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; @media (max-width: 480px) { font-size: 10px; padding: 8px; }`;
-const FoodSearchInput = styled.input` width: 100%; background: #07030f; border: 1px solid #334155; padding: 12px 15px; border-radius: 8px; color: #fff; font-family: 'Exo 2'; margin-bottom: 15px; outline: none; &:focus { border-color: #f97316; } @media (max-width: 480px) { padding: 10px 12px; font-size: 12px; margin-bottom: 10px; }`;
+const NutriTab = styled.button<{ $active: boolean }>` flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-family: 'Exo 2'; cursor: pointer; transition: 0.3s; background: ${(props) => props.$active ? '#f97316' : '#44403c'}; color: ${(props) => props.$active ? '#000' : '#94a3b8'}; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; @media (max-width: 480px) { font-size: 10px; padding: 8px; }`;
+const FoodSearchInput = styled.input` width: 100%; background: #0c0a09; border: 1px solid #334155; padding: 12px 15px; border-radius: 8px; color: #fff; font-family: 'Exo 2'; margin-bottom: 15px; outline: none; &:focus { border-color: #f97316; } @media (max-width: 480px) { padding: 10px 12px; font-size: 12px; margin-bottom: 10px; }`;
 const FoodList = styled.div` max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; direction: rtl; `;
-const FoodItem = styled.div` background: #2d184a50; border: 1px solid #334155; padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; @media (max-width: 480px) { padding: 8px 10px; }`;
+const FoodItem = styled.div` background: #44403c50; border: 1px solid #334155; padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; @media (max-width: 480px) { padding: 8px 10px; }`;
 const ManualInputGrid = styled.div` display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; `;
 const ResetMacrosBtn = styled.button` background: #2a0808; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.3s; &:hover { background: #450a0a; } @media (max-width: 480px) { font-size: 11px; padding: 6px 10px; }`;
 
-const GameFAB = styled(motion.button)` position: fixed; bottom: 80px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: 2px solid #d8b4fe; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; &:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(168, 85, 247, 0.6); } @media (max-width: 480px) { width: 45px; height: 45px; svg { width: 20px; height: 20px; } } `;
-const GameArea = styled.div<{ $state: string }>` width: 100%; height: 250px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: ${(props) => props.$state === 'result_final' ? 'default' : 'pointer'}; user-select: none; transition: background 0.1s; background: ${(props) => props.$state === 'waiting' ? '#ef4444' : props.$state === 'ready' ? '#10b981' : props.$state === 'early' ? '#b45309' : (props.$state === 'result' || props.$state === 'result_final') ? '#a855f7' : '#2d184a' }; box-shadow: inset 0 0 30px rgba(0,0,0,0.5); border: 4px solid rgba(255,255,255,0.1); @media (max-width: 480px) { height: 200px; }`;
+const GameFAB = styled(motion.button)` position: fixed; bottom: 80px; right: 20px; width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b 0%, #7e22ce 100%); border: 2px solid #d8b4fe; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); cursor: pointer; z-index: 90; transition: 0.3s; &:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(245, 158, 11, 0.6); } @media (max-width: 480px) { width: 45px; height: 45px; svg { width: 20px; height: 20px; } } `;
+const GameArea = styled.div<{ $state: string }>` width: 100%; height: 250px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: ${(props) => props.$state === 'result_final' ? 'default' : 'pointer'}; user-select: none; transition: background 0.1s; background: ${(props) => props.$state === 'waiting' ? '#ef4444' : props.$state === 'ready' ? '#10b981' : props.$state === 'early' ? '#b45309' : (props.$state === 'result' || props.$state === 'result_final') ? '#f59e0b' : '#44403c' }; box-shadow: inset 0 0 30px rgba(0,0,0,0.5); border: 4px solid rgba(255,255,255,0.1); @media (max-width: 480px) { height: 200px; }`;
 const GameText = styled.div` font-size: 24px; font-weight: 900; text-transform: uppercase; color: #fff; letter-spacing: 2px; text-align: center; text-shadow: 0 2px 5px rgba(0,0,0,0.5); @media (max-width: 480px) { font-size: 18px; }`;
 const GameSubText = styled.div` font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 10px; font-weight: bold; `;
 const GameSelectorBtn = styled.button<{ $active: boolean, $color: string }>` flex: 1; padding: 10px; background: ${(props) => props.$active ? `${props.$color}20` : 'transparent'}; border: 1px solid ${(props) => props.$active ? props.$color : '#334155'}; color: ${(props) => props.$active ? props.$color : '#94a3b8'}; border-radius: 8px; font-family: 'Exo 2'; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; @media (max-width: 480px) { font-size: 11px; padding: 8px; }`;
 
 const LevelUpOverlay = styled(motion.div)` position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); `;
-const LevelUpCard = styled(motion.div)<{ $color: string }>` background: linear-gradient(135deg, rgba(29, 15, 58, 0.9), rgba(2, 6, 23, 0.95)); border: 2px solid ${(props) => props.$color}; border-radius: 24px; padding: 40px; width: 100%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 0 40px ${(props) => props.$color}60, inset 0 0 20px ${(props) => props.$color}30; @media (max-width: 480px) { padding: 30px 20px; border-radius: 20px; }`;
+const LevelUpCard = styled(motion.div)<{ $color: string }>` background: linear-gradient(135deg, rgba(28, 25, 23, 0.9), rgba(2, 6, 23, 0.95)); border: 2px solid ${(props) => props.$color}; border-radius: 24px; padding: 40px; width: 100%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 0 40px ${(props) => props.$color}60, inset 0 0 20px ${(props) => props.$color}30; @media (max-width: 480px) { padding: 30px 20px; border-radius: 20px; }`;
 const LevelUpTitle = styled.h1<{ $color: string }>` font-size: 36px; font-weight: 900; color: #fff; margin: 0 0 10px 0; text-transform: uppercase; text-shadow: 0 0 15px ${(props) => props.$color}; letter-spacing: 4px; @media (max-width: 480px) { font-size: 26px; letter-spacing: 2px; }`;
 const LevelUpDesc = styled.p` font-size: 16px; color: #cbd5e1; margin: 0 0 30px 0; @media (max-width: 480px) { font-size: 14px; margin-bottom: 20px; }`;
 const LevelUpRewardBox = styled.div<{ $color: string }>` background: rgba(255,255,255,0.05); border: 1px solid ${(props) => props.$color}50; border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 15px; font-size: 20px; font-weight: 900; color: #eab308; @media (max-width: 480px) { font-size: 16px; padding: 12px; gap: 10px; }`;
@@ -605,10 +605,10 @@ const MONTHLY_QUESTS = [
 ];
 
 const MOBILITY_ROUTINE = [
-  { id: 'm1', area: 'Hips', title: '90/90 Hip Rotations', desc: 'مجموعتين - ١٠ تكرارات لكل جانب. لفتح الحوض وتحسين الدوران الداخلي والخارجي.', icon: StretchHorizontal, color: '#c084fc' },
-  { id: 'm_new1', area: 'Hips / Quads', title: 'Couch Stretch', desc: 'مجموعتين - دقيقة لكل قدم. إطالة عميقة لثنيات الحوض وعضلات الفخذ الأمامية.', icon: StretchHorizontal, color: '#c084fc' },
-  { id: 'm_new2', area: 'Back / Core', title: 'Cat-Cow Mobility', desc: 'مجموعتين - ١٥ تكرار. قم بتقويس ظهرك للأعلى (القطة) ثم اخفضه للأسفل ببطء.', icon: Zap, color: '#a855f7' },
-  { id: 'm4', area: 'Back', title: 'Thoracic Rotations', desc: 'مجموعتين - ١٢ تكرار لكل جانب. لتحسين مرونة فقرات الظهر العلوية والصدر.', icon: Zap, color: '#a855f7' },
+  { id: 'm1', area: 'Hips', title: '90/90 Hip Rotations', desc: 'مجموعتين - ١٠ تكرارات لكل جانب. لفتح الحوض وتحسين الدوران الداخلي والخارجي.', icon: StretchHorizontal, color: '#eab308' },
+  { id: 'm_new1', area: 'Hips / Quads', title: 'Couch Stretch', desc: 'مجموعتين - دقيقة لكل قدم. إطالة عميقة لثنيات الحوض وعضلات الفخذ الأمامية.', icon: StretchHorizontal, color: '#eab308' },
+  { id: 'm_new2', area: 'Back / Core', title: 'Cat-Cow Mobility', desc: 'مجموعتين - ١٥ تكرار. قم بتقويس ظهرك للأعلى (القطة) ثم اخفضه للأسفل ببطء.', icon: Zap, color: '#f59e0b' },
+  { id: 'm4', area: 'Back', title: 'Thoracic Rotations', desc: 'مجموعتين - ١٢ تكرار لكل جانب. لتحسين مرونة فقرات الظهر العلوية والصدر.', icon: Zap, color: '#f59e0b' },
   { id: 'm5', area: 'Shoulder', title: 'Wall Angels / Shoulder CARs', desc: 'مجموعتين - ١٠ تكرارات. قف ظهرك للحائط وارفع ذراعيك ببطء لزيادة مرونة مفصل الكتف.', icon: Dumbbell, color: '#10b981' },
   { id: 'm6', area: 'Ankle', title: 'Ankle Dorsiflexion (Combat Stretch)', desc: 'مجموعتين - دقيقة لكل قدم. ادفع ركبتك للأمام متجاوزة مشط القدم مع ثبات الكعب.', icon: Footprints, color: '#facc15' },
 ];
@@ -619,12 +619,12 @@ const FRIDAY_DIRECTIVES = [
 ];
 
 const SHARED_PRACTICE_ID = 'shared_practice';
-const SHARED_HYDRATION = { id: 'shared_1', title: 'Hydration Target (4L)', desc: 'تحقيق معدل استهلاك المياه لضمان ترطيب العضلات وطرد السموم (٤ لتر).', exp: 30, gold: 10, type: 'honor', icon: Droplet, color: '#c084fc' };
+const SHARED_HYDRATION = { id: 'shared_1', title: 'Hydration Target (4L)', desc: 'تحقيق معدل استهلاك المياه لضمان ترطيب العضلات وطرد السموم (٤ لتر).', exp: 30, gold: 10, type: 'honor', icon: Droplet, color: '#eab308' };
 const SHARED_NUTRITION = { id: 'shared_2', title: 'Nutritional Compliance', desc: 'تتبع السعرات والماكروز لتحقيق هدف البروتين الصافي لبناء العضلات.', exp: 30, gold: 10, type: 'nutrition', icon: Flame, color: '#f97316' };
 const SHARED_MOBILITY = { id: 'shared_3', title: 'Functional Mobility', desc: 'أداء روتين المرونة الوظيفية لضمان صحة وكفاءة المفاصل.', exp: 35, gold: 15, type: 'mobilityRoutine', icon: Activity, color: '#10b981' };
 
 const NORMAL_DAILY_QUESTS = [
-  { id: SHARED_PRACTICE_ID, title: 'Practice', desc: 'إتمام الحصة التدريبية الأساسية وفقاً للأحمال والأوزان المحددة بالجدول.', exp: 100, gold: 30, type: 'request', noImage: true, icon: Users, color: '#a855f7' },
+  { id: SHARED_PRACTICE_ID, title: 'Practice', desc: 'إتمام الحصة التدريبية الأساسية وفقاً للأحمال والأوزان المحددة بالجدول.', exp: 100, gold: 30, type: 'request', noImage: true, icon: Users, color: '#f59e0b' },
   SHARED_HYDRATION,
   SHARED_NUTRITION,
   SHARED_MOBILITY,
@@ -644,9 +644,9 @@ const PENALTY_QUEST = { id: 'penalty_q', title: 'Disciplinary Execution', desc: 
 // 🚨 قاعدة بيانات الـ Battle Pass 🚨 (تم تغيير الجوائز للعملات فقط)
 const BATTLE_PASS_TIERS = [
   { id: 'bp_1', xpReq: 1000, rewardType: 'gold', rewardAmount: 500, title: '500 GOLD', icon: Trophy, color: '#eab308' },
-  { id: 'bp_2', xpReq: 2500, rewardType: 'gem', rewardAmount: 5, title: '5 GEMS', icon: Gem, color: '#a855f7' },
+  { id: 'bp_2', xpReq: 2500, rewardType: 'gem', rewardAmount: 5, title: '5 GEMS', icon: Gem, color: '#f59e0b' },
   { id: 'bp_3', xpReq: 4000, rewardType: 'gold', rewardAmount: 1500, title: '1500 GOLD', icon: Trophy, color: '#eab308' },
-  { id: 'bp_4', xpReq: 6000, rewardType: 'gem', rewardAmount: 15, title: '15 GEMS', icon: Gem, color: '#a855f7' },
+  { id: 'bp_4', xpReq: 6000, rewardType: 'gem', rewardAmount: 15, title: '15 GEMS', icon: Gem, color: '#f59e0b' },
   { id: 'bp_5', xpReq: 8000, rewardType: 'gold', rewardAmount: 3000, title: '3000 GOLD', icon: Crown, color: '#facc15' }
 ];
 
@@ -744,7 +744,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
     setIsSyncingOffline(true);
     const toastId = toast.loading('⚡ جاري مزامنة مهامك الأوفلاين مع السيرفر...', {
-      style: { background: '#07030f', border: '1px solid #a855f7', color: '#a855f7' }
+      style: { background: '#0c0a09', border: '1px solid #f59e0b', color: '#f59e0b' }
     });
 
     let successCount = 0;
@@ -980,7 +980,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     const newsSub = supabase.channel(dashboardNewsChannelName).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_news' }, payload => {
         if (payload.new.type !== 'system_settings') {
           setSystemLogs(prev => [`🌍 ${payload.new.title}: ${payload.new.content}`, ...prev.slice(0, 4)]);
-          toast.info(payload.new.title, { description: payload.new.content, style: { background: '#07030f', border: '1px solid #a855f7', color: '#a855f7' } });
+          toast.info(payload.new.title, { description: payload.new.content, style: { background: '#0c0a09', border: '1px solid #f59e0b', color: '#f59e0b' } });
         }
       }).subscribe();
 
@@ -1075,10 +1075,10 @@ const Dashboard = ({ player, setPlayer }: any) => {
             await supabase.from('elite_players').update({ hp: fetchedHp, gold: fetchedGold, streak: fetchedStreak, last_penalty_check: lastPenaltyCheck, claimed_rewards: claimedRewardsList }).eq('name', currentPlayer.name);
             if (hpPenaltyAmount > 0) toast.error(`🩸 تم خصم ${hpPenaltyAmount} HP لعدم استكمال مهام الأيام السابقة. ${hasEmeraldScale ? '(خصم مخفض بنسبة 50% 🛡️)' : ''}`, { duration: 6000, style: { background: '#2a0808', color: '#ef4444', border: '1px solid #ef4444'} });
             if (shieldConsumedThisSync) {
-              toast.success(`🛡️ تم استهلاك "درع حماية الستريك" بنجاح لحماية أيامك النشطة من الانكسار! لا يزال الستريك الخاص بك قائماً! ✨`, { duration: 10000, style: { background: '#07030f', color: '#a855f7', border: '1px solid #a855f7'} });
+              toast.success(`🛡️ تم استهلاك "درع حماية الستريك" بنجاح لحماية أيامك النشطة من الانكسار! لا يزال الستريك الخاص بك قائماً! ✨`, { duration: 10000, style: { background: '#0c0a09', color: '#f59e0b', border: '1px solid #f59e0b'} });
             } else if (applyPenalty) {
               if (hasGolem) {
-                toast.success(`🛡️ حماية الـ Iron Golem منعت انكسار الـ Streak! لم يتم تصفير أيامك النشطة.`, { duration: 8000, style: { background: '#07030f', color: '#a855f7', border: '1px solid #a855f7'} });
+                toast.success(`🛡️ حماية الـ Iron Golem منعت انكسار الـ Streak! لم يتم تصفير أيامك النشطة.`, { duration: 8000, style: { background: '#0c0a09', color: '#f59e0b', border: '1px solid #f59e0b'} });
               } else {
                 toast.error(`💔 تم كسر الـ Streak وخصم ${goldLost} Gold بسبب التقصير!`, { duration: 6000, style: { background: '#450a0a', color: '#fca5a5', border: '1px solid #ef4444'} });
               }
@@ -1134,7 +1134,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
           if (!existing || avg < existing.best_time) {
             await supabase.from('reaction_scores').upsert({ hunter_name: currentPlayer.name, best_time: avg }, { onConflict: 'hunter_name' });
             if (!existing) toast.success(`New Average: ${avg}ms!`, { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' }});
-            else toast.success(`New Personal Best! Beat previous by ${existing.best_time - avg}ms!`, { style: { background: '#07030f', border: '1px solid #d946ef', color: '#d946ef' }});
+            else toast.success(`New Personal Best! Beat previous by ${existing.best_time - avg}ms!`, { style: { background: '#0c0a09', border: '1px solid #f97316', color: '#f97316' }});
           }
 
           let gameGold = 15;
@@ -1151,7 +1151,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
           await supabase.from('elite_players').update({ gold: newGold }).eq('name', currentPlayer.name);
           setPlayer((prev: any) => ({ ...prev, gold: newGold }));
           
-          toast.success(`🎮 Game complete! Reward: +${finalGameGold} Gold ${hasWolf ? '(Frost Wolf +20% 🐺)' : ''}`, { style: { background: '#1e1b4b', border: '1px solid #c084fc', color: '#c084fc' } });
+          toast.success(`🎮 Game complete! Reward: +${finalGameGold} Gold ${hasWolf ? '(Frost Wolf +20% 🐺)' : ''}`, { style: { background: '#1e1b4b', border: '1px solid #eab308', color: '#eab308' } });
         } catch (e) {}
       }
     }
@@ -1171,7 +1171,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       if (!existing || sprintScore > existing.best_score) {
         await supabase.from('finger_sprint_scores').upsert({ hunter_name: currentPlayer.name, best_score: sprintScore }, { onConflict: 'hunter_name' });
         if (!existing) toast.success(`New Score: ${sprintScore} Taps!`, { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' }});
-        else toast.success(`New Personal Best! Beat previous by ${sprintScore - existing.best_score} taps!`, { style: { background: '#07030f', border: '1px solid #d946ef', color: '#d946ef' }});
+        else toast.success(`New Personal Best! Beat previous by ${sprintScore - existing.best_score} taps!`, { style: { background: '#0c0a09', border: '1px solid #f97316', color: '#f97316' }});
       }
 
       const gameGold = Math.round(sprintScore * 0.5);
@@ -1184,7 +1184,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
         const newGold = currentGold + finalGameGold;
         await supabase.from('elite_players').update({ gold: newGold }).eq('name', currentPlayer.name);
         setPlayer((prev: any) => ({ ...prev, gold: newGold }));
-        toast.success(`🎮 Game complete! Reward: +${finalGameGold} Gold ${hasWolf ? '(Frost Wolf +20% 🐺)' : ''}`, { style: { background: '#1e1b4b', border: '1px solid #c084fc', color: '#c084fc' } });
+        toast.success(`🎮 Game complete! Reward: +${finalGameGold} Gold ${hasWolf ? '(Frost Wolf +20% 🐺)' : ''}`, { style: { background: '#1e1b4b', border: '1px solid #eab308', color: '#eab308' } });
       }
     } catch (e) {}
   };
@@ -1227,7 +1227,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       return newMacros;
     });
 
-    toast.success(`تمت إضافة ${food.name} بنجاح!`, { style: { background: '#07030f', border: '1px solid #eab308', color: '#eab308' }});
+    toast.success(`تمت إضافة ${food.name} بنجاح!`, { style: { background: '#0c0a09', border: '1px solid #eab308', color: '#eab308' }});
   }, [currentPlayer.name]);
 
   const handleRemoveConsumedFood = useCallback((itemToRemove: any) => {
@@ -1332,7 +1332,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       
       if (leveledUp && gearBonuses.healOnLevelUp) {
          newHp = MAX_HP;
-         toast.success('Phantom Cloak activated: 100% HP Restored! 🛡️', { style: { background: '#07030f', color: '#ec4899', border: '1px solid #ec4899' }});
+         toast.success('Phantom Cloak activated: 100% HP Restored! 🛡️', { style: { background: '#0c0a09', color: '#ec4899', border: '1px solid #ec4899' }});
       }
 
       const dbUpdates = { cumulative_xp: newXp, monthly_xp: (currentPlayer.monthly_xp || 0) + earnedExp, gold: newGold, hp: newHp, streak: newStreak };
@@ -1348,7 +1348,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
           levelGoldBonus
         });
         toast.info('💡 أنت أوفلاين حالياً! تم حفظ تقدمك محلياً وسيتم رفعه تلقائياً فور عودة الاتصال.', {
-          style: { background: '#07030f', border: '1px solid #a855f7', color: '#a855f7' }
+          style: { background: '#0c0a09', border: '1px solid #f59e0b', color: '#f59e0b' }
         });
       } else {
         const { error: questError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: quest.title, evidence: 'Honor System', type: 'quest', status: 'approved', created_at: logDate }]);
@@ -1414,7 +1414,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
           isPenalty: selectedQuest.isPenalty
         });
         toast.info('💡 أنت أوفلاين حالياً! تم تسجيل طلبك محلياً وسيتم إرساله تلقائياً فور عودة الاتصال.', {
-          style: { background: '#07030f', border: '1px solid #a855f7', color: '#a855f7' }
+          style: { background: '#0c0a09', border: '1px solid #f59e0b', color: '#f59e0b' }
         });
       } else {
         const { error: reqError } = await supabase.from('elite_quests').insert([{ player_name: currentPlayer.name, task_name: selectedQuest.title, evidence: selectedQuest.noImage ? 'Awaiting Coach' : hasFile ? '📷 Attached' : 'No Evidence', type: selectedQuest.isPenalty ? 'penalty' : 'quest', status: 'pending', created_at: logDate }]);
@@ -1499,7 +1499,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
             newStreak
           });
           toast.info('💡 تم التراجع محلياً! سيتم تحديث قاعدة البيانات فور عودة الاتصال.', {
-            style: { background: '#07030f', border: '1px solid #a855f7', color: '#a855f7' }
+            style: { background: '#0c0a09', border: '1px solid #f59e0b', color: '#f59e0b' }
           });
         } else {
           const startOfDay = new Date(selectedDate); startOfDay.setHours(0, 0, 0, 0);
@@ -1524,7 +1524,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
             logDate
           });
           toast.info('💡 تم إلغاء الطلب محلياً! سيتم تحديث السيرفر فور عودة الاتصال.', {
-            style: { background: '#07030f', border: '1px solid #a855f7', color: '#a855f7' }
+            style: { background: '#0c0a09', border: '1px solid #f59e0b', color: '#f59e0b' }
           });
         } else {
           const startOfDay = new Date(selectedDate); startOfDay.setHours(0, 0, 0, 0);
@@ -1675,8 +1675,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
           <StreakProgressBarFill $progress={streakProgress} $color={streakTier.color} />
           <StreakMilestoneNode $active={true} $color="#f97316" $left={0} data-milestone="Ember (0d)" />
           <StreakMilestoneNode $active={streak >= 7} $color="#10b981" $left={23} data-milestone="Emerald (7d)" />
-          <StreakMilestoneNode $active={streak >= 14} $color="#d946ef" $left={46} data-milestone="Cyber (14d)" />
-          <StreakMilestoneNode $active={streak >= 30} $color="#a855f7" $left={100} data-milestone="Void (30d)" />
+          <StreakMilestoneNode $active={streak >= 14} $color="#f97316" $left={46} data-milestone="Cyber (14d)" />
+          <StreakMilestoneNode $active={streak >= 30} $color="#f59e0b" $left={100} data-milestone="Void (30d)" />
         </StreakProgressBar>
         
         <div style={{ fontSize: '10px', color: '#94a3b8', textAlign: 'center', marginTop: '24px', fontWeight: 'bold', letterSpacing: '0.5px' }}>
@@ -1769,17 +1769,17 @@ const Dashboard = ({ player, setPlayer }: any) => {
         <AnimatePresence>
           {showGameModal && (
             <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 300 }}>
-              <ModalContent $color={activeGame === 'reaction' ? '#a855f7' : '#a855f7'} initial={{ scale: 0.9 }}>
+              <ModalContent $color={activeGame === 'reaction' ? '#f59e0b' : '#f59e0b'} initial={{ scale: 0.9 }}>
                 <button 
                   onClick={() => { setShowGameModal(false); if (gameTimeoutId) clearTimeout(gameTimeoutId); }} 
                   style={{ position: 'absolute', top: 15, right: 15, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
                   <X size={24} />
                 </button>
-                <h2 style={{ color: activeGame === 'reaction' ? '#a855f7' : '#a855f7', fontSize: '18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: 8 }}><Gamepad2 size={20} /> ELITE ARCADE</h2>
+                <h2 style={{ color: activeGame === 'reaction' ? '#f59e0b' : '#f59e0b', fontSize: '18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: 8 }}><Gamepad2 size={20} /> ELITE ARCADE</h2>
                 
                 <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-                  <GameSelectorBtn $active={activeGame === 'reaction'} $color="#a855f7" onClick={() => { setActiveGame('reaction'); setGameTab('play'); }}><Zap size={14} /> Reflex</GameSelectorBtn>
-                  <GameSelectorBtn $active={activeGame === 'sprint'} $color="#a855f7" onClick={() => { setActiveGame('sprint'); setGameTab('play'); }}><MousePointerClick size={14} /> Sprint</GameSelectorBtn>
+                  <GameSelectorBtn $active={activeGame === 'reaction'} $color="#f59e0b" onClick={() => { setActiveGame('reaction'); setGameTab('play'); }}><Zap size={14} /> Reflex</GameSelectorBtn>
+                  <GameSelectorBtn $active={activeGame === 'sprint'} $color="#f59e0b" onClick={() => { setActiveGame('sprint'); setGameTab('play'); }}><MousePointerClick size={14} /> Sprint</GameSelectorBtn>
                 </div>
 
                 <NutriTabs style={{ marginBottom: 20 }}>
@@ -1789,7 +1789,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
                 {activeGame === 'reaction' && gameTab === 'play' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <div style={{ textAlign: 'center', marginBottom: 10, fontSize: 12, color: '#a855f7', fontWeight: 'bold' }}>
+                    <div style={{ textAlign: 'center', marginBottom: 10, fontSize: 12, color: '#f59e0b', fontWeight: 'bold' }}>
                       {reactionAttempt < 4 ? `Attempt: ${reactionAttempt + 1} / 4` : `Perfect!`}
                     </div>
                     <GameArea $state={gameState} onClick={handleReactionClick}>
@@ -1801,7 +1801,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
                         <>
                           <GameText style={{ color: '#eab308' }}>{reactionTime} ms</GameText>
                           <GameSubText style={{ color: '#eab308' }}>AVERAGE SCORE!</GameSubText>
-                          <button onClick={resetReaction} style={{ marginTop: 15, background: '#a855f7', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', cursor: 'pointer', zIndex: 10 }}>TRY AGAIN</button>
+                          <button onClick={resetReaction} style={{ marginTop: 15, background: '#f59e0b', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', cursor: 'pointer', zIndex: 10 }}>TRY AGAIN</button>
                         </>
                       )}
                       {gameState === 'early' && <GameText>TOO EARLY!</GameText>}
@@ -1823,18 +1823,18 @@ const Dashboard = ({ player, setPlayer }: any) => {
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     {activeGame === 'reaction' && (
                       <>
-                        <div style={{ textAlign: 'center', marginBottom: 10, color: '#a855f7', fontWeight: 'bold', fontSize: 12 }}>Top 10 Fastest Reflexes</div>
+                        <div style={{ textAlign: 'center', marginBottom: 10, color: '#f59e0b', fontWeight: 'bold', fontSize: 12 }}>Top 10 Fastest Reflexes</div>
                         {reactionLeaderboard.length === 0 ? (
-                           <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#2d184a50', borderRadius: '12px' }}>No scores yet. Be the first!</div>
+                           <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#44403c50', borderRadius: '12px' }}>No scores yet. Be the first!</div>
                         ) : (
                           <FoodList style={{ maxHeight: '250px' }}>
                             {reactionLeaderboard.map((score, idx) => (
-                              <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#a855f7' : '#334155', background: idx === 0 ? 'rgba(168, 85, 247, 0.1)' : '#2d184a50' }}>
+                              <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#f59e0b' : '#334155', background: idx === 0 ? 'rgba(245, 158, 11, 0.1)' : '#44403c50' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                  <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#a855f7' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
-                                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#a855f7' : '#fff' }}>{score.hunter_name}</div>
+                                  <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#f59e0b' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
+                                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#f59e0b' : '#fff' }}>{score.hunter_name}</div>
                                 </div>
-                                <div style={{ fontSize: '16px', fontWeight: '900', color: '#d946ef', display: 'flex', alignItems: 'center', gap: 5 }}><Zap size={14} color="#d946ef" /> {score.best_time} ms</div>
+                                <div style={{ fontSize: '16px', fontWeight: '900', color: '#f97316', display: 'flex', alignItems: 'center', gap: 5 }}><Zap size={14} color="#f97316" /> {score.best_time} ms</div>
                               </FoodItem>
                             ))}
                           </FoodList>
@@ -1843,16 +1843,16 @@ const Dashboard = ({ player, setPlayer }: any) => {
                     )}
                     {activeGame === 'sprint' && (
                       <>
-                        <div style={{ textAlign: 'center', marginBottom: 10, color: '#a855f7', fontWeight: 'bold', fontSize: 12 }}>Top 10 Fastest Fingers (10s)</div>
+                        <div style={{ textAlign: 'center', marginBottom: 10, color: '#f59e0b', fontWeight: 'bold', fontSize: 12 }}>Top 10 Fastest Fingers (10s)</div>
                         {sprintLeaderboard.length === 0 ? (
-                           <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#2d184a50', borderRadius: '12px' }}>No scores yet. Be the first!</div>
+                           <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#44403c50', borderRadius: '12px' }}>No scores yet. Be the first!</div>
                         ) : (
                           <FoodList style={{ maxHeight: '250px' }}>
                             {sprintLeaderboard.map((score, idx) => (
-                              <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#a855f7' : '#334155', background: idx === 0 ? 'rgba(168, 85, 247, 0.1)' : '#2d184a50' }}>
+                              <FoodItem key={score.id} style={{ borderColor: idx === 0 ? '#f59e0b' : '#334155', background: idx === 0 ? 'rgba(245, 158, 11, 0.1)' : '#44403c50' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                  <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#a855f7' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
-                                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#a855f7' : '#fff' }}>{score.hunter_name}</div>
+                                  <div style={{ fontSize: '16px', fontWeight: '900', color: idx === 0 ? '#f59e0b' : '#94a3b8', width: '20px' }}>#{idx + 1}</div>
+                                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: idx === 0 ? '#f59e0b' : '#fff' }}>{score.hunter_name}</div>
                                 </div>
                                 <div style={{ fontSize: '16px', fontWeight: '900', color: '#10b981', display: 'flex', alignItems: 'center', gap: 5 }}><Target size={14} color="#10b981" /> {score.best_score} Taps</div>
                               </FoodItem>
@@ -1916,8 +1916,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 </h2>
 
                 <MacroGrid>
-                  <MacroBox style={{ borderColor: isProteinMet ? '#10b981' : '#c084fc', boxShadow: isProteinMet ? '0 0 10px rgba(16,185,129,0.2)' : 'none' }}>
-                    <MacroLabel $color={isProteinMet ? '#10b981' : '#c084fc'}>PROTEIN</MacroLabel>
+                  <MacroBox style={{ borderColor: isProteinMet ? '#10b981' : '#eab308', boxShadow: isProteinMet ? '0 0 10px rgba(16,185,129,0.2)' : 'none' }}>
+                    <MacroLabel $color={isProteinMet ? '#10b981' : '#eab308'}>PROTEIN</MacroLabel>
                     <MacroValue>{dailyMacros?.protein || 0}g</MacroValue>
                   </MacroBox>
                   <MacroBox>
@@ -1929,7 +1929,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
                     <MacroValue>{dailyMacros?.fats || 0}g</MacroValue>
                   </MacroBox>
                   <MacroBox>
-                    <MacroLabel $color="#a855f7">KCAL</MacroLabel>
+                    <MacroLabel $color="#f59e0b">KCAL</MacroLabel>
                     <MacroValue>{dailyMacros?.calories || 0}</MacroValue>
                   </MacroBox>
                 </MacroGrid>
@@ -1937,10 +1937,10 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 <div style={{ marginBottom: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '5px', fontWeight: 'bold' }}>
                     <span>PROTEIN GOAL: {targetProtein}g - {maxProtein}g</span>
-                    <span style={{ color: isProteinMet ? '#10b981' : '#c084fc' }}>{Math.round(proteinProgress)}%</span>
+                    <span style={{ color: isProteinMet ? '#10b981' : '#eab308' }}>{Math.round(proteinProgress)}%</span>
                   </div>
                   <ProgressBarBG>
-                    <ProgressBarFill $progress={proteinProgress} style={{ background: isProteinMet ? '#10b981' : '#c084fc', boxShadow: `0 0 10px ${isProteinMet ? '#10b981' : '#c084fc'}` }} />
+                    <ProgressBarFill $progress={proteinProgress} style={{ background: isProteinMet ? '#10b981' : '#eab308', boxShadow: `0 0 10px ${isProteinMet ? '#10b981' : '#eab308'}` }} />
                   </ProgressBarBG>
                 </div>
 
@@ -1961,8 +1961,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
                       {allSearchableFoods.filter(f => f && f.name && f.name.toLowerCase().includes((foodSearchQuery || '').toLowerCase())).map((food, idx) => (
                         <FoodItem key={idx}>
                           <div>
-                            <div style={{ fontSize: '13px', fontWeight: 'bold', color: food.isCustom ? '#d946ef' : '#fff' }}>
-                              {food.name} {food.isCustom && <span style={{fontSize: 10, background: '#d946ef20', padding: '2px 6px', borderRadius: 4, marginRight: 5}}>وجبتي</span>}
+                            <div style={{ fontSize: '13px', fontWeight: 'bold', color: food.isCustom ? '#f97316' : '#fff' }}>
+                              {food.name} {food.isCustom && <span style={{fontSize: 10, background: '#f9731620', padding: '2px 6px', borderRadius: 4, marginRight: 5}}>وجبتي</span>}
                             </div>
                             <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>P:{food.protein} | C:{food.carbs} | f:{food.fats} | {food.calories}kcal</div>
                           </div>
@@ -1992,7 +1992,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 {activeNutriTab === 'log' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     {consumedLog.length === 0 ? (
-                      <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#2d184a50', borderRadius: '12px' }}>لم تقم بإضافة أي وجبات اليوم بعد.</div>
+                      <div style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontSize: '12px', background: '#44403c50', borderRadius: '12px' }}>لم تقم بإضافة أي وجبات اليوم بعد.</div>
                     ) : (
                       <FoodList>
                         {consumedLog.map((item: any, idx: number) => (
@@ -2061,7 +2061,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
                 <h3 style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: 10, textTransform: 'uppercase', marginTop: 0 }}><Activity /> بروتوكول المرونة الوظيفية</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: '400px', overflowY: 'auto', paddingRight: 5, direction: 'rtl' }}>
                   {MOBILITY_ROUTINE.map((ex) => (
-                    <div key={ex.id} style={{ background: '#07030f', border: `1px solid ${ex.color}30`, padding: 12, borderRadius: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div key={ex.id} style={{ background: '#0c0a09', border: `1px solid ${ex.color}30`, padding: 12, borderRadius: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
                       <div style={{ background: `${ex.color}15`, color: ex.color, padding: 8, borderRadius: 8, flexShrink: 0 }}><ex.icon size={18} /></div>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 'bold', color: '#fff' }}>{ex.title}</div>
