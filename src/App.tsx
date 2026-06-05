@@ -636,7 +636,8 @@ const App = () => {
     );
   }
 
-  const levelData = calculateLevelData(player.cumulative_xp ?? player.xp ?? 0);
+  const activeXp = (player.cumulative_xp ?? 0) - (player.cumulative_xp_offset ?? 0);
+  const levelData = calculateLevelData(activeXp);
   const currentLvl = levelData.level;
   const currentVisualXp = levelData.xpInCurrentLevel;
   const xpNeededForNextLevel = levelData.expNeededForNextLevel;

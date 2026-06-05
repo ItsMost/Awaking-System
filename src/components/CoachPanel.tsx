@@ -338,7 +338,7 @@ const CoachPanel = () => {
     setProcessingId(req.id);
     try {
       // 1. جلب بيانات اللاعب الحالية
-      const { data: playerData, error: playerErr } = await supabase.from('elite_players').select('cumulative_xp, gold, hp, streak, active_pet, equipped_gear').eq('name', req.player_name).single();
+      const { data: playerData, error: playerErr } = await supabase.from('elite_players').select('cumulative_xp, cumulative_xp_offset, monthly_xp, gold, hp, streak, active_pet, equipped_gear').eq('name', req.player_name).single();
       if (playerErr || !playerData) throw new Error('تعذر إيجاد اللاعب');
 
       // Fetch system settings
@@ -397,11 +397,14 @@ const CoachPanel = () => {
       const finalGold = Math.round(((reward.gold * goldMult) + (reward.gold > 0 ? bonusGoldFromGear : 0)) * streakMultiplier * wyvernMultiplier);
 
       let newXp = (playerData.cumulative_xp || 0) + finalExp;
+      let newMonthlyXp = (playerData.monthly_xp || 0) + finalExp;
       let newGold = (playerData.gold || 0) + finalGold;
 
-      // 3. حساب لو اللاعب هيلفل عشان نديله بونس
-      const oldLvl = calculateLevelData(playerData.cumulative_xp || 0).level;
-      const newLvl = calculateLevelData(newXp).level;
+      // 3. حساب لو اللاعب هيلفل عشان نديله بونس (بناءً على التغير في المستوى النشط للموسم)
+      const oldActiveXp = (playerData.cumulative_xp || 0) - (playerData.cumulative_xp_offset || 0);
+      const newActiveXp = oldActiveXp + finalExp;
+      const oldLvl = calculateLevelData(oldActiveXp).level;
+      const newLvl = calculateLevelData(newActiveXp).level;
       let bonusGold = 0;
       if (newLvl > oldLvl) {
         const levelsGained = newLvl - oldLvl;
@@ -417,7 +420,7 @@ const CoachPanel = () => {
       await supabase.from('elite_quests').update({ status: 'approved' }).eq('id', req.id);
 
       // 5. إعطاء النقاط للاعب
-      await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newXp, gold: newGold }).eq('name', req.player_name);
+      await supabase.from('elite_players').update({ cumulative_xp: newXp, monthly_xp: newMonthlyXp, gold: newGold }).eq('name', req.player_name);
 
       // 6. تسجيل في الاقتصاد
       await supabase.from('elite_economy').insert([{ player_name: req.player_name, amount: finalExp, currency: 'xp', operation: 'increase', reason: `Coach Approved: ${req.task_name}` }]);

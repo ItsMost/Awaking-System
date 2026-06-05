@@ -393,17 +393,21 @@ const Profile = ({ player, setPlayer }: any) => {
   const petEnergy = player?.pet_hunger ?? 100;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const levelData = calculateLevelData(player?.cumulative_xp ?? player?.xp ?? 0);
+  const activeXp = (player?.cumulative_xp ?? 0) - (player?.cumulative_xp_offset ?? 0);
+  const levelData = calculateLevelData(activeXp);
   const lvl = levelData.level;
   const currentXp = levelData.xpInCurrentLevel;
-  const rankInfo = getRankInfo(lvl);
-  const rankProgress = getNextRankInfo(lvl, currentXp);
+  
+  const lifetimeLevelData = calculateLevelData(player?.cumulative_xp ?? 0);
+  const lifetimeLvl = lifetimeLevelData.level;
+  const rankInfo = getRankInfo(lifetimeLvl);
+  const rankProgress = getNextRankInfo(lifetimeLvl, lifetimeLevelData.xpInCurrentLevel);
   const RankIconObj = rankInfo.icon;
   const userClass = getUserClassInfo(editIcon);
   const BaseIcon = userClass.baseIcon;
   const EvolvedIcon = userClass.evolvedIcon;
-  const isEvolved = lvl >= 20;
-  const evoProgress = Math.min(100, (lvl / 20) * 100);
+  const isEvolved = lifetimeLvl >= 20;
+  const evoProgress = Math.min(100, (lifetimeLvl / 20) * 100);
   const titles = player?.titles || ['Awakened', 'Gate Closer'];
   const auraInfo = getStreakAura(liveStreak);
   const AuraIcon = auraInfo.icon;
@@ -624,7 +628,7 @@ const Profile = ({ player, setPlayer }: any) => {
 
   const protMin = Math.round(editWeight * 1.7); const protMax = Math.round(editWeight * 2.2);
   const attRate = attendanceStats.total > 0 ? (attendanceStats.attended / attendanceStats.total) * 100 : 0;
-  const radarStats = [ { label: 'القوة', value: Math.min(10, 3 + (lvl / 6)) }, { label: 'الحيوية', value: Math.min(10, 2 + (attRate / 15)) }, { label: 'الرشاقة', value: Math.min(10, 4 + (lvl / 10)) }, { label: 'التعافي', value: Math.min(10, ((player.hp || 100) / 10)) }, { label: 'التركيز', value: Math.min(10, 2 + (liveStreak / 4)) } ];
+  const radarStats = [ { label: 'القوة', value: Math.min(10, 3 + (lifetimeLvl / 6)) }, { label: 'الحيوية', value: Math.min(10, 2 + (attRate / 15)) }, { label: 'الرشاقة', value: Math.min(10, 4 + (lifetimeLvl / 10)) }, { label: 'التعافي', value: Math.min(10, ((player.hp || 100) / 10)) }, { label: 'التركيز', value: Math.min(10, 2 + (liveStreak / 4)) } ];
 
   return (
     <Container initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

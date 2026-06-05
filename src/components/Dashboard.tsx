@@ -855,9 +855,11 @@ const Dashboard = ({ player, setPlayer }: any) => {
     };
   }, [syncOfflineQueue]);
 
-  const levelData = useMemo(() => calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0), [currentPlayer.cumulative_xp, currentPlayer.xp]);
+  const activeXp = useMemo(() => (currentPlayer.cumulative_xp ?? 0) - (currentPlayer.cumulative_xp_offset ?? 0), [currentPlayer.cumulative_xp, currentPlayer.cumulative_xp_offset]);
+  const levelData = useMemo(() => calculateLevelData(activeXp), [activeXp]);
   const currentVisualLvl = levelData.level;
-  const rankInfo = useMemo(() => getRankInfo(currentVisualLvl), [currentVisualLvl]);
+  const lifetimeLvl = useMemo(() => calculateLevelData(currentPlayer.cumulative_xp ?? 0).level, [currentPlayer.cumulative_xp]);
+  const rankInfo = useMemo(() => getRankInfo(lifetimeLvl), [lifetimeLvl]);
 
   const gearBonuses = useMemo(() => {
      let bonusGold = 0; let bonusHp = 0; let bonusMaxHp = 0; let healOnLevelUp = false;
@@ -1003,7 +1005,8 @@ const Dashboard = ({ player, setPlayer }: any) => {
             } catch (e) {}
           }
 
-          const fetchedLvl = calculateLevelData(userData.cumulative_xp || userData.xp || 0).level;
+          const activeXp = (userData.cumulative_xp || 0) - (userData.cumulative_xp_offset || 0);
+          const fetchedLvl = calculateLevelData(activeXp).level;
           if (prevLevelRef.current !== null && fetchedLvl > prevLevelRef.current) {
             playDashSound('levelUp');
             const newRankInfo = getRankInfo(fetchedLvl);
@@ -1298,8 +1301,10 @@ const Dashboard = ({ player, setPlayer }: any) => {
       const earnedGold = Math.round(((baseGold * goldMult) + (baseGold > 0 ? gearBonuses.goldBonus || gearBonuses.bonusGold || 0 : 0)) * streakMultiplier * wyvernMultiplier);
       let newGold = (currentPlayer.gold || 0) + earnedGold;
       
-      const oldLevelData = calculateLevelData(currentPlayer.cumulative_xp ?? currentPlayer.xp ?? 0);
-      const newLevelData = calculateLevelData(newXp);
+      const oldActiveXp = (currentPlayer.cumulative_xp ?? 0) - (currentPlayer.cumulative_xp_offset ?? 0);
+      const newActiveXp = oldActiveXp + earnedExp;
+      const oldLevelData = calculateLevelData(oldActiveXp);
+      const newLevelData = calculateLevelData(newActiveXp);
       
       let leveledUp = false; let levelGoldBonus = 0;
       if (newLevelData.level > oldLevelData.level) {

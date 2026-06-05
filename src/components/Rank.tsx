@@ -476,10 +476,11 @@ const Rank = ({ player, setPlayer }: any) => {
       }
 
       const processedHunters = hunters.map(h => {
-        const levelData = calculateLevelData(h.cumulative_xp || 0);
-        const monthlyData = calculateLevelData(h.monthly_xp || 0);
-        const rankInfo = getRankInfo(levelData.level);
         const leaderboardXp = (h.cumulative_xp || 0) - (h.cumulative_xp_offset || 0);
+        const levelData = calculateLevelData(leaderboardXp);
+        const monthlyData = calculateLevelData(h.monthly_xp || 0);
+        const lifetimeLevelData = calculateLevelData(h.cumulative_xp || 0);
+        const rankInfo = getRankInfo(lifetimeLevelData.level);
 
         return {
           ...h,
