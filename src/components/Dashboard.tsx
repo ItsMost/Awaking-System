@@ -596,12 +596,12 @@ const LOCAL_FOOD_DB = [
 ];
 
 const BIWEEKLY_QUESTS = [
-  { id: 'wq1', title: 'Recovery Logistics', desc: 'تجهيز وتأمين أدوات الاستشفاء وساعات النوم العميق.', exp: 100, gold: 50, type: 'request', icon: Box, color: '#eab308' },
+  { id: 'wq1', title: 'Recovery Logistics', desc: 'تجهيز وتأمين أدوات الاستشفاء وساعات النوم العميق.', exp: 150, gold: 50, type: 'request', icon: Box, color: '#eab308' },
 ];
 
 const MONTHLY_QUESTS = [
-  { id: 'wq2', title: 'Supplement Inventory', desc: 'جرد وتوفير المكملات الغذائية الأساسية لضمان الاستمرارية.', exp: 100, gold: 50, type: 'request', icon: Flame, color: '#eab308' },
-  { id: 'wq3', title: 'InBody Assessment', desc: 'إجراء فحص InBody لقياس نسبة الدهون والعضلات ومتابعة التطور.', exp: 75, gold: 200, type: 'request', icon: Scale, color: '#06b6d4' },
+  { id: 'wq2', title: 'Supplement Inventory', desc: 'جرد وتوفير المكملات الغذائية الأساسية لضمان الاستمرارية.', exp: 150, gold: 50, type: 'request', icon: Flame, color: '#eab308' },
+  { id: 'wq3', title: 'InBody Assessment', desc: 'إجراء فحص InBody لقياس نسبة الدهون والعضلات ومتابعة التطور.', exp: 100, gold: 200, type: 'request', icon: Scale, color: '#06b6d4' },
 ];
 
 const MOBILITY_ROUTINE = [
@@ -614,8 +614,8 @@ const MOBILITY_ROUTINE = [
 ];
 
 const FRIDAY_DIRECTIVES = [
-  { id: 'fd1', title: 'Weekly Volume Compliance', desc: 'تأكيد تنفيذ كافة الحصص التدريبية وتطابق الأوزان والعدادات مع الخطة الأسبوعية بدقة.', exp: 150, gold: 100, type: 'request', icon: ClipboardCheck, color: '#ef4444' },
-  { id: 'fd2', title: 'Perfect Microcycle Streak', desc: 'الحفاظ على التزام يومي كامل (Streak) بدون انقطاع في المهام من السبت إلى الخميس.', exp: 150, gold: 100, type: 'request', icon: Target, color: '#ef4444' },
+  { id: 'fd1', title: 'Weekly Volume Compliance', desc: 'تأكيد تنفيذ كافة الحصص التدريبية وتطابق الأوزان والعدادات مع الخطة الأسبوعية بدقة.', exp: 250, gold: 100, type: 'request', icon: ClipboardCheck, color: '#ef4444' },
+  { id: 'fd2', title: 'Perfect Microcycle Streak', desc: 'الحفاظ على التزام يومي كامل (Streak) بدون انقطاع في المهام من السبت إلى الخميس.', exp: 250, gold: 100, type: 'request', icon: Target, color: '#ef4444' },
 ];
 
 const SHARED_PRACTICE_ID = 'shared_practice';

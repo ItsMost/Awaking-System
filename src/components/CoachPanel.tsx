@@ -14,11 +14,11 @@ const QUEST_REWARDS: Record<string, { exp: number, gold: number }> = {
   'Nutritional Compliance': { exp: 50, gold: 10 },
   'Functional Mobility': { exp: 45, gold: 15 },
   'Recovery Cooldown': { exp: 50, gold: 10 },
-  'Weekly Volume Compliance': { exp: 150, gold: 100 },
-  'Perfect Microcycle Streak': { exp: 150, gold: 100 },
-  'Recovery Logistics': { exp: 100, gold: 50 },
-  'Supplement Inventory': { exp: 100, gold: 50 },
-  'InBody Assessment': { exp: 75, gold: 200 },
+  'Weekly Volume Compliance': { exp: 250, gold: 100 },
+  'Perfect Microcycle Streak': { exp: 250, gold: 100 },
+  'Recovery Logistics': { exp: 150, gold: 50 },
+  'Supplement Inventory': { exp: 150, gold: 50 },
+  'InBody Assessment': { exp: 100, gold: 200 },
   'Disciplinary Execution': { exp: 0, gold: 0 }, 
 };
 
