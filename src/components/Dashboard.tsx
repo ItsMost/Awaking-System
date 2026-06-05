@@ -914,13 +914,13 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
   const isDoubleExp = (() => {
     if (!systemSettings) return timeLeft.days <= 3;
-    if (systemSettings.is_double_exp_enabled) return true;
+    if (!systemSettings.is_double_exp_enabled) return false;
     if (systemSettings.double_exp_end_date) {
       const endDate = new Date(systemSettings.double_exp_end_date);
       endDate.setHours(23, 59, 59, 999);
-      if (realNow <= endDate) return true;
+      return realNow <= endDate;
     }
-    return timeLeft.days <= 3;
+    return true;
   })();
   const doubleExpMultiplier = isDoubleExp ? 2 : 1;
   const isBloodMoon = isDoubleExp;
@@ -1592,6 +1592,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
   const streak = currentPlayer.streak || 0;
   const streakTier = getStreakTier(streak);
+  const isStreakExpEnabled = systemSettings ? systemSettings.is_streak_exp_enabled : true;
 
   const getStreakProgress = () => {
     if (streak >= 30) return 100;
@@ -1658,7 +1659,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
             <Flame size={16} /> STREAK TRANSMISSION & MULTIPLIER
           </StreakTitle>
           <StreakMultiplierBadge $color={streakTier.color}>
-            Multiplier: x{streakTier.multiplier.toFixed(1)}
+            Multiplier: x{isStreakExpEnabled ? streakTier.multiplier.toFixed(1) : "1.0"}
           </StreakMultiplierBadge>
         </StreakHeader>
 

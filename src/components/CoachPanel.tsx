@@ -354,11 +354,14 @@ const CoachPanel = () => {
       const now = new Date();
       let isDoubleExp = false;
       if (settings) {
-        if (settings.is_double_exp_enabled) isDoubleExp = true;
-        else if (settings.double_exp_end_date) {
-          const endDate = new Date(settings.double_exp_end_date);
-          endDate.setHours(23, 59, 59, 999);
-          if (now <= endDate) isDoubleExp = true;
+        if (settings.is_double_exp_enabled) {
+          if (settings.double_exp_end_date) {
+            const endDate = new Date(settings.double_exp_end_date);
+            endDate.setHours(23, 59, 59, 999);
+            if (now <= endDate) isDoubleExp = true;
+          } else {
+            isDoubleExp = true;
+          }
         }
       }
 
