@@ -213,30 +213,126 @@ const Container = styled(motion.div)` padding: 20px; font-family: 'Oxanium', san
 const TopActions = styled.div` display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; `;
 const TopBtn = styled.button<{ $active?: boolean; $color?: string }>` background: ${(props) => (props.$active ? `${props.$color}20` : 'rgba(15, 23, 42, 0.45)')}; border: 1px solid ${(props) => (props.$active ? props.$color : 'rgba(255,255,255,0.05)')}; color: ${(props) => (props.$active ? props.$color : '#94a3b8')}; padding: 10px 18px; border-radius: 12px; display: flex; align-items: center; gap: 8px; font-family: 'Oxanium'; font-weight: 900; font-size: 12px; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(8px); box-shadow: ${(props) => props.$active ? `0 0 15px ${props.$color}30` : '0 4px 15px rgba(0,0,0,0.2)'}; &:hover { background: ${(props) => (props.$active ? `${props.$color}30` : 'rgba(255,255,255,0.08)')}; color: ${(props) => props.$color || '#fff'}; transform: translateY(-2px); } &:disabled { opacity: 0.5; cursor: not-allowed; } `;
 const InboxBadge = styled.span` background: #ef4444; color: #fff; padding: 2px 6px; border-radius: 20px; font-size: 10px; font-weight: 900; margin-left: 5px; `;
-const TabsGrid = styled.div` display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 25px; `;
-const Tab = styled.button<{ $active: boolean; $glowColor?: string }>`
-  padding: 12px;
+const TabsGrid = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 25px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  width: 100%;
+`;
+
+const Tab = styled(motion.button)<{ $active: boolean; $glowColor?: string }>`
+  padding: 10px 18px;
   border-radius: 14px;
   border: 1px solid ${(props) => (props.$active ? `${props.$glowColor}40` : 'rgba(255,255,255,0.05)')};
   font-family: 'Oxanium', sans-serif;
   font-weight: 900;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   background: ${(props) => (props.$active ? `${props.$glowColor}15` : 'rgba(15, 23, 42, 0.45)')};
   color: ${(props) => (props.$active ? props.$glowColor || '#0ea5e9' : '#94a3b8')};
   backdrop-filter: blur(8px);
   box-shadow: ${(props) => props.$active ? `0 0 25px ${props.$glowColor}25, inset 0 0 10px ${props.$glowColor}15` : 'none'};
+  flex-shrink: 0;
+  white-space: nowrap;
   
   &:hover {
     border-color: ${(props) => props.$glowColor || '#0ea5e9'}70;
     color: ${(props) => props.$glowColor || '#0ea5e9'};
     transform: translateY(-2px);
   }
+`;
+
+// Season Hall Premium Styling
+const SeasonHallCard = styled.div`
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(2, 6, 23, 0.8) 100%);
+  border: 1px solid rgba(0, 242, 255, 0.2);
+  border-radius: 16px;
+  padding: 22px;
+  margin-top: 10px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 242, 255, 0.05);
+`;
+
+const SeasonHeader = styled.h3`
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  font-weight: 900;
+  color: #00f2ff;
+  letter-spacing: 2px;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+  text-transform: uppercase;
+`;
+
+const SeasonItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  gap: 15px;
+  
+  &:first-of-type {
+    padding-top: 0;
+  }
+  &:last-of-type {
+    padding-bottom: 0;
+  }
+`;
+
+const SeasonBadge = styled.div<{ $color?: string }>`
+  background: ${props => props.$color || '#ca8a04'}20;
+  border: 1px solid ${props => props.$color || '#ca8a04'};
+  color: ${props => props.$color || '#ca8a04'};
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px ${props => props.$color || '#ca8a04'}40;
+  text-transform: uppercase;
+`;
+
+const WinnerDetails = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const WinnerTitleTextVal = styled.div`
+  font-size: 9px;
+  color: #64748b;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+`;
+
+const WinnerNameTextVal = styled.div`
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+`;
+
+const PrizeBadge = styled.div<{ $color?: string }>`
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed ${props => props.$color || '#ca8a04'}50;
+  color: ${props => props.$color || '#eab308'};
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 900;
+  text-align: center;
 `;
 
 // 🚨 تصميم قاعة الأبطال (Top 3) بجماليات الـ Glassmorphism الداكنة الفخمة 🚨
@@ -343,7 +439,7 @@ const Rank = ({ player, setPlayer }: any) => {
   const [femaleLeaderboard, setFemaleLeaderboard] = useState<any[]>([]);
   const [championsHistory, setChampionsHistory] = useState<any[]>([]);
 
-  const [activeBoard, setActiveBoard] = useState<'global' | 'monthly' | 'male' | 'female'>('global');
+  const [activeBoard, setActiveBoard] = useState<'global' | 'monthly' | 'male' | 'female' | 'seasons'>('global');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -1056,9 +1152,10 @@ const Rank = ({ player, setPlayer }: any) => {
         <Tab $active={activeBoard === 'monthly'} $glowColor="#0ea5e9" onClick={() => { playClick(); setActiveBoard('monthly'); }}>بطل الشهر <Trophy size={16} /></Tab>
         <Tab $active={activeBoard === 'male'} $glowColor="#38bdf8" onClick={() => { playClick(); setActiveBoard('male'); }}>تصنيف الشباب <Sword size={16} /></Tab>
         <Tab $active={activeBoard === 'female'} $glowColor="#ec4899" onClick={() => { playClick(); setActiveBoard('female'); }}>تصنيف البنات <Crown size={16} /></Tab>
+        <Tab $active={activeBoard === 'seasons'} $glowColor="#eab308" onClick={() => { playClick(); setActiveBoard('seasons'); }}>سجل الأبطال <Award size={16} /></Tab>
       </TabsGrid>
 
-      {!loading && topThree.length > 0 && (
+      {activeBoard !== 'seasons' && !loading && topThree.length > 0 && (
         <HallOfFameContainer>
           {orderedTopThree.map((hunter) => {
             const isFirst = hunter.index === 0;
@@ -1097,49 +1194,77 @@ const Rank = ({ player, setPlayer }: any) => {
         </HallOfFameContainer>
       )}
 
-      <SearchContainer>
-        <SearchIconBox><Search size={20} /></SearchIconBox>
-        <SearchInput type="text" placeholder="ابحث عن لاعب..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-      </SearchContainer>
+      {activeBoard !== 'seasons' && (
+        <SearchContainer>
+          <SearchIconBox><Search size={20} /></SearchIconBox>
+          <SearchInput type="text" placeholder="ابحث عن لاعب..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        </SearchContainer>
+      )}
 
-      {loading ? (
-        <LoadingSpinner />
+      {activeBoard !== 'seasons' ? (
+        loading ? (
+          <LoadingSpinner />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <AnimatePresence mode="wait">
+              <motion.div key={activeBoard} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {others.length === 0 && topThree.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontStyle: 'italic' }}>لا يوجد لاعبين متاحين</div>
+                ) : (
+                  others.map((hunter) => {
+                    const isMe = player?.name === hunter.name;
+                    const playerWins = championsHistory.filter(c => c.hunter_name === hunter.name).length;
+                    const classColor = getUserClassInfo(hunter.selectedIcon || hunter.icon).color;
+
+                    return (
+                      <PlayerCard key={`${hunter.name}-${activeBoard}`} $rankColor={hunter.rankColor} onClick={() => handlePlayerClick(hunter)} whileTap={{ scale: 0.95 }}>
+                        <RankCol>{hunter.position}</RankCol>
+                        <IconCircle $color={hunter.rankColor} $classColor={classColor}>
+                           {getHunterIconOnly(hunter, classColor, 20)}
+                        </IconCircle>
+                        <NameCol>
+                          <PlayerNameText>
+                            {hunter.name} {isMe && <span style={{ color: '#0ea5e9', fontSize: 10 }}> (YOU)</span>}
+                            {playerWins > 0 && <span style={{ color: '#eab308', fontSize: '11px', textShadow: '0 0 5px rgba(234, 179, 8, 0.5)' }}>👑 x{playerWins}</span>}
+                          </PlayerNameText>
+                          <PlayerTitleText $rankColor={hunter.rankColor}>{hunter.rankName}</PlayerTitleText>
+                        </NameCol>
+                        <LevelCol>
+                          <LevelTextVal $rankColor={hunter.rankColor}>LVL {hunter.visualLevel}</LevelTextVal>
+                          <EXPText>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.visualXp} XP</EXPText>
+                        </LevelCol>
+                      </PlayerCard>
+                    );
+                  })
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        )
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <AnimatePresence mode="wait">
-            <motion.div key={activeBoard} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              {others.length === 0 && topThree.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontStyle: 'italic' }}>لا يوجد لاعبين متاحين</div>
-              ) : (
-                others.map((hunter) => {
-                  const isMe = player?.name === hunter.name;
-                  const playerWins = championsHistory.filter(c => c.hunter_name === hunter.name).length;
-                  const classColor = getUserClassInfo(hunter.selectedIcon || hunter.icon).color;
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
+          <SeasonHallCard>
+            <SeasonHeader>🏆 لوحة شرف أبطال المواسم 🏆</SeasonHeader>
+            
+            <SeasonItem>
+              <SeasonBadge $color="#eab308">SEASON ONE</SeasonBadge>
+              <WinnerDetails>
+                <WinnerTitleTextVal>CHAMPION</WinnerTitleTextVal>
+                <WinnerNameTextVal>EL SAEED 👑</WinnerNameTextVal>
+              </WinnerDetails>
+              <PrizeBadge $color="#eab308">1st Place Gold</PrizeBadge>
+            </SeasonItem>
 
-                  return (
-                    <PlayerCard key={`${hunter.name}-${activeBoard}`} $rankColor={hunter.rankColor} onClick={() => handlePlayerClick(hunter)} whileTap={{ scale: 0.95 }}>
-                      <RankCol>{hunter.position}</RankCol>
-                      <IconCircle $color={hunter.rankColor} $classColor={classColor}>
-                         {getHunterIconOnly(hunter, classColor, 20)}
-                      </IconCircle>
-                      <NameCol>
-                        <PlayerNameText>
-                          {hunter.name} {isMe && <span style={{ color: '#0ea5e9', fontSize: 10 }}> (YOU)</span>}
-                          {playerWins > 0 && <span style={{ color: '#eab308', fontSize: '11px', textShadow: '0 0 5px rgba(234, 179, 8, 0.5)' }}>👑 x{playerWins}</span>}
-                        </PlayerNameText>
-                        <PlayerTitleText $rankColor={hunter.rankColor}>{hunter.rankName}</PlayerTitleText>
-                      </NameCol>
-                      <LevelCol>
-                        <LevelTextVal $rankColor={hunter.rankColor}>LVL {hunter.visualLevel}</LevelTextVal>
-                        <EXPText>{activeBoard === 'monthly' ? hunter.monthlyVisualXp : hunter.visualXp} XP</EXPText>
-                      </LevelCol>
-                    </PlayerCard>
-                  );
-                })
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+            <SeasonItem style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: 15 }}>
+              <SeasonBadge $color="#0ea5e9">SEASON TWO</SeasonBadge>
+              <WinnerDetails>
+                <WinnerTitleTextVal>CHAMPION</WinnerTitleTextVal>
+                <WinnerNameTextVal>RAYAN 👑</WinnerNameTextVal>
+              </WinnerDetails>
+              <PrizeBadge $color="#0ea5e9">EAA + ELECTROLYTES</PrizeBadge>
+            </SeasonItem>
+          </SeasonHallCard>
+        </motion.div>
       )}
       
       {renderModals()}

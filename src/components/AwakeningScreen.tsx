@@ -346,7 +346,6 @@ const AwakeningScreen = ({ onAwaken }: any) => {
   };
 
   const handleInputChange = (setter: any) => (e: any) => {
-    playAwakeningSound('typing');
     setter(e.target.value);
     setError('');
   };
@@ -587,7 +586,6 @@ const AwakeningScreen = ({ onAwaken }: any) => {
                     $selected={gender === 'Male'}
                     $color="#0ea5e9"
                     onClick={() => {
-                      playAwakeningSound('typing');
                       setGender('Male');
                     }}
                   >
@@ -597,7 +595,6 @@ const AwakeningScreen = ({ onAwaken }: any) => {
                     $selected={gender === 'Female'}
                     $color="#ec4899"
                     onClick={() => {
-                      playAwakeningSound('typing');
                       setGender('Female');
                     }}
                   >

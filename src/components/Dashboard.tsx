@@ -969,7 +969,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
   useEffect(() => {
     const fetchRadarNews = async () => {
       try {
-        const { data } = await supabase.from('global_news').select('*').order('created_at', { ascending: false }).limit(5);
+        const { data } = await supabase.from('global_news').select('*').neq('type', 'system_settings').order('created_at', { ascending: false }).limit(5);
         if (data && data.length > 0) setSystemLogs(data.map((news) => `🌍 ${news.title}: ${news.content}`));
         else setSystemLogs(['📡 Scanning for Command Transmissions... No active broadcasts.']);
       } catch (e) {}
@@ -978,8 +978,10 @@ const Dashboard = ({ player, setPlayer }: any) => {
 
     const dashboardNewsChannelName = `dashboard_news_${Date.now()}`;
     const newsSub = supabase.channel(dashboardNewsChannelName).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_news' }, payload => {
-        setSystemLogs(prev => [`🌍 ${payload.new.title}: ${payload.new.content}`, ...prev.slice(0, 4)]);
-        toast.info(payload.new.title, { description: payload.new.content, style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' } });
+        if (payload.new.type !== 'system_settings') {
+          setSystemLogs(prev => [`🌍 ${payload.new.title}: ${payload.new.content}`, ...prev.slice(0, 4)]);
+          toast.info(payload.new.title, { description: payload.new.content, style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' } });
+        }
       }).subscribe();
 
     return () => { supabase.removeChannel(newsSub); };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -6,7 +7,7 @@ import {
   Book, Activity, Moon, Eye, Wind, Dumbbell, Zap, Footprints, Lock as LockIcon, Flame,
   Crown, Skull, Target, Heart, Droplet, Axe, Anchor, Fingerprint, Cpu, Infinity as InfinityIcon,
   Hexagon, Globe, Terminal, Power, Bell, X, MessageSquare, WifiOff, Volume2, VolumeX, Package,
-  LayoutDashboard, Box, Trophy, Store, Settings, Crosshair
+  LayoutDashboard, Box, Trophy, Store, Settings, Crosshair, ArrowRight
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 
@@ -176,9 +177,86 @@ const BackgroundGrid = styled.div`
 `;
 
 const ContentWrapper = styled.div` position: relative; padding-bottom: 50px; `;
-const BootScreen = styled(motion.div)` position: fixed; inset: 0; background: #020617; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; font-family: 'Courier New', Courier, monospace; `;
+const BootScreen = styled(motion.div)`
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, #0b1528 0%, #020617 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  font-family: 'Oxanium', sans-serif;
+  overflow: hidden;
+`;
+
+const HUDGrid = styled.div`
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(0, 242, 255, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 242, 255, 0.02) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+  opacity: 0.8;
+  z-index: 1;
+`;
+
+const GlowOrb = styled.div`
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0, 242, 255, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  filter: blur(40px);
+  animation: pulseOrb 3s infinite ease-in-out;
+  @keyframes pulseOrb {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.2); opacity: 1; }
+  }
+`;
+
+const BootLogoContainer = styled(motion.div)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+  margin-bottom: 30px;
+`;
+
+const BootTextVal = styled(motion.p)`
+  color: #00f2ff;
+  font-family: 'Oxanium', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 15px;
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+`;
+
+const ProgressBarContainer = styled.div`
+  width: 240px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 242, 255, 0.15);
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+  z-index: 5;
+`;
+
+const ProgressBarFillVal = styled(motion.div)`
+  height: 100%;
+  background: linear-gradient(90deg, #0ea5e9, #00f2ff);
+  box-shadow: 0 0 15px #00f2ff;
+  border-radius: 10px;
+`;
+
 const scanline = keyframes` 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } `;
-const ScanlineEffect = styled.div` position: absolute; top: 0; left: 0; width: 100%; height: 10px; background: rgba(0, 242, 255, 0.3); box-shadow: 0 0 20px rgba(0, 242, 255, 0.5); animation: ${scanline} 3s linear infinite; pointer-events: none; `;
+const ScanlineEffect = styled.div` position: absolute; top: 0; left: 0; width: 100%; height: 10px; background: rgba(0, 242, 255, 0.15); box-shadow: 0 0 20px rgba(0, 242, 255, 0.3); animation: ${scanline} 3.5s linear infinite; pointer-events: none; z-index: 3; `;
 
 const StatusBar = styled.div`
   background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px 15px; position: sticky; top: 0; z-index: 50; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column;
@@ -216,16 +294,144 @@ const EXPBarContainer = styled.div` display: flex; align-items: center; gap: 8px
 const EXPBarWrapper = styled.div` flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; position: relative; `;
 const EXPBarFill = styled(motion.div)<{ $progress: number; }>` height: 100%; background: linear-gradient(90deg, #0284c7, #00f2ff); width: ${(props) => props.$progress}%; position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(0, 242, 255, 0.5); `;
 
-const NavigationGrid = styled.div` display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 15px; background: rgba(11, 17, 32, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; position: relative; z-index: 40; `;
+const NavigationGrid = styled.div`
+  display: flex;
+  gap: 8px;
+  padding: 10px 15px;
+  background: rgba(11, 17, 32, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 40;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
 
-const NavButton = styled.button<{ $active: boolean; $color: string; }>`
+const NavButton = styled(motion.button)<{ $active: boolean; $color: string; }>`
   background: ${(props) => props.$active ? `linear-gradient(180deg, ${props.$color}20 0%, rgba(2,6,23,0.8) 100%)` : 'rgba(2, 6, 23, 0.6)'};
   border: 1px solid ${(props) => (props.$active ? props.$color : 'rgba(255,255,255,0.05)')};
   color: ${(props) => props.$active ? '#fff' : '#64748b'};
-  padding: 8px 4px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-family: 'Oxanium', sans-serif; font-size: 9px; font-weight: 900; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden;
+  padding: 8px 16px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: 'Oxanium', sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  min-width: 80px;
   box-shadow: ${(props) => props.$active ? `0 0 10px ${props.$color}30` : 'none'};
-  svg { filter: ${(props) => props.$active ? `drop-shadow(0 0 2px ${props.$color})` : 'none'}; transition: 0.3s; width: 22px; height: 22px; }
+  svg { filter: ${(props) => props.$active ? `drop-shadow(0 0 2px ${props.$color})` : 'none'}; transition: 0.3s; width: 20px; height: 20px; }
   &:hover { color: #fff; border-color: ${(props) => props.$color}; }
+`;
+
+// Winner Modal Premium Styling
+const WinnerContent = styled(motion.div)`
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  border: 2px solid #eab308;
+  border-radius: 24px;
+  padding: 30px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 0 45px rgba(234, 179, 8, 0.35), inset 0 0 25px rgba(234, 179, 8, 0.1);
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #eab308, transparent);
+  }
+`;
+
+const WinnerTitleText = styled.h2`
+  color: #eab308;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 15px 0 5px 0;
+  text-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
+`;
+
+const WinnerSubtitleText = styled.div`
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+`;
+
+const ChampionBox = styled.div`
+  background: rgba(0, 0, 0, 0.4);
+  border: 1.5px solid rgba(234, 179, 8, 0.25);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 25px;
+  position: relative;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6);
+`;
+
+const ChampName = styled.div`
+  font-size: 28px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+`;
+
+const PrizeText = styled.div`
+  font-size: 13px;
+  color: #fef08a;
+  font-weight: bold;
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+`;
+
+const ActionBtn = styled.button<{ $color: string }>`
+  width: 100%;
+  padding: 14px;
+  background: ${props => props.$color};
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Oxanium', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 12px ${props => props.$color}40;
+  
+  &:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+  }
 `;
 
 const TopRightControls = styled.div` display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; width: 100%; `;
@@ -248,7 +454,7 @@ const App = () => {
   const [isBooting, setIsBooting] = useState(false);
   const [bootText, setBootText] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
-
+  const [showWinnerModal, setShowWinnerModal] = useState(false);
 
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -270,8 +476,6 @@ const App = () => {
     }
   }, []);
 
-
-
   useEffect(() => {
     const handleOnline = () => { setIsOffline(false); toast.success('SYSTEM ONLINE: Neural Link Restored.', { style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' } }); };
     const handleOffline = () => { setIsOffline(true); toast.error('SYSTEM OFFLINE: Operating on Local Cache.', { duration: 10000, style: { background: '#2a0808', border: '1px solid #ef4444', color: '#fca5a5' } }); };
@@ -283,7 +487,7 @@ const App = () => {
     const savedData = localStorage.getItem('elite_system_active_session');
     if (savedData) {
       const parsedData = JSON.parse(savedData); setIsBooting(true); playSound('boot');
-      let step = 0; const bootInterval = setInterval(() => { if (step < bootSequenceText.length) { setBootText(bootSequenceText[step]); playSound('glitch'); step++; } else { clearInterval(bootInterval); } }, 400);
+      let step = 0; const bootInterval = setInterval(() => { if (step < bootSequenceText.length) { setBootText(bootSequenceText[step]); step++; } else { clearInterval(bootInterval); } }, 400);
       const fetchLatestData = async () => {
         try {
           if (!navigator.onLine) { setPlayer(parsedData); return; }
@@ -304,10 +508,24 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    if (!isBooting && player) {
+      const now = new Date();
+      const popupStart = new Date('2026-06-05T00:00:00');
+      const popupEnd = new Date('2026-06-12T23:59:59');
+      if (now >= popupStart && now <= popupEnd) {
+        const hasSeen = localStorage.getItem('elite_seen_winner_june_2026');
+        if (!hasSeen) {
+          setShowWinnerModal(true);
+        }
+      }
+    }
+  }, [isBooting, player]);
+
+  useEffect(() => {
     if (!player || isBooting || isOffline) return;
     const fetchInitialNotifications = async () => {
       try {
-        const { data } = await supabase.from('global_news').select('*').order('created_at', { ascending: false }).limit(10);
+        const { data } = await supabase.from('global_news').select('*').neq('type', 'system_settings').order('created_at', { ascending: false }).limit(10);
         if (data) { const formatted = data.map((n: any) => ({ id: n.id, title: n.title, msg: n.content, time: new Date(n.created_at).toLocaleString(), type: 'broadcast', read: true })); setNotifications(formatted); }
       } catch (err) { console.error(err); }
     }; fetchInitialNotifications();
@@ -318,7 +536,14 @@ const App = () => {
     const questsChannelName = `app_quests_${uniqueId}`;
     const playerChannelName = `app_player_${uniqueId}`;
 
-    const newsSub = supabase.channel(newsChannelName).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_news' }, payload => { const newNotif = { id: payload.new.id, title: payload.new.title, msg: payload.new.content, time: new Date(payload.new.created_at).toLocaleTimeString(), type: 'broadcast', read: false }; setNotifications(prev => [newNotif, ...prev]); playSound('notification'); toast(payload.new.title, { description: payload.new.content, style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' } }); }).subscribe();
+    const newsSub = supabase.channel(newsChannelName).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'global_news' }, payload => { 
+      if (payload.new.type !== 'system_settings') {
+        const newNotif = { id: payload.new.id, title: payload.new.title, msg: payload.new.content, time: new Date(payload.new.created_at).toLocaleTimeString(), type: 'broadcast', read: false }; 
+        setNotifications(prev => [newNotif, ...prev]); 
+        playSound('notification'); 
+        toast(payload.new.title, { description: payload.new.content, style: { background: '#020617', border: '1px solid #0ea5e9', color: '#0ea5e9' } }); 
+      }
+    }).subscribe();
     
     const questSub = supabase.channel(questsChannelName).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'elite_quests', filter: `player_name=eq.${player.name}` }, payload => { if (payload.new.status !== payload.old.status) { if (payload.new.status === 'approved') { const newNotif = { id: payload.new.id, title: 'REQUEST APPROVED', msg: `Coach has approved your request: ${payload.new.task_name}. Rewards granted!`, time: new Date().toLocaleTimeString(), type: 'success', read: false }; setNotifications(prev => [newNotif, ...prev]); playSound('startup'); toast.success('REQUEST APPROVED!', { description: payload.new.task_name, style: { background: '#022c22', border: '1px solid #10b981', color: '#10b981' } }); } else if (payload.new.status === 'rejected') { const newNotif = { id: payload.new.id, title: 'REQUEST REJECTED', msg: `Coach rejected your request: ${payload.new.task_name}.`, time: new Date().toLocaleTimeString(), type: 'penalty', read: false }; setNotifications(prev => [newNotif, ...prev]); playSound('error'); toast.error('REQUEST REJECTED', { description: payload.new.task_name, style: { background: '#2a0808', border: '1px solid #ef4444', color: '#ef4444' } }); } } }).subscribe();
     
@@ -378,14 +603,41 @@ const App = () => {
 
   if (isBooting) {
     return (
-      <BootScreen>
+      <BootScreen initial={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.5 } }}>
+        <HUDGrid />
+        <GlowOrb />
         <ScanlineEffect />
-        <Terminal size={50} color="#00f2ff" style={{ marginBottom: 15, filter: 'drop-shadow(0 0 10px #00f2ff)' }} />
-        <h2 style={{ color: '#00f2ff', letterSpacing: '2px', textShadow: '0 0 10px #00f2ff', fontSize: 20 }}>SYSTEM BOOT</h2>
-        <p style={{ color: '#94a3b8', fontFamily: 'monospace', marginTop: 15, fontSize: 12, textAlign: 'center', padding: '0 20px' }}>{bootText}</p>
-        <div style={{ width: '200px', height: '2px', background: '#1e293b', marginTop: 20, position: 'relative', overflow: 'hidden' }}>
-          <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 2.2, ease: 'easeInOut' }} style={{ position: 'absolute', top: 0, left: 0, height: '100%', background: '#00f2ff', boxShadow: '0 0 10px #00f2ff' }} />
-        </div>
+        <BootLogoContainer
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            animate={{ y: [-5, 5, -5] }}
+            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 242, 255, 0.05)', border: '2px solid #00f2ff', borderRadius: '50%', padding: '20px', boxShadow: '0 0 30px rgba(0, 242, 255, 0.2), inset 0 0 20px rgba(0, 242, 255, 0.1)' }}
+          >
+            <Terminal size={40} color="#00f2ff" />
+          </motion.div>
+          <h2 style={{ color: '#fff', letterSpacing: '4px', marginTop: 20, fontSize: 18, fontWeight: 900, textTransform: 'uppercase', textShadow: '0 0 10px rgba(0, 242, 255, 0.3)' }}>ELITE MAINFRAME</h2>
+          <BootTextVal
+            key={bootText}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.2 }}
+          >
+            {bootText || "INITIALIZING LINK..."}
+          </BootTextVal>
+        </BootLogoContainer>
+        
+        <ProgressBarContainer>
+          <ProgressBarFillVal 
+            initial={{ width: 0 }} 
+            animate={{ width: '100%' }} 
+            transition={{ duration: 2.2, ease: 'easeInOut' }} 
+          />
+        </ProgressBarContainer>
       </BootScreen>
     );
   }
@@ -534,6 +786,35 @@ const App = () => {
           </motion.div>
         </AnimatePresence>
       </ContentWrapper>
+
+      <AnimatePresence>
+        {showWinnerModal && createPortal(
+          <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ zIndex: 10000 }}>
+            <WinnerContent initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ type: "spring", damping: 15 }}>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <motion.div animate={{ rotate: [0, -10, 10, -10, 10, 0] }} transition={{ repeat: Infinity, duration: 2, repeatDelay: 1 }}>
+                  <Trophy size={64} color="#eab308" style={{ filter: 'drop-shadow(0 0 15px rgba(234, 179, 8, 0.6))' }} />
+                </motion.div>
+              </div>
+              <WinnerTitleText>🏆 بطل الشهر الماضي 🏆</WinnerTitleText>
+              <WinnerSubtitleText>LAST MONTH'S CHAMPION</WinnerSubtitleText>
+              
+              <ChampionBox>
+                <ChampName>RAYAN</ChampName>
+                <PrizeText>
+                  <Zap size={14} color="#fef08a" />
+                  فاز بـ: EAA + ELECTROLYTES 30 SCOOPS
+                </PrizeText>
+              </ChampionBox>
+
+              <ActionBtn $color="#eab308" onClick={() => { playSound('click'); localStorage.setItem('elite_seen_winner_june_2026', 'true'); setShowWinnerModal(false); }}>
+                المتابعة إلى النظام <ArrowRight size={16} />
+              </ActionBtn>
+            </WinnerContent>
+          </ModalOverlay>,
+          document.body
+        )}
+      </AnimatePresence>
     </AppContainer>
   );
 };
