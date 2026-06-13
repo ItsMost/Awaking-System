@@ -123,13 +123,7 @@ const AnimatedSpirit = ({ type, color, size = 100 }: { type: string, color: stri
             <motion.ellipse cx="50" cy="50" rx="5" ry="20" fill="#fff" animate={{ ry: [20, 2, 20] }} transition={{ duration: 4, repeat: Infinity, times: [0, 0.1, 1] }} />
           </motion.svg>
         )}
-        {type === 'golem' && (
-          <motion.svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', filter: `drop-shadow(0 0 8px ${color})` }} animate={{ rotateZ: 360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }}>
-            <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="#334155" stroke={color} strokeWidth="4" />
-            <polygon points="50,20 75,35 75,65 50,80 25,65 25,35" fill="none" stroke={color} strokeWidth="2" />
-            <rect x="40" y="40" width="20" height="20" fill={color} />
-          </motion.svg>
-        )}
+
         {type === 'wolf' && (
           <motion.svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', filter: `drop-shadow(0 0 10px ${color})` }} animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
             <polygon points="50,10 80,40 50,90 20,40" fill="none" stroke={color} strokeWidth="3" />
@@ -154,11 +148,8 @@ const initializeDefaultItems = async () => {
     { name: 'Golden Wyvern Core', description: 'جوهر مالي: يزيد الذهب المكتسب بنسبة 10%.', price: 3000, category: 'pet', color: '#eab308', icon: 'spirit_wyvern', required_rank: 1 },
     { name: 'Healing Phoenix Ember', description: 'جوهر طبي: يعيد 10 HP يومياً عند إكمال المهام.', price: 3000, category: 'pet', color: '#ef4444', icon: 'spirit_phoenix', required_rank: 1 },
     { name: 'Shadow Owl Eye', description: 'جوهر تجاري: يمنحك خصم 10% في المتجر دائماً.', price: 3000, category: 'pet', color: '#f59e0b', icon: 'spirit_owl', required_rank: 1 },
-    { name: 'Iron Golem Matrix', description: 'جوهر مدافع: يحمي الستريك من الكسر.', price: 3000, category: 'pet', color: '#f59e0b', icon: 'spirit_golem', required_rank: 1 },
     { name: 'Frost Wolf Soul', description: 'صياد الألعاب: يزيد ذهب الألعاب بنسبة 20%.', price: 3000, category: 'pet', color: '#eab308', icon: 'spirit_wolf', required_rank: 1 },
-    { name: 'Emerald Dragon Scale', description: 'مخفف الألم: يقلل خسارة الـ HP عند الغياب.', price: 3000, category: 'pet', color: '#10b981', icon: 'spirit_emerald', required_rank: 1 },
-    { name: 'Essence Crystal', description: 'يشحن طاقة مرافقك السحري بنسبة 50%.', price: 500, category: 'consumable', color: '#f59e0b', icon: 'BatteryCharging', required_rank: 1 },
-    { name: 'Streak Protection Shield', description: 'درع حماية الستريك: يحميك من كسر أيامك النشطة وتصفير الستريك لمرة واحدة عند الغياب!', price: 1500, category: 'consumable', color: '#f59e0b', icon: 'Shield', required_rank: 1 }
+    { name: 'Emerald Dragon Scale', description: 'مخفف الألم: يقلل خسارة الـ HP عند الغياب.', price: 3000, category: 'pet', color: '#10b981', icon: 'spirit_emerald', required_rank: 1 }
   ];
   
   const { data } = await supabase.from('shop_items').select('name');
@@ -184,22 +175,8 @@ const renderIcon = (iconValue: string, color: string, size: number = 38) => {
 };
 
 const getRankInfo = (level: number) => {
-  if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444' };
-  if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b' };
-  if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b' };
-  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#ea580c' };
-  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#ea580c' };
-  if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6' };
-  if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6' };
-  if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6' };
-  if (level >= 14) return { name: 'PLATINUM RACER 👟', color: '#06b6d4' };
-  if (level >= 12) return { name: 'PLATINUM RELAY ⏱️', color: '#06b6d4' };
   if (level >= 10) return { name: 'GOLD PACER 🌟', color: '#eab308' };
-  if (level >= 8)  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308' };
-  if (level >= 6)  return { name: 'SILVER SPRINTER 🥈', color: '#94a3b8' };
-  if (level >= 4)  return { name: 'SILVER RUNNER 🎽', color: '#94a3b8' };
-  if (level >= 2)  return { name: 'BRONZE STRIDER 🪵', color: '#b45309' };
-  return { name: 'BRONZE ATHLETE 🥉', color: '#b45309' };
+  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308' };
 };
 
 const calculateLevelData = (totalXp: number) => {
@@ -548,8 +525,6 @@ const Shop = ({ player, setPlayer }: any) => {
   };
 
   const petsItems = dbItems.filter(i => i.category === 'pet');
-  const consumableItems = dbItems.filter(i => i.category === 'consumable');
-  const titleItems = dbItems.filter(i => i.category === 'title');
 
   const renderSection = (title: string, icon: any, items: any[], sectionColor: string) => {
     if (items.length === 0 && !isCoachMode) return null;
@@ -764,8 +739,6 @@ const Shop = ({ player, setPlayer }: any) => {
         ) : (
           <>
             {renderSection('MYSTICAL COMPANIONS', Ghost, petsItems, '#f59e0b')}
-            {renderSection('ESSENCE & ELIXIRS', BatteryCharging, consumableItems, '#f43f5e')}
-            {renderSection('TITLES VAULT', Award, titleItems, '#f59e0b')}
           </>
         )}
       </Container>

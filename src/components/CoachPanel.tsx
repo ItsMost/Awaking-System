@@ -405,7 +405,7 @@ const CoachPanel = () => {
       let newGold = (playerData.gold || 0) + finalGold;
 
       // 3. حساب لو اللاعب هيلفل عشان نديله بونس (بناءً على التغير في المستوى النشط للموسم)
-      const oldActiveXp = (playerData.cumulative_xp || 0) - (playerData.cumulative_xp_offset || 0);
+      const oldActiveXp = playerData.cumulative_xp || 0;
       const newActiveXp = oldActiveXp + finalExp;
       const oldLvl = calculateLevelData(oldActiveXp).level;
       const newLvl = calculateLevelData(newActiveXp).level;

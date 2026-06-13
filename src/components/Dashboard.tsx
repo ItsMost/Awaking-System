@@ -87,22 +87,8 @@ const playHoverSound = () => {
 // 2. Rank System & Utils
 // ==========================================
 const getRankInfo = (level: number) => {
-  if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.6)' };
-  if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' };
-  if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' };
-  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#ea580c', glow: 'rgba(139, 92, 246, 0.4)' };
-  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#ea580c', glow: 'rgba(139, 92, 246, 0.4)' };
-  if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
-  if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
-  if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
-  if (level >= 14) return { name: 'PLATINUM RACER 👟', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)' };
-  if (level >= 12) return { name: 'PLATINUM RELAY ⏱️', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)' };
   if (level >= 10) return { name: 'GOLD PACER 🌟', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' };
-  if (level >= 8)  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' };
-  if (level >= 6)  return { name: 'SILVER SPRINTER 🥈', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)' };
-  if (level >= 4)  return { name: 'SILVER RUNNER 🎽', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)' };
-  if (level >= 2)  return { name: 'BRONZE STRIDER 🪵', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)' };
-  return { name: 'BRONZE ATHLETE 🥉', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)' };
+  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' };
 };
 
 const getPenaltyStats = (level: number) => {
@@ -847,7 +833,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
     };
   }, [syncOfflineQueue]);
 
-  const activeXp = useMemo(() => (currentPlayer.cumulative_xp ?? 0) - (currentPlayer.cumulative_xp_offset ?? 0), [currentPlayer.cumulative_xp, currentPlayer.cumulative_xp_offset]);
+  const activeXp = useMemo(() => currentPlayer.cumulative_xp ?? 0, [currentPlayer.cumulative_xp]);
   const levelData = useMemo(() => calculateLevelData(activeXp), [activeXp]);
   const currentVisualLvl = levelData.level;
   const lifetimeLvl = useMemo(() => calculateLevelData(currentPlayer.cumulative_xp ?? 0).level, [currentPlayer.cumulative_xp]);
@@ -1008,7 +994,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
             } catch (e) {}
           }
 
-          const activeXp = (userData.cumulative_xp || 0) - (userData.cumulative_xp_offset || 0);
+          const activeXp = userData.cumulative_xp || 0;
           const fetchedLvl = calculateLevelData(activeXp).level;
           if (prevLevelRef.current !== null && fetchedLvl > prevLevelRef.current) {
             playDashSound('levelUp');
@@ -1045,7 +1031,6 @@ const Dashboard = ({ player, setPlayer }: any) => {
           const yesterdayObj = new Date(realNow); yesterdayObj.setDate(yesterdayObj.getDate() - 1);
           
           let applyPenalty = false; let daysMissedCount = 0; let hpPenaltyAmount = 0;
-          const hasGolem = currentPlayer.active_pet === 'Iron Golem Matrix';
           const hasEmeraldScale = currentPlayer.active_pet === 'Emerald Dragon Scale';
           const penaltyHpPerTask = hasEmeraldScale ? 7 : 15;
 
@@ -1060,13 +1045,11 @@ const Dashboard = ({ player, setPlayer }: any) => {
             const missedTasksCount = Math.max(0, 4 - completedMandatory.length);
             if (missedTasksCount > 0) hpPenaltyAmount += (missedTasksCount * penaltyHpPerTask);
             if (completedMandatory.length < 3) { 
-              if (!hasGolem) {
-                if (claimedRewardsList.includes('streak_shield')) {
-                  claimedRewardsList = claimedRewardsList.filter(item => item !== 'streak_shield');
-                  shieldConsumedThisSync = true;
-                } else {
-                  fetchedStreak = 0; 
-                }
+              if (claimedRewardsList.includes('streak_shield')) {
+                claimedRewardsList = claimedRewardsList.filter(item => item !== 'streak_shield');
+                shieldConsumedThisSync = true;
+              } else {
+                fetchedStreak = 0; 
               }
               applyPenalty = true; 
               daysMissedCount++; 
@@ -1083,11 +1066,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
             if (shieldConsumedThisSync) {
               toast.success(`🛡️ تم استهلاك "درع حماية الستريك" بنجاح لحماية أيامك النشطة من الانكسار! لا يزال الستريك الخاص بك قائماً! ✨`, { duration: 10000, style: { background: '#0c0a09', color: '#f59e0b', border: '1px solid #f59e0b'} });
             } else if (applyPenalty) {
-              if (hasGolem) {
-                toast.success(`🛡️ حماية الـ Iron Golem منعت انكسار الـ Streak! لم يتم تصفير أيامك النشطة.`, { duration: 8000, style: { background: '#0c0a09', color: '#f59e0b', border: '1px solid #f59e0b'} });
-              } else {
-                toast.error(`💔 تم كسر الـ Streak وخصم ${goldLost} Gold بسبب التقصير!`, { duration: 6000, style: { background: '#450a0a', color: '#fca5a5', border: '1px solid #ef4444'} });
-              }
+              toast.error(`💔 تم كسر الـ Streak وخصم ${goldLost} Gold بسبب التقصير!`, { duration: 6000, style: { background: '#450a0a', color: '#fca5a5', border: '1px solid #ef4444'} });
             }
           } else if (lastPenaltyCheck !== userData.last_penalty_check) {
             await supabase.from('elite_players').update({ last_penalty_check: lastPenaltyCheck }).eq('name', currentPlayer.name);
@@ -1304,7 +1283,7 @@ const Dashboard = ({ player, setPlayer }: any) => {
       const earnedGold = Math.round(((baseGold * goldMult) + (baseGold > 0 ? gearBonuses.goldBonus || gearBonuses.bonusGold || 0 : 0)) * streakMultiplier * wyvernMultiplier);
       let newGold = (currentPlayer.gold || 0) + earnedGold;
       
-      const oldActiveXp = (currentPlayer.cumulative_xp ?? 0) - (currentPlayer.cumulative_xp_offset ?? 0);
+      const oldActiveXp = currentPlayer.cumulative_xp ?? 0;
       const newActiveXp = oldActiveXp + earnedExp;
       const oldLevelData = calculateLevelData(oldActiveXp);
       const newLevelData = calculateLevelData(newActiveXp);

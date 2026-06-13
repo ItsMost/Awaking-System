@@ -74,7 +74,6 @@ const PETS_DATABASE = [
   { name: 'Golden Wyvern Core', type: 'wyvern', color: '#eab308' },
   { name: 'Healing Phoenix Ember', type: 'phoenix', color: '#ef4444' },
   { name: 'Shadow Owl Eye', type: 'owl', color: '#f59e0b' },
-  { name: 'Iron Golem Matrix', type: 'golem', color: '#f59e0b' },
   { name: 'Frost Wolf Soul', type: 'wolf', color: '#eab308' },
   { name: 'Emerald Dragon Scale', type: 'emerald', color: '#10b981' }
 ];
@@ -107,22 +106,8 @@ const QUEST_REWARDS: Record<string, { exp: number; gold: number }> = {
 };
 
 const getRankInfo = (level: number) => {
-  if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.6)' };
-  if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' };
-  if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' };
-  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#ea580c', glow: 'rgba(139, 92, 246, 0.4)' };
-  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#ea580c', glow: 'rgba(139, 92, 246, 0.4)' };
-  if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
-  if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
-  if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)' };
-  if (level >= 14) return { name: 'PLATINUM RACER 👟', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)' };
-  if (level >= 12) return { name: 'PLATINUM RELAY ⏱️', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)' };
   if (level >= 10) return { name: 'GOLD PACER 🌟', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' };
-  if (level >= 8)  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' };
-  if (level >= 6)  return { name: 'SILVER SPRINTER 🥈', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)' };
-  if (level >= 4)  return { name: 'SILVER RUNNER 🎽', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)' };
-  if (level >= 2)  return { name: 'BRONZE STRIDER 🪵', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)' };
-  return { name: 'BRONZE ATHLETE 🥉', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)' };
+  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)' };
 };
 
 const CLASS_MAPPING = [
@@ -198,7 +183,6 @@ const MiniOrb = ({ type, color }: { type: string, color: string }) => {
         {type === 'wyvern' && <svg viewBox="0 0 100 100"><polygon points="50,5 90,50 50,95 10,50" fill="none" stroke={color} strokeWidth="6" /><circle cx="50" cy="50" r="15" fill="#fff" /></svg>}
         {type === 'phoenix' && <svg viewBox="0 0 100 100"><path d="M50 10 Q70 40 50 90 Q30 40 50 10" fill={color} /><circle cx="50" cy="65" r="12" fill="#fff" /></svg>}
         {type === 'owl' && <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke={color} strokeWidth="6" strokeDasharray="10 10" /><ellipse cx="50" cy="50" rx="10" ry="25" fill="#fff" /></svg>}
-        {type === 'golem' && <svg viewBox="0 0 100 100"><polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="#334155" stroke={color} strokeWidth="6" /><rect x="35" y="35" width="30" height="30" fill={color} /></svg>}
         {type === 'wolf' && <svg viewBox="0 0 100 100"><polygon points="50,10 80,40 50,90 20,40" fill="none" stroke={color} strokeWidth="6" /><polygon points="50,30 60,45 50,70 40,45" fill="#fff" /></svg>}
         {type === 'emerald' && <svg viewBox="0 0 100 100"><path d="M50 10 C 80 10, 90 50, 50 90 C 10 50, 20 10, 50 10 Z" fill="none" stroke={color} strokeWidth="6" /><circle cx="50" cy="50" r="15" fill="#fff" /></svg>}
       </div>
@@ -475,21 +459,8 @@ const Rank = ({ player, setPlayer }: any) => {
         return;
       }
 
-      // Auto-repair logic: if cumulative_xp_offset > cumulative_xp, cap it
-      for (const h of hunters) {
-        const cxp = h.cumulative_xp || 0;
-        const cxpOffset = h.cumulative_xp_offset || 0;
-        if (cxpOffset > cxp) {
-          h.cumulative_xp_offset = cxp;
-          await supabase
-            .from('elite_players')
-            .update({ cumulative_xp_offset: cxp })
-            .eq('id', h.id);
-        }
-      }
-
       const processedHunters = hunters.map(h => {
-        const leaderboardXp = (h.cumulative_xp || 0) - (h.cumulative_xp_offset || 0);
+        const leaderboardXp = h.cumulative_xp || 0;
         const levelData = calculateLevelData(leaderboardXp);
         const monthlyData = calculateLevelData(h.monthly_xp || 0);
         const lifetimeLevelData = calculateLevelData(h.cumulative_xp || 0);
@@ -757,17 +728,11 @@ const Rank = ({ player, setPlayer }: any) => {
       let newMonthlyXp = Math.max(0, (selectedHunter.monthly_xp || 0) - reward.exp);
       let newGold = Math.max(0, (selectedHunter.gold || 0) - reward.gold);
 
-      let newXpOffset = selectedHunter.cumulative_xp_offset || 0;
-      if (newXpOffset > newXp) {
-        newXpOffset = newXp;
-      }
-
       await supabase.from('elite_quests').delete().eq('id', reqToDelete.id);
       await supabase.from('elite_players').update({ 
         cumulative_xp: newXp, 
         monthly_xp: newMonthlyXp, 
-        gold: newGold,
-        cumulative_xp_offset: newXpOffset
+        gold: newGold
       }).eq('name', selectedHunter.name);
       await supabase.from('elite_economy').insert([{ player_name: selectedHunter.name, amount: reward.exp, currency: 'xp', operation: 'decrease', reason: `Coach Reverted: ${taskName}` }]);
 
@@ -776,8 +741,7 @@ const Rank = ({ player, setPlayer }: any) => {
         ...prev, 
         cumulative_xp: newXp, 
         monthly_xp: newMonthlyXp, 
-        gold: newGold,
-        cumulative_xp_offset: newXpOffset
+        gold: newGold
       }));
       
       toast.success("✅ تم الإلغاء وخصم النقاط بنجاح!");

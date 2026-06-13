@@ -45,7 +45,6 @@ const PETS_DATABASE = [
   { name: 'Golden Wyvern Core', type: 'wyvern', color: '#eab308' },
   { name: 'Healing Phoenix Ember', type: 'phoenix', color: '#ef4444' },
   { name: 'Shadow Owl Eye', type: 'owl', color: '#f59e0b' },
-  { name: 'Iron Golem Matrix', type: 'golem', color: '#f59e0b' },
   { name: 'Frost Wolf Soul', type: 'wolf', color: '#eab308' },
   { name: 'Emerald Dragon Scale', type: 'emerald', color: '#10b981' }
 ];
@@ -87,13 +86,7 @@ const AnimatedSpirit = ({ type, color, isDead = false }: { type: string, color: 
             <motion.ellipse cx="50" cy="50" rx="5" ry="20" fill="#fff" animate={isDead ? {} : { ry: [20, 2, 20] }} transition={{ duration: 4, repeat: Infinity, times: [0, 0.1, 1] }} />
           </motion.svg>
         )}
-        {type === 'golem' && (
-          <motion.svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', filter: `drop-shadow(0 0 10px ${displayColor})` }} animate={isDead ? {} : { rotateZ: 360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }}>
-            <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="#334155" stroke={displayColor} strokeWidth="4" />
-            <polygon points="50,20 75,35 75,65 50,80 25,65 25,35" fill="none" stroke={displayColor} strokeWidth="2" />
-            <rect x="40" y="40" width="20" height="20" fill={displayColor} />
-          </motion.svg>
-        )}
+
         {type === 'wolf' && (
           <motion.svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', filter: `drop-shadow(0 0 15px ${displayColor})` }} animate={isDead ? {} : { scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
             <polygon points="50,10 80,40 50,90 20,40" fill="none" stroke={displayColor} strokeWidth="3" />
@@ -125,22 +118,8 @@ const calculateLevelData = (totalXp: number) => {
 };
 
 const getRankInfo = (level: number) => {
-  if (level >= 30) return { name: 'ELITE OLYMPIAN 👑', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.6)', icon: Crown };
-  if (level >= 28) return { name: 'GRANDMASTER OLYMPIAN 🎖️', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', icon: Zap };
-  if (level >= 26) return { name: 'MASTER OLYMPIAN ⚡', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', icon: Zap };
-  if (level >= 24) return { name: 'MASTER SPRINTER 🏆', color: '#ea580c', glow: 'rgba(139, 92, 246, 0.4)', icon: Flame };
-  if (level >= 22) return { name: 'MASTER DASH 🏃‍♂️', color: '#ea580c', glow: 'rgba(139, 92, 246, 0.4)', icon: Target };
-  if (level >= 20) return { name: 'DIAMOND RECORDIST 💎', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', icon: Shield };
-  if (level >= 18) return { name: 'DIAMOND FINALIST 🏁', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', icon: Medal };
-  if (level >= 16) return { name: 'DIAMOND VELOCITY 🌀', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', icon: Medal };
-  if (level >= 14) return { name: 'PLATINUM RACER 👟', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)', icon: Target };
-  if (level >= 12) return { name: 'PLATINUM RELAY ⏱️', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)', icon: Medal };
   if (level >= 10) return { name: 'GOLD PACER 🌟', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)', icon: Target };
-  if (level >= 8)  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)', icon: Medal };
-  if (level >= 6)  return { name: 'SILVER SPRINTER 🥈', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)', icon: Medal };
-  if (level >= 4)  return { name: 'SILVER RUNNER 🎽', color: '#94a3b8', glow: 'rgba(148, 163, 184, 0.3)', icon: Medal };
-  if (level >= 2)  return { name: 'BRONZE STRIDER 🪵', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)', icon: Medal };
-  return { name: 'BRONZE ATHLETE 🥉', color: '#b45309', glow: 'rgba(180, 83, 9, 0.3)', icon: Medal };
+  return { name: 'GOLD ACCELERATOR 🚀', color: '#eab308', glow: 'rgba(234, 179, 8, 0.3)', icon: Medal };
 };
 
 const getNextRankInfo = (lvl: number, currentXp: number) => {
@@ -393,7 +372,7 @@ const Profile = ({ player, setPlayer }: any) => {
   const petEnergy = player?.pet_hunger ?? 100;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const activeXp = (player?.cumulative_xp ?? 0) - (player?.cumulative_xp_offset ?? 0);
+  const activeXp = player?.cumulative_xp ?? 0;
   const levelData = calculateLevelData(activeXp);
   const lvl = levelData.level;
   const currentXp = levelData.xpInCurrentLevel;
